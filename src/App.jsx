@@ -423,11 +423,26 @@ function App() {
                   onSelect={setSelectedCountryCode}
                 />
               </ErrorBoundary>
-              <ErrorBoundary inline label="Regional Headlines">
-                <RegionalNewsPanel regionName="Thailand" title="ASEAN Tech Ecosystem" activeSourceIds={activeSources} />
+              <ErrorBoundary inline label="South China Sea">
+                <IntelligencePanel key={`southChinaSea:${sourceSetKey}`} briefingId="southChinaSea" activeSourceIds={activeSources} />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="ASEAN Geopolitics">
+                <IntelligencePanel key={`aseanDiplomacy:${sourceSetKey}`} briefingId="aseanDiplomacy" activeSourceIds={activeSources} />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="Myanmar Conflict">
+                <IntelligencePanel key={`myanmarConflict:${sourceSetKey}`} briefingId="myanmarConflict" activeSourceIds={activeSources} />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="Humanitarian Crisis">
+                <HumanitarianPanel />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="Displacement Tracker">
+                <RefugeePanel />
               </ErrorBoundary>
               <ErrorBoundary inline label="Conflict Analytics">
                 <AcledAnalytics />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="Arms & Defense">
+                <ArmsDefensePanel />
               </ErrorBoundary>
             </>
           )}
@@ -439,6 +454,21 @@ function App() {
                   selectedCode={selectedCountryCode}
                   onSelect={setSelectedCountryCode}
                 />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="Thailand Security">
+                <IntelligencePanel key={`thaiSecurity:${sourceSetKey}`} briefingId="thaiSecurity" activeSourceIds={activeSources} />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="Myanmar Border Crisis">
+                <IntelligencePanel key={`myanmarConflict:${sourceSetKey}`} briefingId="myanmarConflict" activeSourceIds={activeSources} />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="Humanitarian Crisis">
+                <HumanitarianPanel />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="Displacement Tracker">
+                <RefugeePanel />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="Conflict Analytics">
+                <AcledAnalytics />
               </ErrorBoundary>
               <ErrorBoundary inline label="Thai Tech Ecosystem">
                 <RegionalNewsPanel regionName="Thailand" title="Thailand Tech Ecosystem" activeSourceIds={activeSources} />
@@ -499,11 +529,23 @@ function App() {
           )}
           {viewMode === 'indopacific' && (
             <>
+              <ErrorBoundary inline label="South China Sea Watch">
+                <RegionalNewsPanel regionName="SouthChinaSea" title="South China Sea Watch" activeSourceIds={activeSources} />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="Taiwan Strait">
+                <RegionalNewsPanel regionName="Taiwan" title="Taiwan Strait" activeSourceIds={activeSources} />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="ASEAN Diplomacy">
+                <RegionalNewsPanel regionName="ASEAN" title="ASEAN Diplomacy" activeSourceIds={activeSources} />
+              </ErrorBoundary>
               <ErrorBoundary inline label="Global Tech News">
-                <RegionalNewsPanel regionName="SEA" title="Global Technology News" activeSourceIds={activeSources} />
+                <RegionalNewsPanel regionName="SEA" title="Indo-Pacific Tech" activeSourceIds={activeSources} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Global Macro">
                 <RegionalNewsPanel regionName="Global" title="Global Macro & Policy" activeSourceIds={activeSources} />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="Maritime Warnings">
+                <MaritimeWarningsPanel />
               </ErrorBoundary>
               <ErrorBoundary inline label="Media Sentiment">
                 <SentimentChart />
@@ -515,6 +557,12 @@ function App() {
           )}
           {viewMode === 'thailand' && (
             <>
+              <ErrorBoundary inline label="Myanmar Border Crisis">
+                <RegionalNewsPanel regionName="Myanmar" title="Myanmar Border Crisis" activeSourceIds={activeSources} />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="ASEAN Watch">
+                <RegionalNewsPanel regionName="ASEAN" title="ASEAN Watch" activeSourceIds={activeSources} />
+              </ErrorBoundary>
               <ErrorBoundary inline label="Thailand Tech">
                 <RegionalNewsPanel regionName="Thailand" title="Thailand Tech Ecosystem" activeSourceIds={activeSources} />
               </ErrorBoundary>

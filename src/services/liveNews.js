@@ -156,6 +156,94 @@ export const BRIEFING_DEFINITIONS = {
         fallbackItems: [
             { title: 'Tracking energy market impacts from Iran conflict and sanctions enforcement.', link: 'https://www.opec.org/', source: 'Monitor', pubDate: new Date(), tags: ['energy', 'sanctions'] }
         ]
+    },
+    southChinaSea: {
+        id: 'southChinaSea',
+        title: 'South China Sea',
+        description: 'Territorial disputes, naval incidents, UNCLOS claims, Taiwan Strait tensions, and ASEAN maritime security.',
+        queries: [
+            '"South China Sea" OR "Taiwan Strait" tension OR incident',
+            'China Philippines OR Vietnam OR Malaysia territorial OR vessel',
+            'Taiwan China military OR exercise OR incursion',
+            'ASEAN maritime OR "Nine-Dash Line" OR UNCLOS'
+        ],
+        locale: 'en-US',
+        sourceFilter: (source) => ['worldwide', 'asia'].includes(source.group),
+        focusTags: ['naval', 'conflict', 'diplomacy', 'airspace'],
+        primarySources: [
+            { label: 'CSIS Asia', url: 'https://www.csis.org/programs/asia-maritime-transparency-initiative' },
+            { label: 'AMTI', url: 'https://amti.csis.org/' },
+            { label: 'Reuters Asia', url: 'https://www.reuters.com/world/asia-pacific/' }
+        ],
+        fallbackItems: [
+            { title: 'Tracking South China Sea incidents, UNCLOS disputes, and Taiwan Strait activity.', link: 'https://amti.csis.org/', source: 'Monitor', pubDate: new Date(), tags: ['naval', 'conflict'] }
+        ]
+    },
+    myanmarConflict: {
+        id: 'myanmarConflict',
+        title: 'Myanmar Conflict & Border',
+        description: 'Myanmar civil war, SAC junta operations, resistance forces, refugee flows, and Thailand border security.',
+        queries: [
+            'Myanmar civil war OR junta OR SAC OR resistance',
+            'Myanmar Thailand border OR refugee OR displaced',
+            'Myanmar Sagaing OR Shan OR Karen OR Kachin conflict',
+            'Myanmar coup military OR airstrike OR ceasefire'
+        ],
+        locale: 'en-US',
+        sourceFilter: (source) => ['worldwide', 'asia'].includes(source.group),
+        focusTags: ['conflict', 'humanitarian', 'strikes', 'proxy'],
+        primarySources: [
+            { label: 'ACLED', url: 'https://acleddata.com/' },
+            { label: 'Irrawaddy', url: 'https://www.irrawaddy.com/' },
+            { label: 'ReliefWeb', url: 'https://reliefweb.int/country/mmr' }
+        ],
+        fallbackItems: [
+            { title: 'Monitoring Myanmar civil conflict, SAC operations, and cross-border refugee movements.', link: 'https://www.irrawaddy.com/', source: 'Monitor', pubDate: new Date(), tags: ['conflict', 'humanitarian'] }
+        ]
+    },
+    aseanDiplomacy: {
+        id: 'aseanDiplomacy',
+        title: 'ASEAN Geopolitics',
+        description: 'ASEAN summit decisions, US-China rivalry, trade agreements, AUKUS impact, and regional alliance shifts.',
+        queries: [
+            'ASEAN summit OR statement OR agreement OR chair',
+            'US China ASEAN OR Southeast Asia competition OR influence',
+            'AUKUS OR Quad OR "Five Eyes" Asia Pacific',
+            'RCEP OR CPTPP OR ASEAN trade OR supply chain'
+        ],
+        locale: 'en-US',
+        sourceFilter: (source) => ['worldwide', 'asia'].includes(source.group),
+        focusTags: ['diplomacy', 'energy', 'sanctions', 'conflict'],
+        primarySources: [
+            { label: 'ASEAN Secretariat', url: 'https://asean.org/news/' },
+            { label: 'ISEAS', url: 'https://www.iseas.edu.sg/' },
+            { label: 'East Asia Forum', url: 'https://www.eastasiaforum.org/' }
+        ],
+        fallbackItems: [
+            { title: 'Monitoring ASEAN bloc decisions, US-China strategic competition, and regional trade dynamics.', link: 'https://asean.org/news/', source: 'Monitor', pubDate: new Date(), tags: ['diplomacy', 'conflict'] }
+        ]
+    },
+    thaiSecurity: {
+        id: 'thaiSecurity',
+        title: 'Thailand Security',
+        description: 'Southern insurgency, political stability, ISOC operations, border security, and Thai-Myanmar frontier.',
+        queries: [
+            'Thailand southern insurgency OR Pattani OR BRN OR separatist',
+            'Thailand Myanmar border OR military OR security OR Mae Sot',
+            'Thailand political stability OR protest OR election OR coup',
+            'ISOC Thailand OR "Internal Security Operations Command"'
+        ],
+        locale: 'en-US',
+        sourceFilter: (source) => ['worldwide', 'asia', 'thailand'].includes(source.group),
+        focusTags: ['conflict', 'humanitarian', 'diplomacy', 'strikes'],
+        primarySources: [
+            { label: 'Bangkok Post', url: 'https://www.bangkokpost.com/' },
+            { label: 'Benar News', url: 'https://www.benarnews.org/thai/' },
+            { label: 'ACLED Thailand', url: 'https://acleddata.com/asia/' }
+        ],
+        fallbackItems: [
+            { title: 'Monitoring Thailand southern security, political developments, and Myanmar border situation.', link: 'https://www.bangkokpost.com/', source: 'Monitor', pubDate: new Date(), tags: ['conflict', 'diplomacy'] }
+        ]
     }
 };
 

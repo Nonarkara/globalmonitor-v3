@@ -39,6 +39,38 @@ const RegionalNewsPanel = ({ regionName, title, activeSourceIds }) => {
 
     const fetchNews = useCallback(() => {
         setIsRefreshing(true);
+
+        // Google News RSS-backed regions — fetched direct, not from liveNews aggregate
+        const RSS_REGIONS = {
+            Myanmar:      '"Myanmar" conflict OR border OR refugee OR junta',
+            SouthChinaSea:'"South China Sea" OR "Taiwan Strait" tension OR naval OR incident',
+            ASEAN:        'ASEAN geopolitics OR diplomacy OR summit OR "Southeast Asia"',
+            Taiwan:       'Taiwan China military OR strait OR exercise OR invasion',
+        };
+        if (RSS_REGIONS[regionName]) {
+            const q = encodeURIComponent(RSS_REGIONS[regionName]);
+            const rssUrl = `https://news.google.com/rss/search?q=${q}&hl=en-US&gl=US&ceid=US:en&cb=${Date.now()}`;
+            const encoded = encodeURIComponent(rssUrl);
+            const parseXml = (xml) => {
+                const doc = new DOMParser().parseFromString(xml, 'text/xml');
+                if (doc.querySelector('parsererror')) return [];
+                return Array.from(doc.querySelectorAll('item')).slice(0, 5).map(item => ({
+                    title: item.querySelector('title')?.textContent,
+                    link: item.querySelector('link')?.textContent,
+                    pubDate: new Date(item.querySelector('pubDate')?.textContent || Date.now()),
+                    source: item.querySelector('source')?.textContent || 'Google News',
+                })).filter(it => it.title && it.link && it.title !== 'Google News');
+            };
+            (async () => {
+                let items = null;
+                try { const r = await fetch(`https://api.allorigins.win/get?url=${encoded}`); items = parseXml((await r.json())?.contents || ''); } catch {}
+                if (!items?.length) try { const r = await fetch(`https://corsproxy.io/?url=${encoded}`); items = parseXml(await r.text()); } catch {}
+                if (mountedRef.current) setNews(items || []);
+            })().catch(() => { if (mountedRef.current) setNews([]); })
+              .finally(() => { if (mountedRef.current) setIsRefreshing(false); });
+            return;
+        }
+
         if (regionName === 'DEPA') {
             const depaSearchUrl = 'https://news.google.com/rss/search?q="Digital+Economy+Promotion+Agency"+OR+"สำนักงานส่งเสริมเศรษฐกิจดิจิทัล"&hl=th&gl=TH&ceid=TH:th';
             const freshUrl = depaSearchUrl + '&cb=' + Date.now();
