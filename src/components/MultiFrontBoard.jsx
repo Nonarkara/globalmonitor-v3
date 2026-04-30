@@ -32,17 +32,14 @@ const FrontCard = ({ front }) => {
             position: 'relative',
             overflow: 'hidden'
         }}>
-            {/* Pulse glow for critical */}
             {front.status === 'CRITICAL' && (
                 <div style={{
                     position: 'absolute',
                     top: 0,
                     left: 0,
                     right: 0,
-                    height: '2px',
-                    background: front.color,
-                    boxShadow: `0 0 12px ${front.color}, 0 0 24px ${front.color}`,
-                    animation: 'pulse-glow 2s ease-in-out infinite'
+                    height: '1px',
+                    background: front.color
                 }} />
             )}
 

@@ -117,7 +117,7 @@ const OilCrisisHeader = ({ items }) => {
     );
 };
 
-const MarketRadarPanel = () => {
+const MarketRadarPanel = ({ viewMode = 'middleeast' }) => {
     const fetcher = useCallback(() => fetchMarketRadar(), []);
     const {
         data: markets = [],
@@ -154,8 +154,9 @@ const MarketRadarPanel = () => {
                 </div>
             </div>
             <div className="panel-content" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                {/* Oil Crisis Header */}
-                {safeMarkets.length > 0 && <OilCrisisHeader items={safeMarkets} />}
+                {/* Oil Crisis Header — Middle East only; oil is the ME-war story.
+                    Outside ME, surfacing it overweights Iran/Gulf and misleads. */}
+                {viewMode === 'middleeast' && safeMarkets.length > 0 && <OilCrisisHeader items={safeMarkets} />}
                 <div className="panel-lead" style={{ marginBottom: 0, fontFamily: 'var(--font-mono)', fontSize: '0.68rem', letterSpacing: '0.3px' }}>
                     {lastUpdated ? `Last update ${new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Waiting for first live quote...'}
                 </div>

@@ -41,6 +41,23 @@ const defaultIsUsable = (value) => {
 /** Sleep helper for retry backoff */
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/** Stretch the polling interval on phones and slow networks.
+ *  Phone screens see 30+ live consumers, each polling every 5min by default —
+ *  on a 3G or 2g.gp network that's a thrash. Tripling the interval on mobile
+ *  cuts request volume without the user noticing on data that already updates
+ *  this slowly. */
+const getEffectiveInterval = (baseMs) => {
+    if (typeof window === 'undefined') return baseMs;
+    const effectiveType = navigator.connection?.effectiveType;
+    if (effectiveType === 'slow-2g' || effectiveType === '2g' || effectiveType === '3g') {
+        return baseMs * 3;
+    }
+    if (window.matchMedia && window.matchMedia('(max-width: 480px)').matches) {
+        return baseMs * 3;
+    }
+    return baseMs;
+};
+
 export const useLiveResource = (fetcher, {
     cacheKey,
     enabled = true,
@@ -129,19 +146,47 @@ export const useLiveResource = (fetcher, {
     useEffect(() => {
         if (!enabled) return undefined;
 
+        const effectiveInterval = getEffectiveInterval(intervalMs);
+
         const kickoff = window.setTimeout(() => {
             load();
         }, 0);
 
         const interval = window.setInterval(() => {
+            // Skip polling when the tab is hidden — saves bandwidth/battery on
+            // phones backgrounded behind WhatsApp/LINE. On visibility return,
+            // the visibilitychange handler below catches up.
+            if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+                return;
+            }
             load();
-        }, intervalMs);
+        }, effectiveInterval);
+
+        // Catch-up fetch when the tab becomes visible again after being hidden
+        // for longer than the interval.
+        const handleVisibility = () => {
+            if (document.visibilityState === 'visible' && lastUpdated) {
+                const age = Date.now() - new Date(lastUpdated).getTime();
+                if (age > effectiveInterval) {
+                    load();
+                }
+            }
+        };
+        document.addEventListener('visibilitychange', handleVisibility);
+
+        // Subscribe to the global "refresh all" broadcast from the header button.
+        const handleGlobalRefresh = () => {
+            load({ manual: true });
+        };
+        window.addEventListener('gm:refresh-all', handleGlobalRefresh);
 
         return () => {
             window.clearTimeout(kickoff);
             window.clearInterval(interval);
+            document.removeEventListener('visibilitychange', handleVisibility);
+            window.removeEventListener('gm:refresh-all', handleGlobalRefresh);
         };
-    }, [enabled, intervalMs, load]);
+    }, [enabled, intervalMs, load, lastUpdated]);
 
     return {
         data,

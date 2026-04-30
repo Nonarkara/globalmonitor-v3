@@ -72,6 +72,16 @@ function App() {
   useEffect(() => { getVisitorCount().then(setVisitorCount); }, []);
   const { backendUp } = useOnlineStatus();
 
+  // Global refresh — broadcasts to every useLiveResource consumer in one shot.
+  const [isRefreshingAll, setIsRefreshingAll] = useState(false);
+  const handleRefreshAll = useCallback(() => {
+    setIsRefreshingAll(true);
+    window.dispatchEvent(new CustomEvent('gm:refresh-all'));
+    logActivity(LOG_TYPES.USER_ACTION, 'Global refresh triggered');
+    // Visual feedback window — actual refreshes complete asynchronously.
+    setTimeout(() => setIsRefreshingAll(false), 1500);
+  }, []);
+
   const [viewState, setViewState] = useState({
     longitude: 53,
     latitude: 30,
@@ -311,6 +321,11 @@ function App() {
                 padding: '5px 8px', borderRadius: '8px', display: 'flex', alignItems: 'center', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.3s' }}>
               <Info size={11} aria-hidden="true" />
             </button>
+            <button onClick={handleRefreshAll} title="Refresh all data sources" aria-label="Refresh all data sources" disabled={isRefreshingAll}
+              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.06)', color: isRefreshingAll ? 'rgba(56,189,248,0.8)' : 'rgba(255,255,255,0.35)',
+                padding: '5px 8px', borderRadius: '8px', display: 'flex', alignItems: 'center', cursor: isRefreshingAll ? 'wait' : 'pointer', fontFamily: 'inherit', transition: 'all 0.3s' }}>
+              <RefreshCw size={11} aria-hidden="true" className={isRefreshingAll ? 'spin-anim' : ''} />
+            </button>
             <button onClick={() => setIsSettingsOpen(true)} title="Settings" aria-label="Open intelligence source settings"
               style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.35)',
                 padding: '5px 8px', borderRadius: '8px', display: 'flex', alignItems: 'center', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.3s' }}>
@@ -447,7 +462,7 @@ function App() {
         {/* Row 5: Bottom bar — 5-column grid, 2 rows */}
         <div className="bottom-bar">
           <ErrorBoundary inline label="Market Radar">
-            <MarketRadarPanel />
+            <MarketRadarPanel viewMode={viewMode} />
           </ErrorBoundary>
           {viewMode === 'middleeast' && (
             <>

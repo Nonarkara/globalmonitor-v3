@@ -198,6 +198,55 @@ const ActorNetworkModal = ({ isOpen, onClose }) => {
 
     if (!isOpen) return null;
 
+    // Mobile fallback — D3 force-directed graph with 100+ SVG nodes and a
+    // simulation that re-renders every frame on drag is unusable on a phone.
+    // Show a one-liner instead.
+    const isPhoneViewport = typeof window !== 'undefined' && window.innerWidth < 600;
+    if (isPhoneViewport) {
+        return (
+            <div style={{
+                position: 'fixed', inset: 0, zIndex: 10000,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(0,0,0,0.85)',
+                padding: '24px'
+            }} onClick={onClose}>
+                <div style={{
+                    background: 'rgba(10, 14, 20, 0.96)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    padding: '28px 24px',
+                    maxWidth: '320px',
+                    textAlign: 'center'
+                }} onClick={e => e.stopPropagation()}>
+                    <Network size={20} style={{ color: '#8b5cf6', marginBottom: '14px' }} />
+                    <div style={{
+                        fontSize: '0.95rem', fontWeight: 600, color: 'rgba(255,255,255,0.9)',
+                        marginBottom: '8px', letterSpacing: '0.4px'
+                    }}>
+                        Actor / Faction Network
+                    </div>
+                    <div style={{
+                        fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)',
+                        lineHeight: 1.55, marginBottom: '16px'
+                    }}>
+                        {networkData.nodes.length} actors · {networkData.edges.length} relationships.
+                        The interactive graph is available on tablet and desktop — open globalmonitor.fly.dev on a wider screen to explore.
+                    </div>
+                    <button onClick={onClose} style={{
+                        background: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        color: 'rgba(255,255,255,0.75)',
+                        padding: '10px 18px',
+                        fontSize: '0.75rem', fontFamily: 'inherit',
+                        letterSpacing: '0.6px', cursor: 'pointer',
+                        minHeight: '44px'
+                    }}>
+                        Close
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     // Get edges for selected node
     const selectedEdges = selectedNode
         ? networkData.edges.filter(e => e.source === selectedNode.id || e.target === selectedNode.id)

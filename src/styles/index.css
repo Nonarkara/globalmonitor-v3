@@ -100,13 +100,7 @@ body {
 }
 
 .map-vignette {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse at 50% 40%, transparent 0%, transparent 50%, rgba(6, 9, 15, 0.06) 75%, rgba(6, 9, 15, 0.18) 100%),
-    linear-gradient(180deg, rgba(6, 9, 15, 0.1) 0%, transparent 12%, transparent 88%, rgba(6, 9, 15, 0.12) 100%);
+  display: none;
 }
 
 .map-grid-overlay {
@@ -269,12 +263,21 @@ body {
 @media (max-width: 900px) {
   .app-container {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto auto auto auto auto;
+    grid-template-rows: auto;
+    grid-auto-rows: auto;
+    height: auto;
+    min-height: 100vh;
     overflow-y: auto;
     overflow-x: hidden;
   }
-  .left-sidebar { display: none; }
-  .right-sidebar { grid-column: 1; }
+  /* Linear flow: Map -> Right panels -> Left sidebar (data layers) -> Bottom cards */
+  .map-wrapper { grid-column: 1; grid-row: auto; height: 50vh; min-height: 320px; }
+  .right-sidebar { grid-column: 1; grid-row: auto; }
+  .left-sidebar {
+    grid-column: 1;
+    grid-row: auto;
+    max-height: none;
+  }
   .bottom-bar { grid-column: 1; flex-direction: column; }
   .chronicle-row { grid-column: 1; }
 }
@@ -635,8 +638,8 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.55), rgba(16, 185, 129, 0.55), transparent);
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .eo-preview-card .panel-header {
@@ -715,12 +718,9 @@ body {
 .eo-preview-frame {
   position: relative;
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.06);
-  background:
-    radial-gradient(circle at 30% 25%, rgba(56, 189, 248, 0.16), transparent 28%),
-    radial-gradient(circle at 70% 70%, rgba(16, 185, 129, 0.15), transparent 32%),
-    linear-gradient(180deg, rgba(6, 20, 46, 0.96), rgba(4, 12, 28, 0.96));
+  background: var(--bg-panel);
   aspect-ratio: 12 / 7;
 }
 
@@ -1270,13 +1270,11 @@ body {
 .radar-price .change.positive {
   color: var(--accent-green);
   background: rgba(16, 185, 129, 0.12);
-  text-shadow: 0 0 6px rgba(16, 185, 129, 0.3);
 }
 
 .radar-price .change.negative {
   color: var(--accent-red);
   background: rgba(239, 68, 68, 0.12);
-  text-shadow: 0 0 6px rgba(239, 68, 68, 0.3);
 }
 
 
@@ -1569,7 +1567,6 @@ body {
 
   30% {
     color: var(--accent-green);
-    text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
   }
 
   100% {
@@ -1584,7 +1581,6 @@ body {
 
   30% {
     color: var(--accent-red);
-    text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
   }
 
   100% {
@@ -1617,10 +1613,6 @@ body {
   50% { opacity: 0.7; }
 }
 
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 8px currentColor; }
-  50% { box-shadow: 0 0 20px currentColor, 0 0 40px currentColor; }
-}
 
 /* GlassCard component styles */
 .glass-card {
@@ -1799,24 +1791,9 @@ body {
   animation-delay: 0.6s;
 }
 
-/* Signal items: hover sheen */
 .signal-item {
   position: relative;
   overflow: hidden;
-}
-
-.signal-item::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.03) 50%, transparent 60%);
-  transform: translateX(-100%);
-  transition: transform 0.5s;
-  pointer-events: none;
-}
-
-.signal-item:hover::after {
-  transform: translateX(100%);
 }
 
 
@@ -2457,6 +2434,101 @@ body {
   .region-btn {
     padding: 5px 8px;
     font-size: 0.72rem;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   PHONES (< 480px) — touch targets, solid panels,
+   no backdrop-filter (GPU-cheap on phones)
+   ═══════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  /* Replace expensive blur with a solid translucent panel */
+  .grid-panel,
+  .bottom-card,
+  .glass-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(10, 14, 20, 0.94);
+  }
+
+  .region-selector {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(10, 14, 20, 0.92);
+    bottom: 12px;
+  }
+
+  /* Touch targets — 44px floor on every interactive surface */
+  button,
+  .layer-card,
+  .region-btn,
+  .eo-preview-toggle,
+  .eo-overlay-toggle,
+  .eo-chip {
+    min-height: 44px;
+  }
+
+  .header-bar button {
+    min-width: 44px;
+    padding: 10px 12px !important;
+  }
+
+  /* Header logo strip: allow horizontal scroll as last resort */
+  .header-bar > div:first-child {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .header-bar > div:first-child::-webkit-scrollbar { display: none; }
+
+  /* Layer cards: more breathing room, bigger icon */
+  .layer-card {
+    padding: 12px 14px;
+    gap: 12px;
+  }
+  .layer-icon-wrapper {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Bottom-bar cards stacked one per row, breathing room */
+  .bottom-bar {
+    gap: 6px;
+    padding-bottom: 8px;
+  }
+  .bottom-card {
+    width: 100%;
+  }
+
+  /* Tighter app padding to recover screen real estate */
+  .app-container {
+    padding: 4px 4px 8px 4px;
+    gap: 6px;
+  }
+
+  /* Divider edges — drop the subtle sheen on phones */
+  .grid-panel::before,
+  .bottom-card::before,
+  .header-bar::before {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   MID-PHONE / LARGE PHONE LANDSCAPE (481-768px)
+   ═══════════════════════════════════════════ */
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .grid-panel,
+  .bottom-card {
+    backdrop-filter: blur(12px) saturate(1.1);
+    -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  }
+  button,
+  .layer-card,
+  .region-btn {
+    min-height: 40px;
   }
 }
 
