@@ -1,9 +1,13 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Activity } from 'lucide-react';
 import { useLiveResource } from '../hooks/useLiveResource';
 import DataStatus from './DataStatus';
 
 const API_BASE = import.meta.env.DEV ? 'http://localhost:4000' : '';
+const EMPTY_TIMELINE = [];
+const CHART_WIDTH = 200;
+const CHART_HEIGHT = 60;
+const CHART_PAD = 2;
 
 const SentimentChart = () => {
     const fetcher = useCallback(() =>
@@ -15,8 +19,46 @@ const SentimentChart = () => {
         isUsable: (d) => d?.timeline?.length >= 3
     });
 
-    const timeline = data?.timeline || [];
-    if (timeline.length < 3) return (
+    const timeline = data?.timeline || EMPTY_TIMELINE;
+    const computed = useMemo(() => {
+        if (timeline.length < 3) return null;
+
+        const tones = timeline.map(d => d.tone || 0);
+        const minT = Math.min(...tones, -5);
+        const maxT = Math.max(...tones, 5);
+        const range = Math.max(maxT - minT, 1);
+        const toX = (i) => CHART_PAD + (i / (timeline.length - 1)) * (CHART_WIDTH - CHART_PAD * 2);
+        const toY = (t) => CHART_PAD + (1 - (t - minT) / range) * (CHART_HEIGHT - CHART_PAD * 2);
+        const zeroY = toY(0);
+        const linePath = timeline.map((d, i) => `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${toY(d.tone || 0).toFixed(1)}`).join(' ');
+        const posArea = timeline.map((d, i) => {
+            const y = toY(Math.max(d.tone || 0, 0));
+            return `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${y.toFixed(1)}`;
+        }).join(' ') + ` L${toX(timeline.length - 1).toFixed(1)},${zeroY.toFixed(1)} L${toX(0).toFixed(1)},${zeroY.toFixed(1)} Z`;
+        const negArea = timeline.map((d, i) => {
+            const y = toY(Math.min(d.tone || 0, 0));
+            return `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${y.toFixed(1)}`;
+        }).join(' ') + ` L${toX(timeline.length - 1).toFixed(1)},${zeroY.toFixed(1)} L${toX(0).toFixed(1)},${zeroY.toFixed(1)} Z`;
+        const avg = tones.reduce((a, b) => a + b, 0) / tones.length;
+        const trendWindow = tones.slice(-5);
+        const trend = trendWindow.reduce((a, b) => a + b, 0) / trendWindow.length;
+        return {
+            tones,
+            zeroY,
+            linePath,
+            posArea,
+            negArea,
+            avg,
+            trend,
+            toX,
+            toY,
+            W: CHART_WIDTH,
+            H: CHART_HEIGHT,
+            PAD: CHART_PAD
+        };
+    }, [timeline]);
+
+    if (!computed) return (
         <div className="bottom-card" style={{ padding: '10px 12px' }}>
             <div className="panel-header" style={{
                 display: 'flex', alignItems: 'center', gap: '6px',
@@ -28,37 +70,13 @@ const SentimentChart = () => {
                 <span style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.85)' }}>Media Sentiment</span>
             </div>
             <DataStatus isLoading={isLoading} error={error} retryCount={retryCount} data={data} refresh={refresh}
+                isRefreshing={isRefreshing} isStale={isStale}
                 isEmpty={!isLoading && timeline.length < 3} emptyMessage="Awaiting GDELT data" />
         </div>
     );
 
-    const tones = timeline.map(d => d.tone || 0);
-    const minT = Math.min(...tones, -5);
-    const maxT = Math.max(...tones, 5);
-    const range = Math.max(maxT - minT, 1);
-    const W = 200, H = 60, PAD = 2;
-
-    const toX = (i) => PAD + (i / (timeline.length - 1)) * (W - PAD * 2);
-    const toY = (t) => PAD + (1 - (t - minT) / range) * (H - PAD * 2);
-    const zeroY = toY(0);
-
-    const linePath = timeline.map((d, i) => `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${toY(d.tone || 0).toFixed(1)}`).join(' ');
-
-    // Positive area (above zero)
-    const posArea = timeline.map((d, i) => {
-        const y = toY(Math.max(d.tone || 0, 0));
-        return `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${y.toFixed(1)}`;
-    }).join(' ') + ` L${toX(timeline.length - 1).toFixed(1)},${zeroY.toFixed(1)} L${toX(0).toFixed(1)},${zeroY.toFixed(1)} Z`;
-
-    // Negative area (below zero)
-    const negArea = timeline.map((d, i) => {
-        const y = toY(Math.min(d.tone || 0, 0));
-        return `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${y.toFixed(1)}`;
-    }).join(' ') + ` L${toX(timeline.length - 1).toFixed(1)},${zeroY.toFixed(1)} L${toX(0).toFixed(1)},${zeroY.toFixed(1)} Z`;
-
+    const { tones, zeroY, linePath, posArea, negArea, avg, trend, toX, toY, W, H, PAD } = computed;
     const latest = tones[tones.length - 1];
-    const avg = tones.reduce((a, b) => a + b, 0) / tones.length;
-    const trend = tones.slice(-5).reduce((a, b) => a + b, 0) / 5;
     const label = trend < -3 ? 'VERY NEGATIVE' : trend < -1 ? 'NEGATIVE' : trend < 1 ? 'NEUTRAL' : 'IMPROVING';
     const labelColor = trend < -3 ? '#ef4444' : trend < -1 ? '#f59e0b' : trend < 1 ? 'rgba(255,255,255,0.5)' : '#22c55e';
 

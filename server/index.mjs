@@ -148,6 +148,39 @@ const server = http.createServer(async (request, response) => {
     const sourceIds = parseSourceIds(url.searchParams);
 
     try {
+        // ── CORS proxy relay (replaces dead allorigins.win / codetabs for v1 HTML page) ──
+        // /api/proxy/get?url=<encoded>  → { contents: "..." }  (allorigins /get format)
+        // /api/proxy/raw?url=<encoded>  → raw text             (allorigins /raw format)
+        if (url.pathname === '/api/proxy/get' || url.pathname === '/api/proxy/raw') {
+            const targetUrl = url.searchParams.get('url');
+            if (!targetUrl) {
+                json(response, 400, { error: 'Missing ?url= parameter' }, { status: 'offline' });
+                return;
+            }
+            try {
+                const upstream = await fetch(decodeURIComponent(targetUrl), {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        'Accept-Language': 'en-US,en;q=0.5',
+                        'Referer': 'https://www.google.com/',
+                        'Cache-Control': 'no-cache',
+                    },
+                    signal: AbortSignal.timeout(12000),
+                });
+                const text = await upstream.text();
+                if (url.pathname === '/api/proxy/get') {
+                    json(response, 200, { contents: text, status: { url: targetUrl, content_type: upstream.headers.get('content-type') || '' } }, { status: 'live', updatedAt: new Date().toISOString(), cache: 'miss' });
+                } else {
+                    response.writeHead(200, { 'Content-Type': upstream.headers.get('content-type') || 'text/plain', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' });
+                    response.end(text);
+                }
+            } catch (err) {
+                json(response, 502, { error: 'Proxy fetch failed', message: err.message }, { status: 'offline' });
+            }
+            return;
+        }
+
         if (url.pathname === '/api/sheets-health') {
             json(response, 200, getRecordingHealth(), { status: 'live', updatedAt: new Date().toISOString(), cache: 'miss' });
             return;
@@ -172,7 +205,7 @@ const server = http.createServer(async (request, response) => {
         if (url.pathname === '/api/ticker') {
             const result = await useCached(
                 `ticker:${sourceIds?.join(',') || 'default'}`,
-                60000,  // V4: reduced from 120s to 60s for breaking news
+                180000,  // 3 min — ticker changes slowly; 60s caused unnecessary re-fetches
                 () => fetchTickerPayload(sourceIds),
                 (payload) => Array.isArray(payload) && payload.length > 0
             );
@@ -184,7 +217,7 @@ const server = http.createServer(async (request, response) => {
             const briefingId = decodeURIComponent(url.pathname.replace('/api/briefings/', ''));
             const result = await useCached(
                 `briefing:${briefingId}:${sourceIds?.join(',') || 'default'}`,
-                60000,  // V4: reduced from 120s to 60s for faster escalation detection
+                120000,  // 2 min — balances freshness vs server load
                 () => fetchBriefingPayload(briefingId, sourceIds),
                 (payload) => Array.isArray(payload?.items) && payload.items.length > 0
             );
@@ -344,7 +377,7 @@ const server = http.createServer(async (request, response) => {
         if (url.pathname === '/api/markets') {
             const result = await useCached(
                 'markets',
-                30000,  // V4: reduced from 60s to 30s for oil price crisis tracking
+                60000,  // 60s — markets update every minute, 30s was unnecessary churn
                 () => fetchMarketPayload(),
                 (payload) => Array.isArray(payload) && payload.length > 0
             );

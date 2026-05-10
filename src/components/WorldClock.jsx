@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 
 const ME_CITIES = [
-    { name: 'Tehran', tz: 'Asia/Tehran', label: 'Tehran (IR)', primary: true },
-    { name: 'Tel Aviv', tz: 'Asia/Jerusalem' },
-    { name: 'Dubai', tz: 'Asia/Dubai' },
+    { name: 'Jerusalem', tz: 'Asia/Jerusalem', label: 'Jerusalem (IL)', primary: true },
+    { name: 'Washington', tz: 'America/New_York' },
+    { name: 'London', tz: 'Europe/London' },
+    { name: 'Tehran', tz: 'Asia/Tehran' },
+    { name: 'Moscow', tz: 'Europe/Moscow' },
     { name: 'Riyadh', tz: 'Asia/Riyadh' },
     { name: 'Beirut', tz: 'Asia/Beirut' },
-    { name: 'London', tz: 'Europe/London' },
-    { name: 'Washington', tz: 'America/New_York' },
-    { name: 'Moscow', tz: 'Europe/Moscow' },
-    { name: 'Bangkok', tz: 'Asia/Bangkok' },
+    { name: 'Beijing', tz: 'Asia/Shanghai' },
+    { name: 'Kyiv', tz: 'Europe/Kiev' },
 ];
 
 const APAC_CITIES = [

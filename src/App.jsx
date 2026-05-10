@@ -47,6 +47,7 @@ import ClassificationBanner from './components/ClassificationBanner';
 import SourceHealthModal from './components/SourceHealthModal';
 import ActivityLogModal from './components/ActivityLogModal';
 import { logActivity, LOG_TYPES } from './services/activityLog';
+import { useEscapeKey } from './hooks/useEscapeKey';
 import './styles/print.css';
 
 function App() {
@@ -63,6 +64,7 @@ function App() {
   const [isSourceHealthOpen, setIsSourceHealthOpen] = useState(false);
   const [isActivityLogOpen, setIsActivityLogOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  useEscapeKey(isAboutOpen, () => setIsAboutOpen(false));
   const [activeSources, setActiveSources] = useState(INTELLIGENCE_SOURCES.map((source) => source.id));
   const [copernicusMode, setCopernicusMode] = useState('true-color');
   const [showCopernicusOverlay, setShowCopernicusOverlay] = useState(true);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { X, Database, CheckCircle, AlertCircle, Clock, ExternalLink } from 'lucide-react';
 import dataSources from '../data/dataSources.json';
+import { useEscapeKey } from '../hooks/useEscapeKey';
 
 const API_BASE = import.meta.env.DEV ? 'http://localhost:4000' : '';
 
@@ -17,6 +18,8 @@ const SourceHealthModal = ({ isOpen, onClose }) => {
     useEffect(() => {
         if (isOpen) fetchHealth();
     }, [isOpen, fetchHealth]);
+
+    useEscapeKey(isOpen, onClose);
 
     if (!isOpen) return null;
 

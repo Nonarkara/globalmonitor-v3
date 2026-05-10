@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Tv, Volume2, VolumeX } from 'lucide-react';
 import { getRegion } from '../data/regions.js';
 
@@ -11,21 +11,19 @@ const CHANNELS_PER_PAGE = 4;
  */
 const LiveTVPanel = ({ viewMode = 'middleeast' }) => {
   const channels = useMemo(() => getRegion(viewMode).channels, [viewMode]);
-  const [activeChannel, setActiveChannel] = useState(null);
-  const [page, setPage] = useState(0);
+  const [activeState, setActiveState] = useState({ viewMode, channel: null });
+  const [pageState, setPageState] = useState({ viewMode, page: 0 });
+  const activeChannel = activeState.viewMode === viewMode ? activeState.channel : null;
   const totalPages = Math.ceil(channels.length / CHANNELS_PER_PAGE);
+  const page = pageState.viewMode === viewMode ? Math.min(pageState.page, Math.max(totalPages - 1, 0)) : 0;
   const visibleChannels = channels.slice(page * CHANNELS_PER_PAGE, (page + 1) * CHANNELS_PER_PAGE);
 
-  // Reset to page 0 + clear active channel when region changes — the previous
-  // page index may not exist in the new region's channel list.
-  useEffect(() => {
-    setPage(0);
-    setActiveChannel(null);
-  }, [viewMode]);
-
   const handleChannelClick = useCallback((channelId) => {
-    setActiveChannel((prev) => (prev === channelId ? null : channelId));
-  }, []);
+    setActiveState((prev) => ({
+      viewMode,
+      channel: prev.viewMode === viewMode && prev.channel === channelId ? null : channelId,
+    }));
+  }, [viewMode]);
 
   return (
     <div className="grid-panel" style={{
@@ -153,7 +151,7 @@ const LiveTVPanel = ({ viewMode = 'middleeast' }) => {
           {Array.from({ length: totalPages }, (_, i) => (
             <button
               key={i}
-              onClick={() => setPage(i)}
+              onClick={() => setPageState({ viewMode, page: i })}
               style={{
                 width: '12px', height: '3px', borderRadius: '2px',
                 background: i === page ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.15)',

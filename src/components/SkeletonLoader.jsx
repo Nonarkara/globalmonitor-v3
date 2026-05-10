@@ -15,7 +15,7 @@ const SkeletonLoader = ({ lines = 4, showKpi = false }) => (
         )}
         {Array.from({ length: lines }).map((_, i) => (
             <div key={i} className="skeleton-line" style={{
-                width: `${85 - i * 8 + Math.random() * 10}%`,
+                width: `${85 - i * 8 + (i % 3) * 4}%`,
                 animationDelay: `${i * 0.1}s`
             }} />
         ))}

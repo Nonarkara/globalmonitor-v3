@@ -4,7 +4,7 @@ import { fetchStrikeStats } from '../services/strikeStats';
 import { fetchFrontStatus } from '../services/frontStatus';
 import { useLiveResource } from '../hooks/useLiveResource';
 import DataStatus from './DataStatus';
-import { WAR_START } from '../data/warConstants';
+import { getDayCount } from '../data/warConstants';
 
 const SubFront = ({ front }) => (
     <div style={{
@@ -38,7 +38,7 @@ const SubFront = ({ front }) => (
     </div>
 );
 
-const IranWarPanel = ({ activeSourceIds }) => {
+const IranWarPanel = () => {
     const strikeFetcher = useCallback(() => fetchStrikeStats(), []);
     const frontFetcher = useCallback(() => fetchFrontStatus(), []);
 
@@ -56,7 +56,7 @@ const IranWarPanel = ({ activeSourceIds }) => {
 
     const hasAnyData = strikeData || frontData;
 
-    const dayCount = Math.floor((Date.now() - WAR_START.getTime()) / 86400000);
+    const dayCount = getDayCount();
     const weekTotal = strikeData?.weekTotal || {};
     const fronts = frontData?.fronts || [];
 

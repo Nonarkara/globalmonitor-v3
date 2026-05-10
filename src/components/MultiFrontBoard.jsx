@@ -16,7 +16,6 @@ const ICONS = {
 
 const FrontCard = ({ front }) => {
     const Icon = ICONS[front.icon] || Crosshair;
-    const isActive = front.status === 'CRITICAL' || front.status === 'ACTIVE';
 
     return (
         <div style={{

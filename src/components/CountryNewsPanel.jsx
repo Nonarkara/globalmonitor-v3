@@ -43,19 +43,14 @@ const CountryNewsPanel = ({ mode = 'indopacific', selectedCode, onSelect }) => {
     const fetcher = mode === 'thailand' ? fetchThaiRegionNews : fetchAseanCountryNews;
     const title = mode === 'thailand' ? 'Thailand Regions' : 'ASEAN Countries';
 
-    const [activeCode, setActiveCode] = useState(selectedCode || items[0][codeKey]);
+    const fallbackCode = items[0]?.[codeKey];
+    const [localCode, setLocalCode] = useState(selectedCode || fallbackCode);
+    const activeCode = selectedCode || (items.some((item) => item[codeKey] === localCode) ? localCode : fallbackCode);
     const [news, setNews] = useState([]);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const mounted = useRef(true);
 
     useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
-
-    // Sync external selection
-    useEffect(() => {
-        if (selectedCode && selectedCode !== activeCode) {
-            setActiveCode(selectedCode);
-        }
-    }, [selectedCode]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const load = useCallback(() => {
         if (!activeCode) return;
@@ -86,7 +81,7 @@ const CountryNewsPanel = ({ mode = 'indopacific', selectedCode, onSelect }) => {
     }, [load]);
 
     const handleSelect = (code) => {
-        setActiveCode(code);
+        setLocalCode(code);
         onSelect?.(code);
     };
 

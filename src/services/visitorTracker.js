@@ -5,7 +5,7 @@
  * Also fetches total visitor count for the counter display.
  */
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzSIskjTOoavYg6U_uLgG9xjRY4FLuv2tuYhT-FGuHE1aSt6-rdqnu_u_-49eMBslZQ/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwzTwBNOseKkvkkjD-LH6B3GWrsFcwS6MTDbn7W5eb3zHxA-swtlHYuwJ3w5PAVXDhU7Q/exec';
 
 const BASE_COUNT = 88888;
 

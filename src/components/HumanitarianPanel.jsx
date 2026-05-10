@@ -2,16 +2,16 @@ import React, { useCallback, useMemo } from 'react';
 import { Heart, Users, Building2, TrendingUp } from 'lucide-react';
 import { useLiveResource } from '../hooks/useLiveResource';
 import DataStatus from './DataStatus';
-import { WAR_START } from '../data/warConstants';
+import { getDayCount } from '../data/warConstants';
 
-const KPI = ({ icon: Icon, label, value, color, sub }) => (
+const KPI = ({ icon, label, value, color, sub }) => (
     <div style={{
         padding: '6px 8px', borderRadius: '6px',
         background: 'rgba(255,255,255,0.04)',
         border: '1px solid rgba(255,255,255,0.06)',
         textAlign: 'center', flex: 1
     }}>
-        <Icon size={10} style={{ color, marginBottom: '2px' }} />
+        {React.createElement(icon, { size: 10, style: { color, marginBottom: '2px' } })}
         <div style={{ fontSize: '0.82rem', fontWeight: 700, color, fontFamily: 'var(--font-mono)' }}>{value}</div>
         <div style={{ fontSize: '0.42rem', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>{label}</div>
         {sub && <div style={{ fontSize: '0.38rem', color: 'rgba(255,255,255,0.25)', marginTop: '1px' }}>{sub}</div>}
@@ -69,9 +69,10 @@ const HumanitarianPanel = () => {
         isUsable: (d) => d != null
     });
 
-    const { totalFatalities, cumulativeData, displacedCount, damagedCount } = useMemo(() => {
+    const { totalFatalities, cumulativeData, displacedCount, damagedCount, fatalitiesPerDay } = useMemo(() => {
         const events = acledData?.features?.map(f => f.properties) || [];
         const total = events.reduce((s, e) => s + (e.fatalities || 0), 0);
+        const dayCount = getDayCount();
 
         // Group fatalities by date for cumulative sparkline
         const byDate = {};
@@ -80,8 +81,10 @@ const HumanitarianPanel = () => {
             if (d) byDate[d] = (byDate[d] || 0) + (e.fatalities || 0);
         });
         const sorted = Object.entries(byDate).sort((a, b) => a[0].localeCompare(b[0]));
-        let running = 0;
-        const cumulative = sorted.map(([, count]) => { running += count; return running; });
+        const cumulative = sorted.reduce((acc, [, count]) => [
+            ...acc,
+            (acc[acc.length - 1] || 0) + count
+        ], []);
 
         // Displaced from humanitarian data
         const displaced = humanData?.totalDisplaced || humanData?.displaced ||
@@ -96,7 +99,8 @@ const HumanitarianPanel = () => {
             totalFatalities: total,
             cumulativeData: cumulative,
             displacedCount: displaced,
-            damagedCount: damaged
+            damagedCount: damaged,
+            fatalitiesPerDay: total > 0 ? Math.round(total / Math.max(1, dayCount)) : null
         };
     }, [acledData, humanData, infraData]);
 
@@ -178,8 +182,8 @@ const HumanitarianPanel = () => {
                 }}>
                     <TrendingUp size={10} style={{ color: '#ef4444' }} />
                     <span style={{ fontSize: '0.42rem', color: 'rgba(255,255,255,0.5)' }}>
-                        {totalFatalities > 0
-                            ? `~${Math.round(totalFatalities / Math.max(1, Math.floor((Date.now() - WAR_START.getTime()) / 86400000)))} fatalities/day avg`
+                        {fatalitiesPerDay != null
+                            ? `~${fatalitiesPerDay} fatalities/day avg`
                             : 'Monitoring conflict casualties'}
                     </span>
                 </div>

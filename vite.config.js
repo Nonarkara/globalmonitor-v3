@@ -12,4 +12,16 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-map': ['maplibre-gl'],
+          'vendor-d3': ['d3'],
+          'vendor-lucide': ['lucide-react'],
+        },
+      },
+    },
+  },
 })

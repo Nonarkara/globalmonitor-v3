@@ -3,17 +3,18 @@ import { DollarSign, TrendingUp } from 'lucide-react';
 import warEconomy from '../data/warEconomy.json';
 import { WAR_START, getDayCount } from '../data/warConstants';
 
+const getCurrentTime = () => Date.now();
+
 const WarCostTracker = () => {
-    const [now, setNow] = useState(Date.now());
+    const [now, setNow] = useState(getCurrentTime);
 
     // Tick every 5 seconds for live cost counter
     useEffect(() => {
-        const t = setInterval(() => setNow(Date.now()), 5000);
+        const t = setInterval(() => setNow(getCurrentTime()), 5000);
         return () => clearInterval(t);
     }, []);
 
     const dayCount = getDayCount();
-    const totalEstimate = warEconomy.dailyCostEstimate * dayCount;
     const maxCat = Math.max(...warEconomy.categories.map(c => c.estimateTotal));
 
     // Animated cost with millisecond precision

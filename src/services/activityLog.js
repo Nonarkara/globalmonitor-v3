@@ -6,6 +6,7 @@
 
 const MAX_ENTRIES = 200;
 const log = [];
+let snapshot = [];
 const listeners = new Set();
 
 export const LOG_TYPES = {
@@ -15,7 +16,10 @@ export const LOG_TYPES = {
     SYSTEM: 'system'
 };
 
-const notify = () => listeners.forEach(fn => fn([...log]));
+const notify = () => {
+    snapshot = [...log];
+    listeners.forEach(fn => fn());
+};
 
 export const logActivity = (type, message, details = null) => {
     const entry = {
@@ -30,7 +34,7 @@ export const logActivity = (type, message, details = null) => {
     notify();
 };
 
-export const getActivityLog = () => [...log];
+export const getActivityLog = () => snapshot;
 
 export const subscribeActivityLog = (fn) => {
     listeners.add(fn);

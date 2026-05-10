@@ -1,6 +1,6 @@
 import React from 'react';
 import { Ship, AlertTriangle, DollarSign, Anchor } from 'lucide-react';
-import { WAR_START, getDayCount } from '../data/warConstants';
+import { getDayCount } from '../data/warConstants';
 
 /**
  * Strait of Hormuz Crisis Tracker — curated war-time status panel.
@@ -29,7 +29,7 @@ const HORMUZ_STATUS = {
     ]
 };
 
-const Stat = ({ icon: Icon, label, value, color }) => (
+const Stat = ({ icon, label, value, color }) => (
     <div style={{
         display: 'flex', alignItems: 'center', gap: '6px',
         padding: '5px 8px',
@@ -37,7 +37,7 @@ const Stat = ({ icon: Icon, label, value, color }) => (
         borderRadius: '6px',
         border: '1px solid rgba(255,255,255,0.06)'
     }}>
-        <Icon size={12} style={{ color: color || 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
+        {React.createElement(icon, { size: 12, style: { color: color || 'rgba(255,255,255,0.4)', flexShrink: 0 } })}
         <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                 {label}

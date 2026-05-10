@@ -63,8 +63,8 @@ const RegionalNewsPanel = ({ regionName, title, activeSourceIds }) => {
             };
             (async () => {
                 let items = null;
-                try { const r = await fetch(`https://api.allorigins.win/get?url=${encoded}`); items = parseXml((await r.json())?.contents || ''); } catch {}
-                if (!items?.length) try { const r = await fetch(`https://corsproxy.io/?url=${encoded}`); items = parseXml(await r.text()); } catch {}
+                try { const r = await fetch(`https://api.allorigins.win/get?url=${encoded}`); items = parseXml((await r.json())?.contents || ''); } catch { /* try next proxy */ }
+                if (!items?.length) try { const r = await fetch(`https://corsproxy.io/?url=${encoded}`); items = parseXml(await r.text()); } catch { /* fall through to empty state */ }
                 if (mountedRef.current) setNews(items || []);
             })().catch(() => { if (mountedRef.current) setNews([]); })
               .finally(() => { if (mountedRef.current) setIsRefreshing(false); });

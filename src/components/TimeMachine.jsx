@@ -5,13 +5,14 @@ import { WAR_START } from '../data/warConstants';
 const formatDate = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
 const daysSince = (d) => Math.floor((d - WAR_START) / 86400000);
+const getToday = () => new Date();
 
 const TimeMachine = ({ onDateChange }) => {
-    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [today, setToday] = useState(getToday);
+    const [selectedDate, setSelectedDate] = useState(getToday);
     const [playing, setPlaying] = useState(false);
     const intervalRef = useRef(null);
 
-    const today = new Date();
     const totalDays = daysSince(today);
     const currentDay = daysSince(selectedDate);
 
@@ -28,6 +29,11 @@ const TimeMachine = ({ onDateChange }) => {
         setPlaying(false);
         onDateChange?.(today);
     }, [today, onDateChange]);
+
+    useEffect(() => {
+        const timer = setInterval(() => setToday(getToday()), 60 * 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     // Auto-play animation
     useEffect(() => {
@@ -61,7 +67,6 @@ const TimeMachine = ({ onDateChange }) => {
     };
 
     const isLive = currentDay >= totalDays;
-    const dateStr = selectedDate.toISOString().slice(0, 10);
 
     return (
         <div style={{

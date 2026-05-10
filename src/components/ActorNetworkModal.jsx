@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { X, Network } from 'lucide-react';
 import * as d3 from 'd3';
 import networkData from '../data/actorNetwork.json';
+import { useEscapeKey } from '../hooks/useEscapeKey';
 
 const EDGE_COLORS = {
     alliance: '#22c55e',
@@ -22,21 +23,27 @@ const NODE_TYPE_LABELS = {
     proxy: 'Proxy / Non-State'
 };
 
+const getModalDimensions = () => ({
+    width: Math.min(window.innerWidth * 0.8, 1000),
+    height: Math.min(window.innerHeight * 0.75, 700)
+});
+
 const ActorNetworkModal = ({ isOpen, onClose }) => {
     const svgRef = useRef(null);
     const [selectedNode, setSelectedNode] = useState(null);
     const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
     const simRef = useRef(null);
 
+    useEscapeKey(isOpen, onClose);
+
     // Calculate dimensions on open
     useEffect(() => {
-        if (isOpen) {
-            setDimensions({
-                width: Math.min(window.innerWidth * 0.8, 1000),
-                height: Math.min(window.innerHeight * 0.75, 700)
-            });
+        if (!isOpen) return undefined;
+        const frame = requestAnimationFrame(() => {
+            setDimensions(getModalDimensions());
             setSelectedNode(null);
-        }
+        });
+        return () => cancelAnimationFrame(frame);
     }, [isOpen]);
 
     const initGraph = useCallback(() => {

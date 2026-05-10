@@ -361,7 +361,6 @@ const MapContainer = ({
     copernicusRuntimeSource,
     showCopernicusOverlay,
     showStrategicContext,
-    timeMachineDate,
     viewMode = 'middleeast',
     onRegionDotClick
 }) => {

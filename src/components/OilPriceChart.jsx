@@ -16,7 +16,7 @@ const OilPriceChart = () => {
     const fetcher = useCallback(() =>
         fetch(`${API_BASE}/api/oil-prices`).then(r => r.json()), []);
 
-    const { data, isLoading, isRefreshing, isStale, error, retryCount, refresh } = useLiveResource(fetcher, {
+    const { data, isLoading, error, retryCount, refresh } = useLiveResource(fetcher, {
         cacheKey: 'oil-prices',
         intervalMs: 30 * 60 * 1000,
         isUsable: (d) => d?.brent?.length > 0

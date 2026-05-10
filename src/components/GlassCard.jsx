@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, RefreshCw } from 'lucide-react';
 
 const GlassCard = ({
     title,
@@ -31,6 +31,25 @@ const GlassCard = ({
                         <span className={`glass-pill ${statusLabel === 'LIVE' ? 'glass-pill-live' : 'glass-pill-muted'}`}>
                             {statusLabel}
                         </span>
+                    )}
+                    {onRefresh && (
+                        <button
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                onRefresh();
+                            }}
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'rgba(255,255,255,0.45)',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                padding: '2px'
+                            }}
+                            title="Refresh"
+                        >
+                            <RefreshCw size={13} className={isRefreshing ? 'spin-anim' : ''} />
+                        </button>
                     )}
                     {collapsible && (
                         <ChevronDown

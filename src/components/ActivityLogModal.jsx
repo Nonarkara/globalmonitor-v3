@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useSyncExternalStore } from 'react';
 import { X, FileText, Download, Trash2 } from 'lucide-react';
 import { getActivityLog, subscribeActivityLog, clearActivityLog, LOG_TYPES } from '../services/activityLog';
+import { useEscapeKey } from '../hooks/useEscapeKey';
 
 const TYPE_COLORS = {
     [LOG_TYPES.DATA_FETCH]: '#3b82f6',
@@ -17,14 +18,10 @@ const TYPE_LABELS = {
 };
 
 const ActivityLogModal = ({ isOpen, onClose }) => {
-    const [entries, setEntries] = useState(getActivityLog());
+    const entries = useSyncExternalStore(subscribeActivityLog, getActivityLog, getActivityLog);
     const [filter, setFilter] = useState('all');
 
-    useEffect(() => {
-        if (!isOpen) return;
-        setEntries(getActivityLog());
-        return subscribeActivityLog(setEntries);
-    }, [isOpen]);
+    useEscapeKey(isOpen, onClose);
 
     if (!isOpen) return null;
 
@@ -87,7 +84,7 @@ const ActivityLogModal = ({ isOpen, onClose }) => {
                         }}>
                             <Download size={10} /> Export
                         </button>
-                        <button onClick={() => { clearActivityLog(); setEntries([]); }} style={{
+                        <button onClick={clearActivityLog} style={{
                             background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)',
                             borderRadius: '6px', padding: '4px 8px', color: 'rgba(239,68,68,0.6)',
                             cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',

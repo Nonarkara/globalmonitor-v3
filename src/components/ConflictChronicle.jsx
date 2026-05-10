@@ -24,6 +24,9 @@ const CATEGORY_LABELS = {
     maritime: 'MAR'
 };
 
+const CHRONICLE_WIDTH = 1200;
+const CHRONICLE_MARGIN = { left: 40, right: 20, top: 14, bottom: 20 };
+
 const ConflictChronicle = ({ onFlyTo }) => {
     const [expanded, setExpanded] = useState(true);
     const [hoveredMilestone, setHoveredMilestone] = useState(null);
@@ -41,7 +44,6 @@ const ConflictChronicle = ({ onFlyTo }) => {
     });
 
     const { eventDensity, maxDensity, sortedMilestones, totalDays } = useMemo(() => {
-        const now = new Date();
         const days = getDayCount();
 
         // ACLED event density by day
@@ -67,9 +69,9 @@ const ConflictChronicle = ({ onFlyTo }) => {
         };
     }, [acledData]);
 
-    const WIDTH = 1200;
+    const WIDTH = CHRONICLE_WIDTH;
     const HEIGHT = expanded ? 70 : 0;
-    const MARGIN = { left: 40, right: 20, top: 14, bottom: 20 };
+    const MARGIN = CHRONICLE_MARGIN;
     const plotW = WIDTH - MARGIN.left - MARGIN.right;
     const plotH = HEIGHT - MARGIN.top - MARGIN.bottom;
 
@@ -88,7 +90,7 @@ const ConflictChronicle = ({ onFlyTo }) => {
             return `${x},${y}`;
         });
         return `M${MARGIN.left},${MARGIN.top + plotH} L${points.join(' L')} L${MARGIN.left + plotW},${MARGIN.top + plotH} Z`;
-    }, [eventDensity, maxDensity, plotW, plotH]);
+    }, [eventDensity, maxDensity, plotW, plotH, MARGIN.left, MARGIN.top]);
 
     const handleMilestoneClick = (m) => {
         if (onFlyTo && m.lat && m.lon) {
@@ -116,14 +118,13 @@ const ConflictChronicle = ({ onFlyTo }) => {
     const weekLabels = useMemo(() => {
         const labels = [];
         for (let d = 0; d <= totalDays; d += 7) {
-            const date = new Date(WAR_START.getTime() + d * 86400000);
             labels.push({
                 x: MARGIN.left + (d / Math.max(totalDays, 1)) * plotW,
                 label: `W${Math.floor(d / 7) + 1}`
             });
         }
         return labels;
-    }, [totalDays, plotW]);
+    }, [totalDays, plotW, MARGIN.left]);
 
     return (
         <div style={{

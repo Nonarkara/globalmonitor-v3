@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { INTELLIGENCE_SOURCES } from '../services/liveNews';
 import { X, Check } from 'lucide-react';
+import { useEscapeKey } from '../hooks/useEscapeKey';
 
 const TABS = [
     { id: 'all', label: 'ALL' },
@@ -17,6 +18,8 @@ const TABS = [
 const SettingsModal = ({ isOpen, onClose, activeSources, toggleSource, setAllSources }) => {
     const [activeTab, setActiveTab] = useState('middle-east');
     const [filterText, setFilterText] = useState('');
+
+    useEscapeKey(isOpen, onClose);
 
     if (!isOpen) return null;
 

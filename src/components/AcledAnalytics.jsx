@@ -6,14 +6,14 @@ import { WAR_START } from '../data/warConstants';
 
 const API_BASE = import.meta.env.DEV ? 'http://localhost:4000' : '';
 
-const KPI = ({ icon: Icon, label, value, color, sub }) => (
+const KPI = ({ icon, label, value, color, sub }) => (
     <div style={{
         padding: '6px 8px', borderRadius: '6px',
         background: 'rgba(255,255,255,0.04)',
         border: '1px solid rgba(255,255,255,0.06)',
         textAlign: 'center'
     }}>
-        <Icon size={10} style={{ color, marginBottom: '2px' }} />
+        {React.createElement(icon, { size: 10, style: { color, marginBottom: '2px' } })}
         <div style={{ fontSize: '0.82rem', fontWeight: 700, color, fontFamily: 'var(--font-mono)' }}>{value}</div>
         <div style={{ fontSize: '0.45rem', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>{label}</div>
         {sub && <div style={{ fontSize: '0.4rem', color: 'rgba(255,255,255,0.25)', marginTop: '1px' }}>{sub}</div>}
@@ -41,7 +41,7 @@ const MiniBar = ({ items, maxVal }) => (
 /** Cumulative area sparkline */
 const CumulativeChart = ({ data, color, width = 180, height = 36 }) => {
     if (!data || data.length < 2) return null;
-    const max = Math.max(...data);
+    const max = Math.max(...data, 1);
     const stepX = width / (data.length - 1);
     const points = data.map((v, i) => `${i * stepX},${height - (v / max) * (height - 4) - 2}`);
     return (
@@ -54,7 +54,7 @@ const CumulativeChart = ({ data, color, width = 180, height = 36 }) => {
 
 const AcledAnalytics = () => {
     const [showActors, setShowActors] = useState(false);
-    const [showTrend, setShowTrend] = useState(true);
+    const showTrend = true;
 
     const fetcher = useCallback(() =>
         fetch(`${API_BASE}/api/acled`).then(r => r.json()), []);

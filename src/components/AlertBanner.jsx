@@ -16,7 +16,7 @@ const AlertBanner = () => {
     if (!data && !error) return null;
     if (!data && error) return null;
 
-    const { score, level, label, components } = data;
+    const { score, components } = data;
     if (score < 50) return null;
 
     const isCritical = score >= 70;
