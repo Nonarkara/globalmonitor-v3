@@ -4,6 +4,7 @@ import CopernicusPreviewPanel from './CopernicusPreviewPanel';
 import SourceStack from './SourceStack';
 import { EO_TILE_LAYERS } from '../services/eoTiles';
 import { useFlightCount } from '../hooks/useFlightCount';
+import { useVesselCount } from '../hooks/useVesselCount';
 
 const Sidebar = ({
     activeLayers,
@@ -19,7 +20,11 @@ const Sidebar = ({
     copernicusResource,
 }) => {
     const flightCount = useFlightCount();
+    const vesselCount = useVesselCount();
     const contentRef = useRef(null);
+    const flightsActive = activeLayers.includes('flights');
+    const vesselsActive = activeLayers.includes('vessels');
+    const showLiveTraffic = flightsActive || vesselsActive;
 
     useEffect(() => {
         if (contentRef.current) {
@@ -152,12 +157,36 @@ const Sidebar = ({
             <div ref={contentRef} className="sidebar-content">
                 <div>
                     <h3 className="section-title">Data Layers</h3>
+                    {showLiveTraffic && (
+                        <div
+                            style={{
+                                fontFamily: 'var(--font-mono)',
+                                fontSize: '0.68rem',
+                                letterSpacing: '0.3px',
+                                color: 'rgba(56, 189, 248, 0.9)',
+                                marginBottom: '10px',
+                                minHeight: '1.1rem',
+                                fontVariantNumeric: 'tabular-nums',
+                            }}
+                            aria-live="polite"
+                        >
+                            {flightsActive && flightCount > 0
+                                ? `${flightCount.toLocaleString()} aircraft`
+                                : flightsActive ? '… aircraft' : ''}
+                            {flightsActive && vesselsActive ? ' · ' : ''}
+                            {vesselsActive && vesselCount > 0
+                                ? `${vesselCount.toLocaleString()} vessels`
+                                : vesselsActive ? '… vessels' : ''}
+                        </div>
+                    )}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {layerConfigs.map((layer) => {
                             const isActive = activeLayers.includes(layer.id);
                             const layerDesc = layer.id === 'flights' && isActive && flightCount > 0
-                                ? `${flightCount.toLocaleString()} aircraft tracked · airplanes.live + OpenSky`
-                                : layer.desc;
+                                ? `${flightCount.toLocaleString()} aircraft · airplanes.live ADS-B`
+                                : layer.id === 'vessels' && isActive && vesselCount > 0
+                                    ? `${vesselCount.toLocaleString()} vessels · aisstream.io AIS`
+                                    : layer.desc;
                             return (
                                 <div
                                     key={layer.id}

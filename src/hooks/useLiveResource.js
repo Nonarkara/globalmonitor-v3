@@ -68,6 +68,7 @@ export const useLiveResource = (fetcher, {
 } = {}) => {
     const [cached] = useState(() => readCachedState(cacheKey));
     const dataRef = useRef(cached.data);
+    const cachedDataRef = useRef(cached.data);
 
     // Stabilize isUsable so it never causes re-render loops
     const isUsableRef = useRef(isUsable);
@@ -136,7 +137,7 @@ export const useLiveResource = (fetcher, {
         setRetryCount((prev) => prev + 1);
 
         // Check if existing data is too old
-        const hasData = Boolean(dataRef.current || cached.data);
+        const hasData = Boolean(dataRef.current || cachedDataRef.current);
         const stamp = lastUpdatedRef.current;
         if (hasData && stamp) {
             const age = Date.now() - new Date(stamp).getTime();

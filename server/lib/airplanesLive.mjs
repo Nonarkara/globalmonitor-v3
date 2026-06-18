@@ -18,16 +18,20 @@ const THEATER_BOUNDS = {
 /** Overlapping 250 nm circles to cover each theater bbox. */
 const THEATER_QUERY_POINTS = {
     global: [
-        { lat: 40.0, lon: -100.0 },  // North America
-        { lat: 51.0, lon: 0.0 },     // UK / Western Europe
-        { lat: 48.0, lon: 10.0 },    // Central Europe
-        { lat: 25.0, lon: 55.0 },    // Gulf / Middle East
-        { lat: 30.0, lon: 80.0 },    // South Asia
-        { lat: 35.0, lon: 135.0 },   // Japan
-        { lat: 20.0, lon: 110.0 },   // Southeast Asia
-        { lat: -25.0, lon: 135.0 },  // Australia
-        { lat: -15.0, lon: -50.0 },  // Brazil
-        { lat: -35.0, lon: 25.0 }    // South Africa
+        { lat: 40.0, lon: -100.0 },  // North America central
+        { lat: 45.0, lon: -70.0 },   // US East / Atlantic
+        { lat: 60.0, lon: -150.0 },  // Alaska / North Pacific
+        { lat: 51.0, lon: 0.0 },       // UK / Western Europe
+        { lat: 48.0, lon: 10.0 },      // Central Europe
+        { lat: 55.0, lon: 37.0 },      // Eastern Europe / Russia west
+        { lat: 25.0, lon: 55.0 },      // Gulf / Middle East
+        { lat: 30.0, lon: 80.0 },      // South Asia
+        { lat: 35.0, lon: 135.0 },     // Japan
+        { lat: 20.0, lon: 110.0 },     // Southeast Asia
+        { lat: 10.0, lon: -75.0 },     // Caribbean / northern South America
+        { lat: -25.0, lon: 135.0 },    // Australia
+        { lat: -15.0, lon: -50.0 },    // Brazil
+        { lat: -35.0, lon: 25.0 }      // South Africa
     ],
     worldwide: null, // alias → global
     middleeast: [

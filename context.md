@@ -103,7 +103,7 @@ Pattern: extend [server/lib/supabase.mjs](server/lib/supabase.mjs) with an `upse
 - **GitHub repo**: https://github.com/aisstream/aisstream — free global AIS WebSocket API (like airplanes-live for flights)
 - **Coverage**: worldwide bounding box `[-180,-90] → [180,90]` plus Hormuz/Malacca/Taiwan Strait supplements
 - **Requires env var**: `AISSTREAM_API_KEY` — free registration at https://aisstream.io/authenticate
-- Local: put key in `.env.local` (gitignored via `*.local`). Also in `shared/.secrets-backup/dashboards_2026-Dashboard_.env.local`
+- Local: `AISSTREAM_API_KEY` in `.env.local` (gitignored via `*.local`) — **configured 2026-06-19**; restart `npm run dev:stack`, allow ~60s AIS WebSocket warmup before `/api/vessels` fills
 - Without key: layer shows legend "AIS key required"; API returns empty FeatureCollection with `meta.requiresKey: true`
 - Default layers: flights + vessels both on at startup
 
