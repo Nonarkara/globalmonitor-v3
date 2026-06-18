@@ -3,6 +3,7 @@ import { Layers, Activity, CloudRain, Flame, AlertTriangle, Wind, Zap, Building2
 import CopernicusPreviewPanel from './CopernicusPreviewPanel';
 import SourceStack from './SourceStack';
 import { EO_TILE_LAYERS } from '../services/eoTiles';
+import { useFlightCount } from '../hooks/useFlightCount';
 
 const Sidebar = ({
     activeLayers,
@@ -16,8 +17,8 @@ const Sidebar = ({
     showStrategicContext,
     setShowStrategicContext,
     copernicusResource,
-    flightCount = 0
 }) => {
+    const flightCount = useFlightCount();
     const contentRef = useRef(null);
 
     useEffect(() => {

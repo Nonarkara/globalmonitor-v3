@@ -64,21 +64,23 @@ const DataStatus = ({
         );
     }
 
-    // Has data — render children
+    // Has data — render children; badge slot is fixed-height so REFRESHING never shifts layout.
     return (
         <>
-            {(isStale || isRefreshing) && (
-                <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '2px 8px 0' }}>
-                    {isStale && !isRefreshing && (
-                        <span style={S.staleBadge} role="status">STALE</span>
-                    )}
-                    {isRefreshing && (
-                        <span style={{ ...S.staleBadge, color: 'var(--accent-cyan)', background: 'rgba(56,189,248,0.1)' }} role="status">
-                            REFRESHING
-                        </span>
-                    )}
-                </div>
-            )}
+            <div style={{ position: 'relative', minHeight: 18, flexShrink: 0 }}>
+                {(isStale || isRefreshing) && (
+                    <div style={{ position: 'absolute', top: 2, right: 8, display: 'flex', gap: 6 }}>
+                        {isStale && !isRefreshing && (
+                            <span style={S.staleBadge} role="status">STALE</span>
+                        )}
+                        {isRefreshing && (
+                            <span style={{ ...S.staleBadge, color: 'var(--accent-cyan)', background: 'rgba(56,189,248,0.1)' }} role="status">
+                                REFRESHING
+                            </span>
+                        )}
+                    </div>
+                )}
+            </div>
             {children}
         </>
     );

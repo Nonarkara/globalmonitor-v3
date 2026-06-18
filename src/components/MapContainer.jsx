@@ -18,6 +18,7 @@ import { useLiveResource } from '../hooks/useLiveResource';
 import { EO_TILE_LAYERS, getEoLayerById } from '../services/eoTiles';
 import { fetchSdgLayer } from '../services/undpSdg';
 import { getRegion } from '../data/regions.js';
+import { setFlightCount } from '../services/flightCountBus.js';
 
 // ponytail: no route/origin-destination API exists (airplanes.live gives position + track + speed
 // only), so a "flight path" is a short heading projection — not a route spiderweb.
@@ -401,8 +402,7 @@ const MAP_STYLE_FALLBACKS = {
 };
 
 const MapContainer = ({
-    viewState,
-    onMove,
+    viewTarget,
     activeLayers,
     onMarkerClick,
     copernicusPreview,
@@ -412,10 +412,10 @@ const MapContainer = ({
     showStrategicContext,
     viewMode = 'middleeast',
     onRegionDotClick,
-    onFlightCountChange
 }) => {
     const region = getRegion(viewMode);
     const regionDots = region.dots;
+    const [viewState, setViewState] = useState(viewTarget);
     const [mapStyle, setMapStyle] = useState('dark');
     const mapRef = useRef(null);
     // Track which raster sources have failed (auth / 404 / CORS / 5xx) so the
@@ -429,14 +429,29 @@ const MapContainer = ({
 
     const handleMove = useCallback((event) => {
         const vs = event.viewState;
-        onMove({
+        setViewState({
             ...vs,
-            zoom: Math.min(Math.max(vs.zoom, MAP_MIN_ZOOM), MAP_MAX_ZOOM)
+            zoom: Math.min(Math.max(vs.zoom, MAP_MIN_ZOOM), MAP_MAX_ZOOM),
+            transitionDuration: 0,
         });
-    }, [onMove]);
+    }, []);
 
     const flightsLayerActive = activeLayers.includes('flights');
     const weatherLayerActive = activeLayers.includes('weather');
+
+    useEffect(() => {
+        setViewState((prev) => ({
+            ...viewTarget,
+            transitionDuration: viewTarget.transitionDuration ?? prev.transitionDuration ?? 1500,
+        }));
+    }, [
+        viewTarget.longitude,
+        viewTarget.latitude,
+        viewTarget.zoom,
+        viewTarget.pitch,
+        viewTarget.bearing,
+        viewTarget.transitionDuration,
+    ]);
 
     useEffect(() => {
         if (!weatherLayerActive) return undefined;
@@ -593,7 +608,7 @@ const MapContainer = ({
     const flightsResource = useLiveResource(useCallback(() => fetchFlights('global'), []), {
         cacheKey: 'map:flights:global',
         enabled: activeLayers.includes('flights'),
-        intervalMs: 2 * 60 * 1000,
+        intervalMs: 60 * 1000,
         isUsable: hasFeatureData
     });
     const acledResource = useLiveResource(useCallback(() => fetchAcledEvents(), []), {
@@ -625,8 +640,8 @@ const MapContainer = ({
     const vesselsNeedKey = vesselsData?.meta?.requiresKey;
 
     useEffect(() => {
-        onFlightCountChange?.(flightsLayerActive ? flightCount : 0);
-    }, [flightsLayerActive, flightCount, onFlightCountChange]);
+        setFlightCount(flightsLayerActive ? flightCount : 0);
+    }, [flightsLayerActive, flightCount]);
 
     const acledData = acledResource.data;
     const publicSentinelLayerId = getPublicSentinelLayerId(copernicusMode);
@@ -1381,7 +1396,7 @@ const MapContainer = ({
             {activeLayers.includes('vessels') && (
                 <div
                     className="map-legend"
-                    style={{ top: flightsLayerActive && flightCount > 0 ? 88 : 12, bottom: 'auto', right: 10, left: 'auto' }}
+                    style={{ top: flightsLayerActive ? 88 : 12, bottom: 'auto', right: 10, left: 'auto' }}
                     aria-live="polite"
                 >
                     <div className="map-legend-title">SHIP TRACKING</div>

@@ -83,12 +83,17 @@ export const useLiveResource = (fetcher, {
 
     dataRef.current = data;
 
+    const lastUpdatedRef = useRef(lastUpdated);
+    lastUpdatedRef.current = lastUpdated;
+
     const load = useCallback(async ({ manual = false } = {}) => {
         if (!enabled) return;
 
-        if (manual || dataRef.current) {
+        // Background polls must not toggle isRefreshing — DataStatus badge insertion
+        // was shifting Multi-Front / Iran theater bar height every interval tick.
+        if (manual && dataRef.current) {
             setIsRefreshing(true);
-        } else {
+        } else if (!dataRef.current) {
             setIsLoading(true);
         }
 
@@ -132,8 +137,9 @@ export const useLiveResource = (fetcher, {
 
         // Check if existing data is too old
         const hasData = Boolean(dataRef.current || cached.data);
-        if (hasData && lastUpdated) {
-            const age = Date.now() - new Date(lastUpdated).getTime();
+        const stamp = lastUpdatedRef.current;
+        if (hasData && stamp) {
+            const age = Date.now() - new Date(stamp).getTime();
             setIsStale(age > maxStaleMs);
         } else {
             setIsStale(hasData);
@@ -141,7 +147,7 @@ export const useLiveResource = (fetcher, {
 
         setIsLoading(false);
         setIsRefreshing(false);
-    }, [cacheKey, cached.data, enabled, fetcher, lastUpdated, maxRetries, maxStaleMs]);
+    }, [cacheKey, enabled, fetcher, maxRetries, maxStaleMs]);
 
     useEffect(() => {
         if (!enabled) return undefined;
@@ -165,8 +171,9 @@ export const useLiveResource = (fetcher, {
         // Catch-up fetch when the tab becomes visible again after being hidden
         // for longer than the interval.
         const handleVisibility = () => {
-            if (document.visibilityState === 'visible' && lastUpdated) {
-                const age = Date.now() - new Date(lastUpdated).getTime();
+            const stamp = lastUpdatedRef.current;
+            if (document.visibilityState === 'visible' && stamp) {
+                const age = Date.now() - new Date(stamp).getTime();
                 if (age > effectiveInterval) {
                     load();
                 }
@@ -186,7 +193,7 @@ export const useLiveResource = (fetcher, {
             document.removeEventListener('visibilitychange', handleVisibility);
             window.removeEventListener('gm:refresh-all', handleGlobalRefresh);
         };
-    }, [enabled, intervalMs, load, lastUpdated]);
+    }, [enabled, intervalMs, load]);
 
     return {
         data,

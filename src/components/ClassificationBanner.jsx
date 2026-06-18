@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 /**
  * Classification Banner — persistent strip at very top and bottom of viewport.
@@ -51,4 +51,4 @@ const ClassificationBanner = ({ level = 'UNCLASSIFIED' }) => {
     );
 };
 
-export default ClassificationBanner;
+export default memo(ClassificationBanner);

@@ -69,7 +69,6 @@ function App() {
   const [copernicusMode, setCopernicusMode] = useState('true-color');
   const [showCopernicusOverlay, setShowCopernicusOverlay] = useState(true);
   const [showStrategicContext, setShowStrategicContext] = useState(false);
-  const [flightCount, setFlightCount] = useState(0);
 
   const [visitorCount, setVisitorCount] = useState(BASE_COUNT);
   useEffect(() => { getVisitorCount().then(setVisitorCount); }, []);
@@ -85,7 +84,7 @@ function App() {
     setTimeout(() => setIsRefreshingAll(false), 1500);
   }, []);
 
-  const [viewState, setViewState] = useState({
+  const [viewTarget, setViewTarget] = useState({
     longitude: 53,
     latitude: 30,
     zoom: 4.5,
@@ -105,7 +104,7 @@ function App() {
 
   const handleRegionSelect = useCallback((regionId, targetViewState) => {
     setActiveRegion(regionId);
-    setViewState(prev => ({
+    setViewTarget(prev => ({
       ...prev,
       ...targetViewState,
       transitionDuration: 1500,
@@ -114,7 +113,7 @@ function App() {
 
   /** Chronicle fly-to handler */
   const handleChronicleFlyTo = useCallback((target) => {
-    setViewState(prev => ({
+    setViewTarget(prev => ({
       ...prev,
       ...target,
       transitionDuration: target.transitionDuration || 1500,
@@ -159,8 +158,7 @@ function App() {
         {/* Full-screen map underneath */}
         <ErrorBoundary label="Map">
           <MapContainer
-            viewState={viewState}
-            onMove={setViewState}
+            viewTarget={viewTarget}
             activeLayers={activeLayers}
             onMarkerClick={setSelectedEvent}
             copernicusPreview={copernicusResource.data}
@@ -174,7 +172,7 @@ function App() {
               const code = props?.countryCode || props?.regionCode;
               if (code) setSelectedCountryCode(code);
               if (typeof props?.latitude === 'number' && typeof props?.longitude === 'number') {
-                setViewState((prev) => ({
+                setViewTarget((prev) => ({
                   ...prev,
                   longitude: props.longitude,
                   latitude: props.latitude,
@@ -183,7 +181,6 @@ function App() {
                 }));
               }
             }}
-            onFlightCountChange={setFlightCount}
           />
         </ErrorBoundary>
 
@@ -253,7 +250,7 @@ function App() {
                     onClick={() => {
                       setViewMode(r.id);
                       setActiveRegion(r.id === 'middleeast' ? 'middleeast' : r.id === 'indopacific' ? 'asean' : 'thailand');
-                      setViewState({ ...r.viewState, transitionDuration: 1200 });
+                      setViewTarget({ ...r.viewState, transitionDuration: 1200 });
                       setActiveSources(r.id === 'middleeast'
                         ? INTELLIGENCE_SOURCES.map(s => s.id)
                         : APAC_SOURCES.map(s => s.id));
@@ -317,14 +314,12 @@ function App() {
               showStrategicContext={showStrategicContext}
               setShowStrategicContext={setShowStrategicContext}
               copernicusResource={copernicusResource}
-              flightCount={flightCount}
             />
           </ErrorBoundary>
           {viewMode === 'middleeast' && (
             <ErrorBoundary inline label="Flight Radar">
               <FlightRadarEmbed
                 flightsActive={activeLayers.includes('flights')}
-                flightCount={flightCount}
                 onToggleFlights={() => toggleLayer('flights')}
               />
             </ErrorBoundary>

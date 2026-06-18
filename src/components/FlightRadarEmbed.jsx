@@ -1,7 +1,11 @@
 import React from 'react';
 import { Plane, ExternalLink } from 'lucide-react';
+import { useFlightCount } from '../hooks/useFlightCount';
 
-const FlightRadarEmbed = ({ flightsActive, flightCount, onToggleFlights }) => (
+const FlightRadarEmbed = ({ flightsActive, onToggleFlights }) => {
+    const flightCount = useFlightCount();
+
+    return (
     <div className="bottom-card" style={{ padding: '6px 8px', flexShrink: 0 }}>
         <div style={{
             display: 'flex', alignItems: 'center', gap: '5px',
@@ -66,6 +70,7 @@ const FlightRadarEmbed = ({ flightsActive, flightCount, onToggleFlights }) => (
             Civ-Mil Radar · full screen <ExternalLink size={8} />
         </a>
     </div>
-);
+    );
+};
 
 export default FlightRadarEmbed;

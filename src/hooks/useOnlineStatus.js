@@ -23,7 +23,8 @@ export const useOnlineStatus = () => {
             const contentType = res.headers.get('content-type') || '';
             const isJson = contentType.includes('application/json');
 
-            setBackendUp(res.ok && isJson);
+            const up = res.ok && isJson;
+            setBackendUp((prev) => (prev === up ? prev : up));
             setLastPing(new Date().toISOString());
         } catch {
             setBackendUp(false);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, memo } from 'react';
+import React, { useEffect, useRef, memo } from 'react';
 
 const ME_CITIES = [
     { name: 'Jerusalem', tz: 'Asia/Jerusalem', label: 'Jerusalem (IL)', primary: true },
@@ -52,10 +52,10 @@ const formatTime = (date, timezone, showSeconds = false) => {
     }
 };
 
-const SecondaryClock = memo(({ city, time }) => (
+const SecondaryClock = memo(({ city, timeRef }) => (
     <div className="secondary-clock-h">
         <span className="clock-city-small">{city.name}</span>
-        <span className="clock-time-small">{time}</span>
+        <span className="clock-time-small" ref={timeRef} aria-live="off">--:--</span>
     </div>
 ));
 SecondaryClock.displayName = 'SecondaryClock';
@@ -75,37 +75,50 @@ const WorldClock = ({ viewMode = 'middleeast' }) => {
         : viewMode === 'indopacific'
             ? INDO_PACIFIC_CITIES
             : ME_CITIES;
+
     const primaryTimeRef = useRef(null);
-    const [minuteBucket, setMinuteBucket] = useState(() => Math.floor(Date.now() / 60000));
+    const secondaryTimeRefs = useRef([]);
 
     const primaryCity = cities.find((city) => city.primary) || cities[0];
     const secondaryCities = cities.filter((city) => !city.primary);
 
     useEffect(() => {
+        secondaryTimeRefs.current = secondaryTimeRefs.current.slice(0, secondaryCities.length);
+
+        let lastMinute = -1;
+
         const tick = () => {
             const now = new Date();
             if (primaryTimeRef.current) {
                 primaryTimeRef.current.textContent = formatTime(now, primaryCity.tz, true);
             }
-            const nextBucket = Math.floor(now.getTime() / 60000);
-            setMinuteBucket((prev) => (prev === nextBucket ? prev : nextBucket));
+
+            const minute = now.getMinutes();
+            if (minute !== lastMinute) {
+                lastMinute = minute;
+                secondaryCities.forEach((city, index) => {
+                    const el = secondaryTimeRefs.current[index];
+                    if (el) {
+                        el.textContent = formatTime(now, city.tz, false);
+                    }
+                });
+            }
         };
 
         tick();
         const timer = setInterval(tick, 1000);
         return () => clearInterval(timer);
-    }, [primaryCity.tz]);
-
-    const secondaryTimes = secondaryCities.map((city) => ({
-        city,
-        time: formatTime(new Date(minuteBucket * 60000), city.tz, false)
-    }));
+    }, [primaryCity.tz, secondaryCities]);
 
     return (
         <div className="top-bar-clock">
             <div className="secondary-clocks-side left-side">
-                {secondaryTimes.slice(0, 4).map(({ city, time }) => (
-                    <SecondaryClock key={city.name} city={city} time={time} />
+                {secondaryCities.slice(0, 4).map((city, index) => (
+                    <SecondaryClock
+                        key={city.name}
+                        city={city}
+                        timeRef={(el) => { secondaryTimeRefs.current[index] = el; }}
+                    />
                 ))}
             </div>
 
@@ -114,8 +127,12 @@ const WorldClock = ({ viewMode = 'middleeast' }) => {
             </div>
 
             <div className="secondary-clocks-side right-side">
-                {secondaryTimes.slice(4).map(({ city, time }) => (
-                    <SecondaryClock key={city.name} city={city} time={time} />
+                {secondaryCities.slice(4).map((city, index) => (
+                    <SecondaryClock
+                        key={city.name}
+                        city={city}
+                        timeRef={(el) => { secondaryTimeRefs.current[index + 4] = el; }}
+                    />
                 ))}
             </div>
         </div>
