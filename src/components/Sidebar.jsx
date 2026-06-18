@@ -72,7 +72,7 @@ const Sidebar = ({
         {
             id: 'flights',
             title: 'Flight Tracking',
-            desc: 'airplanes.live ADS-B · worldwide',
+            desc: 'airplanes.live + OpenSky ADS-B · worldwide',
             icon: <Plane size={18} />
         },
         {
@@ -155,7 +155,7 @@ const Sidebar = ({
                         {layerConfigs.map((layer) => {
                             const isActive = activeLayers.includes(layer.id);
                             const layerDesc = layer.id === 'flights' && isActive && flightCount > 0
-                                ? `${flightCount.toLocaleString()} aircraft tracked · airplanes.live ADS-B`
+                                ? `${flightCount.toLocaleString()} aircraft tracked · airplanes.live + OpenSky`
                                 : layer.desc;
                             return (
                                 <div

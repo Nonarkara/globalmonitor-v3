@@ -78,6 +78,19 @@
     "apiEndpoint": "/api/flights"
   },
   {
+    "id": "opensky",
+    "name": "OpenSky Network",
+    "fullName": "OpenSky Network ADS-B",
+    "type": "Flight Tracking (Supplement)",
+    "url": "https://opensky-network.org",
+    "reliability": 9,
+    "updateFrequency": "Real-time ADS-B (5s resolution)",
+    "cacheTTL": "2 minutes",
+    "methodology": "Authenticated OAuth2 client. Worldwide /states/all query supplements airplanes.live with origin-country, emitter category, and SPI metadata. 4,000 daily API credits (OPENSKY_API_DEFAULT).",
+    "coverage": "Global — theater bbox filter applied server-side",
+    "apiEndpoint": "/api/flights"
+  },
+  {
     "id": "rss",
     "name": "Intelligence RSS Feeds",
     "fullName": "Multi-Source News Aggregation",

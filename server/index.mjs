@@ -381,7 +381,7 @@ const server = http.createServer(async (request, response) => {
         if (url.pathname === '/api/flights') {
             const theater = url.searchParams.get('theater') || 'global';
             const result = await useCached(
-                `airplanes:${theater}`,
+                `flights:${theater}`,
                 2 * 60 * 1000,
                 () => fetchFlightsPayload(theater),
                 (p) => p?.type === 'FeatureCollection' && p.features?.length > 0

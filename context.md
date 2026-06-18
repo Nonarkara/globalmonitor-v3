@@ -108,10 +108,17 @@ Pattern: extend [server/lib/supabase.mjs](server/lib/supabase.mjs) with an `upse
 - Default layers: flights + vessels both on at startup
 
 ## Flight tracking (ADS-B)
-- **GitHub repo**: https://github.com/airplanes-live/api — free REST API, no key
-- **Coverage**: 15 overlapping 250 nm query points worldwide when `theater=global` or `theater=worldwide`
+- **Primary**: https://github.com/airplanes-live/api — free REST API, no key
+- **Supplement**: OpenSky Network — OAuth2 client credentials (`OPENSKY_CLIENT_ID` + `OPENSKY_CLIENT_SECRET`). Authenticated tier: 4,000 daily credits per endpoint bucket; worldwide `/states/all` costs 4 credits per request.
+- **Coverage**: airplanes.live uses 15 overlapping 250 nm query points worldwide when `theater=global` or `theater=worldwide`; OpenSky adds origin-country, emitter category, and SPI metadata when configured.
 - Endpoint: `GET /api/flights?theater=global` (default). Map always fetches global regardless of theater nav
-- Rate limit: 1 req/sec; server caches 2 min
+- Rate limit: airplanes.live 1 req/sec; server caches 2 min
+- **Local env template** (`.env.local` — gitignored):
+```
+OPENSKY_CLIENT_ID=nonarkara-api-client
+OPENSKY_CLIENT_SECRET=<from OpenSky account page or Reset Credential>
+```
+If secret missing: log in at https://opensky-network.org → Account → API Clients → Reset Credential for `nonarkara-api-client`.
 
 ## RainViewer radar (2026-06-18 fix)
 - Legacy URL `/v2/radar/nowcast/…` returns **404** → MapLibre grey "Zoom Level Not Supported" tiles when Weather layer on
