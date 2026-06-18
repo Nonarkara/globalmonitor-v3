@@ -18,19 +18,10 @@ const FrontCard = ({ front }) => {
     const Icon = ICONS[front.icon] || Crosshair;
 
     return (
-        <div style={{
-            flex: '1 1 0',
-            minWidth: '110px',
-            background: 'rgba(255,255,255,0.04)',
-            borderRadius: '8px',
-            padding: '8px 10px',
-            borderTop: `2px solid ${front.color}`,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '4px',
-            position: 'relative',
-            overflow: 'hidden'
-        }}>
+        <div
+            className="multi-front-card"
+            style={{ borderTop: `2px solid ${front.color}` }}
+        >
             {front.status === 'CRITICAL' && (
                 <div style={{
                     position: 'absolute',
@@ -52,7 +43,10 @@ const FrontCard = ({ front }) => {
                     textTransform: 'uppercase',
                     padding: '1px 5px',
                     background: `${front.color}15`,
-                    borderRadius: '3px'
+                    borderRadius: '3px',
+                    minWidth: '5.5ch',
+                    textAlign: 'center',
+                    fontVariantNumeric: 'tabular-nums'
                 }}>
                     {front.status}
                 </span>
@@ -68,52 +62,30 @@ const FrontCard = ({ front }) => {
                 {front.name}
             </div>
 
-            {front.dayCount != null && (
-                <div style={{
-                    fontSize: '0.72rem',
-                    fontWeight: 200,
-                    fontFamily: 'var(--font-mono)',
-                    color: front.color,
-                    lineHeight: 1
-                }}>
-                    DAY {front.dayCount}
-                </div>
-            )}
-
-            <div style={{ display: 'flex', gap: '8px', marginTop: '2px' }}>
-                {front.fireCount > 0 && (
-                    <span style={{
-                        fontSize: '0.44rem',
-                        color: 'rgba(255,255,255,0.45)',
-                        fontFamily: 'var(--font-mono)'
-                    }}>
-                        {front.fireCount} fires
-                    </span>
-                )}
-                {front.newsHits > 0 && (
-                    <span style={{
-                        fontSize: '0.44rem',
-                        color: 'rgba(255,255,255,0.45)',
-                        fontFamily: 'var(--font-mono)'
-                    }}>
-                        {front.newsHits} intel
-                    </span>
-                )}
+            <div style={{
+                fontSize: '0.72rem',
+                fontWeight: 200,
+                fontFamily: 'var(--font-mono)',
+                fontVariantNumeric: 'tabular-nums',
+                color: front.dayCount != null ? front.color : 'transparent',
+                lineHeight: 1,
+                minHeight: '0.72rem'
+            }}>
+                {front.dayCount != null ? `DAY ${front.dayCount}` : '\u00A0'}
             </div>
 
-            {front.latestHeadline && (
-                <div style={{
-                    fontSize: '0.44rem',
-                    color: 'rgba(255,255,255,0.35)',
-                    lineHeight: 1.3,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    marginTop: '2px'
-                }}>
-                    {front.latestHeadline}
-                </div>
-            )}
+            <div className="multi-front-card__metrics">
+                <span style={{ visibility: front.fireCount > 0 ? 'visible' : 'hidden' }}>
+                    {front.fireCount || 0} fires
+                </span>
+                <span style={{ visibility: front.newsHits > 0 ? 'visible' : 'hidden' }}>
+                    {front.newsHits || 0} intel
+                </span>
+            </div>
+
+            <div className="multi-front-card__headline">
+                {front.latestHeadline || '\u00A0'}
+            </div>
         </div>
     );
 };
@@ -131,20 +103,14 @@ const MultiFrontBoard = () => {
     const activeCount = fronts.filter(f => f.status === 'ACTIVE').length;
 
     return (
-        <div style={{
+        <div className="multi-front-board" style={{
             background: 'rgba(10, 12, 18, 0.75)',
             backdropFilter: 'blur(16px)',
             borderRadius: '10px',
             padding: '8px',
             border: '1px solid rgba(255,255,255,0.06)'
         }}>
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '6px',
-                padding: '0 4px'
-            }}>
+            <div className="multi-front-board__header">
                 <span style={{
                     fontSize: '0.5rem',
                     fontWeight: 600,
@@ -154,27 +120,27 @@ const MultiFrontBoard = () => {
                 }}>
                     MULTI-FRONT STATUS
                 </span>
-                <div style={{ display: 'flex', gap: '6px' }}>
-                    {criticalCount > 0 && (
-                        <span style={{
-                            fontSize: '0.42rem',
-                            fontWeight: 700,
-                            color: '#ef4444',
-                            letterSpacing: '0.5px'
-                        }}>
-                            {criticalCount} CRITICAL
-                        </span>
-                    )}
-                    {activeCount > 0 && (
-                        <span style={{
-                            fontSize: '0.42rem',
-                            fontWeight: 700,
-                            color: '#f59e0b',
-                            letterSpacing: '0.5px'
-                        }}>
-                            {activeCount} ACTIVE
-                        </span>
-                    )}
+                <div style={{ display: 'flex', gap: '6px', minWidth: '12ch', justifyContent: 'flex-end' }}>
+                    <span style={{
+                        fontSize: '0.42rem',
+                        fontWeight: 700,
+                        color: '#ef4444',
+                        letterSpacing: '0.5px',
+                        visibility: criticalCount > 0 ? 'visible' : 'hidden',
+                        fontVariantNumeric: 'tabular-nums'
+                    }}>
+                        {criticalCount} CRITICAL
+                    </span>
+                    <span style={{
+                        fontSize: '0.42rem',
+                        fontWeight: 700,
+                        color: '#f59e0b',
+                        letterSpacing: '0.5px',
+                        visibility: activeCount > 0 ? 'visible' : 'hidden',
+                        fontVariantNumeric: 'tabular-nums'
+                    }}>
+                        {activeCount} ACTIVE
+                    </span>
                 </div>
             </div>
             <DataStatus
@@ -188,11 +154,7 @@ const MultiFrontBoard = () => {
                 emptyMessage="No active front data"
                 refresh={refresh}
             >
-                <div style={{
-                    display: 'flex',
-                    gap: '6px',
-                    overflowX: 'auto'
-                }}>
+                <div className="multi-front-board__cards">
                     {fronts.map((front) => (
                         <FrontCard key={front.id} front={front} />
                     ))}

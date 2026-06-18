@@ -72,8 +72,11 @@ const IranWarPanel = () => {
                         fontSize: '0.75rem',
                         fontWeight: 200,
                         fontFamily: 'var(--font-mono)',
+                        fontVariantNumeric: 'tabular-nums',
                         color: '#ef4444',
-                        letterSpacing: '0.5px'
+                        letterSpacing: '0.5px',
+                        minWidth: '6ch',
+                        textAlign: 'right'
                     }}>
                         DAY {dayCount}
                     </span>

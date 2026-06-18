@@ -343,8 +343,76 @@ body {
   color: var(--text-main);
   z-index: 20;
   pointer-events: auto;
+  height: 42px;
   min-height: 42px;
+  max-height: 42px;
+  overflow: hidden;
+  contain: layout size style;
+}
+
+.multi-front-row {
+  grid-column: 2 / -1;
+  grid-row: 3;
+  pointer-events: auto;
+  min-height: 120px;
+  contain: layout;
+}
+
+.multi-front-board {
   contain: layout style;
+}
+
+.multi-front-board__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  padding: 0 4px;
+  min-height: 16px;
+}
+
+.multi-front-board__cards {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  min-height: 88px;
+}
+
+.multi-front-card {
+  flex: 1 1 0;
+  min-width: 110px;
+  min-height: 88px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  contain: layout;
+}
+
+.multi-front-card__headline {
+  font-size: 0.44rem;
+  color: rgba(255, 255, 255, 0.35);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 2px;
+  min-height: 0.6rem;
+}
+
+.multi-front-card__metrics {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+  min-height: 0.55rem;
+  font-size: 0.44rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 
@@ -363,8 +431,11 @@ body {
   padding: 4px 14px;
   border-radius: var(--radius-sm);
   height: 52px;
-  position: relative;
+  min-height: 52px;
+  max-height: 52px;
   overflow: hidden;
+  contain: layout size style;
+  position: relative;
 }
 
 .header-brand-strip {
@@ -1023,6 +1094,10 @@ body {
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
+  min-height: 38px;
+  max-height: 38px;
+  overflow: hidden;
+  contain: layout;
   color: var(--text-muted);
 }
 
