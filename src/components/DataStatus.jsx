@@ -5,7 +5,8 @@ const S = {
     container: {
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         justifyContent: 'center', padding: 'var(--sp-2) var(--sp-2)',
-        gap: 'var(--sp-1)', minHeight: 40, textAlign: 'center'
+        gap: 'var(--sp-1)', minHeight: 80, textAlign: 'center',
+        contain: 'layout'
     },
     label: {
         fontSize: 'var(--type-xs)', color: 'var(--text-dim)',
@@ -33,9 +34,13 @@ const DataStatus = ({
     data, isEmpty, emptyMessage = 'No data available',
     refresh, children
 }) => {
-    // First load — skeleton placeholder
+    // First load — skeleton placeholder (fixed slot height)
     if (!data && isLoading) {
-        return <SkeletonLoader lines={4} showKpi={true} />;
+        return (
+            <div className="data-status-shell" style={{ minHeight: 80, contain: 'layout' }}>
+                <SkeletonLoader lines={4} showKpi={true} />
+            </div>
+        );
     }
 
     // Error with no data
@@ -64,25 +69,46 @@ const DataStatus = ({
         );
     }
 
-    // Has data — render children; badge slot is fixed-height so REFRESHING never shifts layout.
+    // Has data — badges are absolute overlays; never insert/remove flow blocks on poll.
     return (
-        <>
-            <div style={{ position: 'relative', minHeight: 18, flexShrink: 0 }}>
-                {(isStale || isRefreshing) && (
-                    <div style={{ position: 'absolute', top: 2, right: 8, display: 'flex', gap: 6 }}>
-                        {isStale && !isRefreshing && (
-                            <span style={S.staleBadge} role="status">STALE</span>
-                        )}
-                        {isRefreshing && (
-                            <span style={{ ...S.staleBadge, color: 'var(--accent-cyan)', background: 'rgba(56,189,248,0.1)' }} role="status">
-                                REFRESHING
-                            </span>
-                        )}
-                    </div>
-                )}
+        <div className="data-status-shell" style={{ position: 'relative', contain: 'layout' }}>
+            <div
+                className="data-status-badges"
+                style={{
+                    position: 'absolute',
+                    top: 2,
+                    right: 8,
+                    zIndex: 2,
+                    display: 'flex',
+                    gap: 6,
+                    pointerEvents: 'none',
+                    minHeight: 18
+                }}
+                aria-live="polite"
+            >
+                <span
+                    style={{
+                        ...S.staleBadge,
+                        visibility: isStale && !isRefreshing ? 'visible' : 'hidden'
+                    }}
+                    role="status"
+                >
+                    STALE
+                </span>
+                <span
+                    style={{
+                        ...S.staleBadge,
+                        color: 'var(--accent-cyan)',
+                        background: 'rgba(56,189,248,0.1)',
+                        visibility: isRefreshing ? 'visible' : 'hidden'
+                    }}
+                    role="status"
+                >
+                    REFRESHING
+                </span>
             </div>
             {children}
-        </>
+        </div>
     );
 };
 

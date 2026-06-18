@@ -136,15 +136,6 @@
         overflow: visible !important;
     }
 
-    /* Chronicle */
-    .chronicle-row {
-        margin-bottom: 8px !important;
-    }
-
-    .chronicle-row svg {
-        max-height: 60px !important;
-    }
-
     /* Fix text colors for print */
     [style*="color: rgba(255"] {
         color: #333 !important;

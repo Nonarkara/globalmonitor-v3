@@ -35,7 +35,6 @@ import { useOnlineStatus } from './hooks/useOnlineStatus';
 import HumanitarianPanel from './components/HumanitarianPanel';
 import SanctionsPanel from './components/SanctionsPanel';
 import WarCostTracker from './components/WarCostTracker';
-import ConflictChronicle from './components/ConflictChronicle';
 import ActorNetworkModal from './components/ActorNetworkModal';
 import NuclearTrackerPanel from './components/NuclearTrackerPanel';
 import KeyFiguresPanel from './components/KeyFiguresPanel';
@@ -111,8 +110,7 @@ function App() {
     }));
   }, []);
 
-  /** Chronicle fly-to handler */
-  const handleChronicleFlyTo = useCallback((target) => {
+  const handleMapFlyTo = useCallback((target) => {
     setViewTarget(prev => ({
       ...prev,
       ...target,
@@ -216,11 +214,13 @@ function App() {
               <Eye size={9} style={{ opacity: 0.35 }} />
               {visitorCount.toLocaleString()}
             </div>
-            {!backendUp && (
-              <span className="header-offline-pill">
-                OFFLINE
-              </span>
-            )}
+            <span
+              className="header-offline-pill"
+              style={{ visibility: backendUp ? 'hidden' : 'visible' }}
+              aria-hidden={backendUp}
+            >
+              OFFLINE
+            </span>
           </div>
           {/* Right: Controls */}
           <div className="header-controls">
@@ -439,16 +439,7 @@ function App() {
           )}
         </div>
 
-        {/* Row 4: Conflict Chronicle — timeline between map and bottom bar */}
-        {viewMode === 'middleeast' && (
-          <div className="chronicle-row">
-            <ErrorBoundary inline label="Conflict Chronicle">
-              <ConflictChronicle onFlyTo={handleChronicleFlyTo} />
-            </ErrorBoundary>
-          </div>
-        )}
-
-        {/* Row 5: Bottom bar — 5-column grid, 2 rows */}
+        {/* Row 4: Bottom bar — 5-column grid, 2 rows */}
         <div className="bottom-bar">
           <ErrorBoundary inline label="Market Radar">
             <MarketRadarPanel viewMode={viewMode} />
@@ -470,7 +461,7 @@ function App() {
               </ErrorBoundary>
               {/* Row 2: Military & Intelligence */}
               <ErrorBoundary inline label="Nuclear Program">
-                <NuclearTrackerPanel onFlyTo={handleChronicleFlyTo} />
+                <NuclearTrackerPanel onFlyTo={handleMapFlyTo} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Diplomacy & Sanctions">
                 <IntelligencePanel key={`iranDiplomacy:${sourceSetKey}`} briefingId="iranDiplomacy" activeSourceIds={activeSources} />

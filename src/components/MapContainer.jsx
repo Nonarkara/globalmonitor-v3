@@ -1407,46 +1407,60 @@ const MapContainer = ({
                 </div>
             )}
 
-            {(flightsLayerActive || vesselsLayerActive) && (
+            <div
+                className="map-legend map-legend--traffic"
+                style={{
+                    top: 12,
+                    bottom: 'auto',
+                    right: 10,
+                    left: 'auto',
+                    visibility: (flightsLayerActive || vesselsLayerActive) ? 'visible' : 'hidden',
+                    pointerEvents: (flightsLayerActive || vesselsLayerActive) ? 'auto' : 'none'
+                }}
+                aria-live="polite"
+                aria-hidden={!(flightsLayerActive || vesselsLayerActive)}
+            >
+                <div className="map-legend-title">LIVE TRAFFIC</div>
                 <div
-                    className="map-legend"
-                    style={{ top: 12, bottom: 'auto', right: 10, left: 'auto' }}
-                    aria-live="polite"
+                    className="map-legend-item"
+                    style={{ visibility: flightsLayerActive ? 'visible' : 'hidden' }}
                 >
-                    <div className="map-legend-title">LIVE TRAFFIC</div>
-                    {flightsLayerActive && flightCount > 0 && (
-                        <div className="map-legend-item">
-                            <span className="map-legend-line" style={{ background: '#58a6ff' }} />
-                            <span style={{ fontVariantNumeric: 'tabular-nums' }}>
-                                {flightCount.toLocaleString()} aircraft · ADS-B
-                            </span>
-                        </div>
-                    )}
-                    {vesselsLayerActive && vesselCount > 0 && (
-                        <div className="map-legend-item">
-                            <span className="map-legend-line" style={{ background: '#22c55e' }} />
-                            <span style={{ fontVariantNumeric: 'tabular-nums' }}>
-                                {vesselCount.toLocaleString()} vessels · AIS
-                            </span>
-                        </div>
-                    )}
-                    {vesselsLayerActive && vesselCount === 0 && (
-                        <div className="map-legend-item">
-                            <span className="map-legend-line" style={{ background: 'rgba(245,158,11,0.35)' }} />
-                            <span>{vesselsNeedKey ? 'AIS key required · aisstream.io' : 'Awaiting AIS feed…'}</span>
-                        </div>
-                    )}
-                    {flightsLayerActive && flightCount > 0 && (
-                        <div className="map-legend-item">
-                            <span className="map-legend-line" style={{ background: '#f59e0b' }} />
-                            <span>Cyan/amber planes · hull icons · 3 min vectors</span>
-                        </div>
-                    )}
+                    <span className="map-legend-line" style={{ background: '#58a6ff' }} />
+                    <span style={{ fontVariantNumeric: 'tabular-nums', minWidth: '14ch', display: 'inline-block' }}>
+                        {flightCount > 0 ? `${flightCount.toLocaleString()} aircraft · ADS-B` : '… aircraft · ADS-B'}
+                    </span>
                 </div>
-            )}
+                <div
+                    className="map-legend-item"
+                    style={{ visibility: vesselsLayerActive ? 'visible' : 'hidden' }}
+                >
+                    <span
+                        className="map-legend-line"
+                        style={{ background: vesselCount > 0 ? '#22c55e' : 'rgba(245,158,11,0.35)' }}
+                    />
+                    <span style={{ fontVariantNumeric: 'tabular-nums', minWidth: '14ch', display: 'inline-block' }}>
+                        {vesselCount > 0
+                            ? `${vesselCount.toLocaleString()} vessels · AIS`
+                            : vesselsNeedKey ? 'AIS key required' : 'Awaiting AIS feed…'}
+                    </span>
+                </div>
+                <div
+                    className="map-legend-item"
+                    style={{ visibility: flightsLayerActive ? 'visible' : 'hidden' }}
+                >
+                    <span className="map-legend-line" style={{ background: '#f59e0b' }} />
+                    <span>Cyan/amber planes · hull icons · 3 min vectors</span>
+                </div>
+            </div>
 
-            {showStrategicContext && (
-                <div className="map-legend">
+            <div
+                className="map-legend map-legend--strategic"
+                style={{
+                    visibility: showStrategicContext ? 'visible' : 'hidden',
+                    pointerEvents: showStrategicContext ? 'auto' : 'none'
+                }}
+                aria-hidden={!showStrategicContext}
+            >
                     <div className="map-legend-title">STRATEGIC CONTEXT</div>
                     <div className="map-legend-item">
                         <span className="map-legend-line" style={{ background: '#ef4444' }} />
@@ -1473,8 +1487,7 @@ const MapContainer = ({
                         <span className="map-legend-zone" style={{ background: 'rgba(16,185,129,0.3)', borderColor: '#6ee7b7' }} />
                         <span>ASEAN urban systems</span>
                     </div>
-                </div>
-            )}
+            </div>
 
             {/* Active EO Layer Labels */}
             {(() => {
