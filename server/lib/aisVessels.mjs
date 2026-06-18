@@ -19,7 +19,21 @@ const VESSEL_BOXES = [
     [118.5, 21.5, 122.5, 26.5], // Taiwan Strait
 ];
 
-// vessel_positions: Map<mmsi, { lon, lat, heading, speed, name, shipType, updatedAt }>
+/** AIS ship type (ITU-R M.1371) → VesselFinder-style category */
+export function mapShipTypeCategory(shipType) {
+    const t = Number(shipType) || 0;
+    if (t >= 70 && t <= 79) return 'cargo';
+    if (t >= 80 && t <= 89) return 'tanker';
+    if (t >= 60 && t <= 69) return 'passenger';
+    if (t === 37 || t === 36) return 'pleasure';
+    if (t === 30 || t === 33 || t === 34) return 'fishing';
+    if (t === 31 || t === 32 || t === 52 || t === 53) return 'tug';
+    if (t >= 30 && t <= 39) return 'fishing';
+    if (t >= 50 && t <= 59) return 'tug';
+    return 'other';
+}
+
+// vessel_positions: Map<mmsi, { lon, lat, heading, course, speed, name, shipType, updatedAt }>
 const vessel_positions = new Map();
 const STALE_MS = 30 * 60 * 1000;
 const MAX_VESSELS = 8000;
@@ -67,10 +81,15 @@ function connect() {
             if (msg.MessageType === 'PositionReport') {
                 const pr = msg.Message?.PositionReport || {};
                 const meta = msg.MetaData || {};
+                const course = pr.Cog ?? 0;
+                const heading = pr.TrueHeading !== 511 && pr.TrueHeading != null
+                    ? pr.TrueHeading
+                    : course;
                 vessel_positions.set(mmsi, {
                     lon: pr.Longitude ?? meta.longitude ?? null,
                     lat: pr.Latitude ?? meta.latitude ?? null,
-                    heading: pr.TrueHeading !== 511 ? (pr.TrueHeading || 0) : (pr.Cog || 0),
+                    heading,
+                    course,
                     speed: pr.Sog || 0,
                     name: meta.ShipName?.trim() || mmsi,
                     shipType: vessel_positions.get(mmsi)?.shipType || 0,
@@ -119,12 +138,11 @@ export function getVesselsGeoJson() {
             properties: {
                 mmsi,
                 name: v.name,
-                heading: v.heading,
+                heading: v.heading ?? 0,
+                course: v.course ?? v.heading ?? 0,
                 speed: v.speed,
                 shipType: v.shipType,
-                typeGroup: v.shipType >= 70 && v.shipType <= 79 ? 'cargo'
-                    : v.shipType >= 80 && v.shipType <= 89 ? 'tanker'
-                    : v.shipType === 0 ? 'unknown' : 'other',
+                category: mapShipTypeCategory(v.shipType),
             }
         });
     }

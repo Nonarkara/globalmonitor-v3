@@ -477,7 +477,16 @@ const MapContainer = ({
         if (!map) return;
 
         const PLANE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><g fill="#38bdf8"><ellipse cx="16" cy="16" rx="3" ry="12"/><path d="M2,13 L30,13 L16,20 Z"/><path d="M11,27 L16,24 L21,27 L16,30 Z"/></g></svg>`;
-        const SHIP_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="24" height="32"><path d="M12,2 L20,10 L20,26 Q12,30 4,26 L4,10 Z" fill="#f59e0b"/><rect x="8" y="13" width="8" height="6" rx="1" fill="#fbbf24" opacity="0.55"/></svg>`;
+        const vesselTriangleSvg = (fill) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><polygon points="8,1 15,14 1,14" fill="${fill}" stroke="rgba(255,255,255,0.55)" stroke-width="0.6"/></svg>`;
+        const VESSEL_ICONS = [
+            ['vessel-cargo', vesselTriangleSvg('#22c55e')],
+            ['vessel-tanker', vesselTriangleSvg('#ef4444')],
+            ['vessel-passenger', vesselTriangleSvg('#3b82f6')],
+            ['vessel-fishing', vesselTriangleSvg('#f59e0b')],
+            ['vessel-tug', vesselTriangleSvg('#ea580c')],
+            ['vessel-pleasure', vesselTriangleSvg('#a855f7')],
+            ['vessel-other', vesselTriangleSvg('#94a3b8')],
+        ];
 
         let pending = 0;
         let loaded = 0;
@@ -506,7 +515,9 @@ const MapContainer = ({
             loaded = 0;
             setMapIconsReady(false);
             addSvgImage('plane-icon', PLANE_SVG, 32, 32);
-            addSvgImage('ship-icon', SHIP_SVG, 24, 32);
+            for (const [name, svg] of VESSEL_ICONS) {
+                addSvgImage(name, svg, 16, 16);
+            }
         };
 
         if (map.isStyleLoaded()) loadIcons();
@@ -1175,30 +1186,39 @@ const MapContainer = ({
                     </Source>
                 )}
 
-                {/* Vessels Layer — ship icons at strait chokepoints, all three theaters */}
+                {/* Vessels Layer — VesselFinder-style triangles by ship category */}
                 {activeLayers.includes('vessels') && vesselsData?.features?.length > 0 && (
-                    <Source id="vessels-data" type="geojson" data={vesselsData}>
+                    <Source id="vessels-data" type="geojson" data={vesselsData} key={mapIconsReady ? 'vessels-icons-ready' : 'vessels-icons-pending'}>
                         <Layer
                             id="vessels-icons"
                             type="symbol"
                             layout={{
-                                'icon-image': 'ship-icon',
-                                'icon-size': ['interpolate', ['linear'], ['zoom'], 2, 0.45, 5, 0.65, 9, 0.9],
+                                'icon-image': [
+                                    'match', ['get', 'category'],
+                                    'cargo', 'vessel-cargo',
+                                    'tanker', 'vessel-tanker',
+                                    'passenger', 'vessel-passenger',
+                                    'fishing', 'vessel-fishing',
+                                    'tug', 'vessel-tug',
+                                    'pleasure', 'vessel-pleasure',
+                                    'vessel-other'
+                                ],
+                                'icon-size': ['interpolate', ['linear'], ['zoom'], 2, 0.45, 4, 0.6, 7, 0.75, 10, 0.95],
                                 'icon-rotate': ['get', 'heading'],
                                 'icon-rotation-alignment': 'map',
                                 'icon-allow-overlap': true,
                                 'icon-ignore-placement': true,
                                 'icon-pitch-alignment': 'map',
-                                'text-field': ['step', ['zoom'], '', 7, ['get', 'name']],
+                                'text-field': ['step', ['zoom'], '', 8, ['get', 'name']],
                                 'text-size': 9,
-                                'text-offset': [0, 1.6],
+                                'text-offset': [0, 1.4],
                                 'text-anchor': 'top',
                                 'text-allow-overlap': false,
                             }}
                             paint={{
-                                'icon-opacity': 0.9,
-                                'text-color': '#f59e0b',
-                                'text-halo-color': 'rgba(0,0,0,0.7)',
+                                'icon-opacity': 0.92,
+                                'text-color': '#e2e8f0',
+                                'text-halo-color': 'rgba(0,0,0,0.75)',
                                 'text-halo-width': 1,
                             }}
                         />
@@ -1366,10 +1386,28 @@ const MapContainer = ({
                 >
                     <div className="map-legend-title">SHIP TRACKING</div>
                     {vesselCount > 0 ? (
-                        <div className="map-legend-item">
-                            <span className="map-legend-line" style={{ background: '#f59e0b' }} />
-                            <span>{vesselCount.toLocaleString()} vessels · worldwide AIS</span>
-                        </div>
+                        <>
+                            <div className="map-legend-item">
+                                <span className="map-legend-line" style={{ background: '#22c55e' }} />
+                                <span>Cargo · {vesselCount.toLocaleString()} vessels AIS</span>
+                            </div>
+                            <div className="map-legend-item">
+                                <span className="map-legend-line" style={{ background: '#ef4444' }} />
+                                <span>Tanker</span>
+                            </div>
+                            <div className="map-legend-item">
+                                <span className="map-legend-line" style={{ background: '#3b82f6' }} />
+                                <span>Passenger</span>
+                            </div>
+                            <div className="map-legend-item">
+                                <span className="map-legend-line" style={{ background: '#f59e0b' }} />
+                                <span>Fishing / tug</span>
+                            </div>
+                            <div className="map-legend-item">
+                                <span className="map-legend-line" style={{ background: '#a855f7' }} />
+                                <span>Pleasure · heading triangles</span>
+                            </div>
+                        </>
                     ) : (
                         <div className="map-legend-item">
                             <span className="map-legend-line" style={{ background: 'rgba(245,158,11,0.35)' }} />
