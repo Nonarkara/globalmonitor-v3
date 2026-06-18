@@ -103,3 +103,123 @@ export const recordIngestionRun = async ({ loader, region = null, status, rowsIn
         finished_at: new Date().toISOString()
     });
 };
+
+/**
+ * Archive ACLED conflict events. De-duped by (event_date, lat, lon, actor1).
+ * Expects a GeoJSON FeatureCollection as returned by fetchAcledEvents().
+ */
+export const upsertAcledEvents = async (geojson) => {
+    const sb = init();
+    if (!sb || !geojson?.features?.length) return;
+    const t0 = Date.now();
+    const rows = geojson.features.map((f) => {
+        const p = f.properties || {};
+        const [lon, lat] = f.geometry?.coordinates || [];
+        return {
+            event_date:     p.eventDate || p.event_date || p.date || null,
+            event_type:     p.eventType || p.event_type || null,
+            sub_event_type: p.subType   || p.sub_event_type || null,
+            actor1:         p.actor1    || null,
+            actor2:         p.actor2    || null,
+            country:        p.country   || null,
+            admin1:         p.admin1    || p.region || null,
+            latitude:       lat ?? null,
+            longitude:      lon ?? null,
+            fatalities:     Number(p.fatalities) || 0,
+            notes:          p.notes ? String(p.notes).substring(0, 500) : null,
+            source:         p.source    || null
+        };
+    }).filter((r) => r.event_date);
+    if (!rows.length) return;
+    const { error } = await sb
+        .from('gm_acled_events')
+        .upsert(rows, { onConflict: 'event_date,latitude,longitude,actor1', ignoreDuplicates: true });
+    await recordIngestionRun({
+        loader: 'acled', status: error ? 'fail' : 'ok',
+        rowsInserted: error ? 0 : rows.length,
+        errorMessage: error?.message || null,
+        durationMs: Date.now() - t0
+    });
+};
+
+/**
+ * Archive NASA FIRMS thermal hotspots. De-duped by (acq_date, acq_time, lat, lon).
+ * Expects a GeoJSON FeatureCollection as returned by fetchFirmsPayload().
+ */
+export const upsertFirmsHotspots = async (geojson, theater = 'middleeast') => {
+    const sb = init();
+    if (!sb || !geojson?.features?.length) return;
+    const t0 = Date.now();
+    const rows = geojson.features.map((f) => {
+        const p = f.properties || {};
+        const [lon, lat] = f.geometry?.coordinates || [];
+        return {
+            acq_date:   p.acq_date  || p.date || null,
+            acq_time:   String(p.acq_time || p.time || ''),
+            latitude:   lat ?? null,
+            longitude:  lon ?? null,
+            brightness: Number(p.brightness) || null,
+            frp:        Number(p.frp) || null,
+            satellite:  p.satellite || null,
+            confidence: String(p.confidence || ''),
+            daynight:   p.daynight  || null,
+            theater
+        };
+    }).filter((r) => r.acq_date && r.latitude != null);
+    if (!rows.length) return;
+    const { error } = await sb
+        .from('gm_firms_hotspots')
+        .upsert(rows, { onConflict: 'acq_date,acq_time,latitude,longitude', ignoreDuplicates: true });
+    await recordIngestionRun({
+        loader: 'firms', status: error ? 'fail' : 'ok',
+        rowsInserted: error ? 0 : rows.length,
+        errorMessage: error?.message || null,
+        durationMs: Date.now() - t0
+    });
+};
+
+/**
+ * Archive market quotes snapshot. Throttle handled by the caller.
+ * Expects the array returned by fetchMarketPayload().
+ */
+export const upsertMarketQuotes = async (items) => {
+    const sb = init();
+    if (!sb || !Array.isArray(items) || !items.length) return;
+    const t0 = Date.now();
+    const rows = items.map((m) => ({
+        symbol:      m.symbol || m.name || '',
+        price:       String(m.price || ''),
+        change_perc: String(m.changePerc || m.change || ''),
+        is_positive: Boolean(m.isPositive)
+    }));
+    const { error } = await sb.from('gm_market_quotes').insert(rows);
+    await recordIngestionRun({
+        loader: 'markets', status: error ? 'fail' : 'ok',
+        rowsInserted: error ? 0 : rows.length,
+        errorMessage: error?.message || null,
+        durationMs: Date.now() - t0
+    });
+};
+
+/**
+ * Archive GDELT sentiment timeline.
+ * Expects the object returned by fetchGdeltSentiment(): { timeline, query }.
+ */
+export const upsertSentimentReadings = async (data) => {
+    const sb = init();
+    if (!sb || !Array.isArray(data?.timeline) || !data.timeline.length) return;
+    const t0 = Date.now();
+    const rows = data.timeline.map((t) => ({
+        query:        data.query || 'ME conflict',
+        tone:         Number(t.tone) || null,
+        reading_date: t.date || null
+    })).filter((r) => r.reading_date);
+    if (!rows.length) return;
+    const { error } = await sb.from('gm_sentiment_readings').insert(rows);
+    await recordIngestionRun({
+        loader: 'sentiment', status: error ? 'fail' : 'ok',
+        rowsInserted: error ? 0 : rows.length,
+        errorMessage: error?.message || null,
+        durationMs: Date.now() - t0
+    });
+};

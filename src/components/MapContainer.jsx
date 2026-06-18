@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef, useEffect } from 'react';
+import React, { useCallback, useState, useRef, useEffect, useMemo } from 'react';
 import Map, { Marker, Source, Layer } from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
 import { Copy, Check, AlertTriangle } from 'lucide-react';
@@ -10,12 +10,46 @@ import { fetchMacroEconomy } from '../services/worldBank';
 import { fetchAirQuality } from '../services/airQuality';
 import { fetchFirmsData } from '../services/firms';
 import { fetchInfrastructure } from '../services/infrastructure';
-import { fetchOpenSky } from '../services/opensky';
-import { fetchAcledEvents } from '../services/acled';
+import { fetchFlights } from '../services/flights.js';
+import { fetchAcledEvents } from '../services/acled.js';
 import { useLiveResource } from '../hooks/useLiveResource';
 import { EO_TILE_LAYERS, getEoLayerById } from '../services/eoTiles';
 import { fetchSdgLayer } from '../services/undpSdg';
 import { getRegion } from '../data/regions.js';
+
+// ponytail: no route/origin-destination API exists (airplanes.live gives position + track + speed
+// only), so a "flight path" is the ~10-min look-ahead projected along each plane's heading.
+const EARTH_RADIUS_M = 6371000;
+const PATH_LOOKAHEAD_S = 600;
+
+const projectForward = (lon, lat, headingDeg, distanceM) => {
+    const delta = distanceM / EARTH_RADIUS_M;
+    const theta = (headingDeg * Math.PI) / 180;
+    const phi1 = (lat * Math.PI) / 180;
+    const lambda1 = (lon * Math.PI) / 180;
+    const phi2 = Math.asin(Math.sin(phi1) * Math.cos(delta) + Math.cos(phi1) * Math.sin(delta) * Math.cos(theta));
+    const lambda2 = lambda1 + Math.atan2(
+        Math.sin(theta) * Math.sin(delta) * Math.cos(phi1),
+        Math.cos(delta) - Math.sin(phi1) * Math.sin(phi2)
+    );
+    return [(lambda2 * 180) / Math.PI, (phi2 * 180) / Math.PI];
+};
+
+const buildFlightPaths = (flights) => {
+    if (!flights?.features?.length) return null;
+    const features = flights.features
+        .filter((f) => !f.properties?.onGround && f.properties?.velocity > 0)
+        .map((f) => {
+            const [lon, lat] = f.geometry.coordinates;
+            const end = projectForward(lon, lat, f.properties.heading || 0, f.properties.velocity * PATH_LOOKAHEAD_S);
+            return {
+                type: 'Feature',
+                geometry: { type: 'LineString', coordinates: [[lon, lat], end] },
+                properties: { military: Boolean(f.properties?.military) }
+            };
+        });
+    return { type: 'FeatureCollection', features };
+};
 
 const STRATEGIC_ZONES = {
     type: 'FeatureCollection',
@@ -461,8 +495,8 @@ const MapContainer = ({
         intervalMs: 10 * 60 * 1000,
         isUsable: hasFeatureData
     });
-    const flightsResource = useLiveResource(useCallback(() => fetchOpenSky(), []), {
-        cacheKey: 'map:flights',
+    const flightsResource = useLiveResource(useCallback(() => fetchFlights(viewMode), [viewMode]), {
+        cacheKey: `map:flights:${viewMode}`,
         enabled: activeLayers.includes('flights'),
         intervalMs: 2 * 60 * 1000,
         isUsable: hasFeatureData
@@ -483,6 +517,7 @@ const MapContainer = ({
     const firmsData = firmsResource.data;
     const infraData = infraResource.data;
     const flightsData = flightsResource.data;
+    const flightPaths = useMemo(() => buildFlightPaths(flightsData), [flightsData]);
     const acledData = acledResource.data;
     const publicSentinelLayerId = getPublicSentinelLayerId(copernicusMode);
     const publicSentinelLayer = getEoLayerById(publicSentinelLayerId);
@@ -931,17 +966,48 @@ const MapContainer = ({
                     </Source>
                 )}
 
+                {/* Flight path vectors — heading look-ahead, drawn under the position dots */}
+                {activeLayers.includes('flights') && flightPaths?.features?.length > 0 && (
+                    <Source id="flight-paths" type="geojson" data={flightPaths}>
+                        <Layer
+                            id="flight-paths-lines"
+                            type="line"
+                            layout={{ 'line-cap': 'round' }}
+                            paint={{
+                                'line-color': [
+                                    'case',
+                                    ['==', ['get', 'military'], true], '#f59e0b',
+                                    '#38bdf8'
+                                ],
+                                'line-width': ['interpolate', ['linear'], ['zoom'], 3, 0.6, 8, 1.5],
+                                'line-opacity': 0.35
+                            }}
+                        />
+                    </Source>
+                )}
+
                 {/* Flights Layer */}
                 {activeLayers.includes('flights') && flightsData?.features?.length > 0 && (
                     <Source id="flights-data" type="geojson" data={flightsData}>
                         <Layer
-                            id="flights-circles"
-                            type="circle"
+                            id="flights-icons"
+                            type="symbol"
+                            layout={{
+                                'text-field': '✈',
+                                'text-size': ['interpolate', ['linear'], ['zoom'], 3, 10, 8, 16],
+                                'text-rotate': ['get', 'heading'],
+                                'text-rotation-alignment': 'map',
+                                'text-allow-overlap': true,
+                                'text-ignore-placement': true
+                            }}
                             paint={{
-                                'circle-color': '#38bdf8',
-                                'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 1.5, 8, 3],
-                                'circle-opacity': 0.5,
-                                'circle-blur': 0.3
+                                'text-color': [
+                                    'case',
+                                    ['==', ['get', 'military'], true], '#f59e0b',
+                                    '#38bdf8'
+                                ],
+                                'text-halo-color': 'rgba(5, 14, 32, 0.8)',
+                                'text-halo-width': 1
                             }}
                         />
                     </Source>
@@ -1052,6 +1118,8 @@ const MapContainer = ({
                         key={key}
                         className={`map-style-btn ${mapStyle === key ? 'active' : ''}`}
                         onClick={() => setMapStyle(key)}
+                        aria-label={`Switch map to ${key} view`}
+                        aria-pressed={mapStyle === key}
                         title={`${key.charAt(0).toUpperCase() + key.slice(1)} view`}
                     >
                         {icon}

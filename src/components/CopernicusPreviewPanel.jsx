@@ -126,6 +126,7 @@ const CopernicusPreviewPanel = ({
                         onClick={refresh}
                         style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', padding: 0 }}
                         title="Refresh Sentinel preview"
+                        aria-label="Refresh Sentinel preview"
                     >
                         <RefreshCw size={14} className={isRefreshing ? 'spin-anim' : ''} />
                     </button>
@@ -142,6 +143,8 @@ const CopernicusPreviewPanel = ({
                                 type="button"
                                 className={`eo-preview-toggle ${preset === item.id ? 'active' : ''}`}
                                 onClick={() => onPresetChange(item.id)}
+                                aria-pressed={preset === item.id}
+                                aria-label={`Switch Sentinel preview to ${item.label}`}
                             >
                                 {item.label}
                             </button>
@@ -153,6 +156,8 @@ const CopernicusPreviewPanel = ({
                         className={`eo-overlay-toggle ${showOverlay && canOverlay ? 'active' : ''}`}
                         onClick={onToggleOverlay}
                         disabled={!canOverlay}
+                        aria-label={showOverlay && canOverlay ? 'Turn map overlay off' : 'Turn map overlay on'}
+                        aria-pressed={showOverlay && canOverlay}
                         title={canOverlay ? 'Toggle map overlay' : 'Overlay becomes available after a live image is loaded'}
                     >
                         {showOverlay && canOverlay ? <Eye size={12} /> : <EyeOff size={12} />}

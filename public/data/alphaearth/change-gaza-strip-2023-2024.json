@@ -1,0 +1,23 @@
+{
+  "image": "change-gaza-strip-2023-2024.png",
+  "bounds": {
+    "west": 34.29992333589363,
+    "south": 31.29964011846284,
+    "east": 34.50042730730911,
+    "north": 31.550270082732187
+  },
+  "years": {
+    "a": 2023,
+    "b": 2024
+  },
+  "stats": {
+    "p_low": 0.3070733845233917,
+    "p_high": 0.9231131672859192,
+    "ramp_low_pctile": 50.0,
+    "ramp_high_pctile": 99.0,
+    "pixel_count": 76880,
+    "max_l2": 1.1280564069747925,
+    "median_l2": 0.3070733845233917
+  },
+  "dataset": "GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL"
+}

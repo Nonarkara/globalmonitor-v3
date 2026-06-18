@@ -24,6 +24,11 @@ const TABS = {
     Escalation: ['ingestedAt', 'score', 'level', 'label', 'firms', 'news', 'market', 'strikes', 'sourceHealth'],
     Markets:    ['ingestedAt', 'symbol', 'price', 'changePerc'],
     Sentiment:  ['ingestedAt', 'date', 'tone', 'query'],
+    FIRMS:      ['ingestedAt', 'theater', 'acqDate', 'acqTime', 'lat', 'lon', 'brightness', 'frp', 'satellite', 'confidence'],
+    OilPrice:   ['ingestedAt', 'symbol', 'date', 'price'],
+    Quakes:     ['ingestedAt', 'theater', 'mag', 'place', 'time', 'lat', 'lon', 'depth'],
+    Flights:    ['ingestedAt', 'theater', 'callsign', 'lat', 'lon', 'altitude', 'velocity', 'country'],
+    NGA:        ['ingestedAt', 'number', 'title', 'area', 'issued', 'expires'],
 };
 
 // ── State (per serverless instance) ────────────────────────
@@ -283,6 +288,105 @@ async function recordSentiment(data, updatedAt) {
     lastRecordAt.Sentiment = now();
 }
 
+// ── New record functions (FIRMS, OilPrice, Quakes, Flights, NGA) ──────────
+async function recordFirms(geojson, theater, updatedAt) {
+    if (!geojson?.features?.length) return;
+    const ts = updatedAt || now();
+    const rows = geojson.features.map((f) => {
+        const p = f.properties || {};
+        const [lon, lat] = f.geometry?.coordinates || [];
+        return [
+            ts,
+            theater || '',
+            p.acq_date || p.date || '',
+            String(p.acq_time || p.time || ''),
+            lat ?? '',
+            lon ?? '',
+            p.brightness || '',
+            p.frp || '',
+            p.satellite || '',
+            p.confidence || ''
+        ];
+    });
+    await appendRows('FIRMS', rows);
+    writeCount.FIRMS = (writeCount.FIRMS || 0) + rows.length;
+    lastRecordAt.FIRMS = now();
+}
+
+async function recordOilPrice(items, updatedAt) {
+    if (!Array.isArray(items) || !items.length) return;
+    const ts = updatedAt || now();
+    const rows = items.map((m) => [
+        ts,
+        m.symbol || m.name || '',
+        m.date || '',
+        m.price || ''
+    ]);
+    await appendRows('OilPrice', rows);
+    writeCount.OilPrice = (writeCount.OilPrice || 0) + rows.length;
+    lastRecordAt.OilPrice = now();
+}
+
+async function recordQuakes(geojson, theater, updatedAt) {
+    if (!geojson?.features?.length) return;
+    const ts = updatedAt || now();
+    const rows = geojson.features.map((f) => {
+        const p = f.properties || {};
+        const [lon, lat] = f.geometry?.coordinates || [];
+        return [
+            ts,
+            theater || '',
+            p.mag || '',
+            p.place || '',
+            p.time ? new Date(p.time).toISOString() : '',
+            lat ?? '',
+            lon ?? '',
+            f.geometry?.coordinates?.[2] ?? ''
+        ];
+    });
+    await appendRows('Quakes', rows);
+    writeCount.Quakes = (writeCount.Quakes || 0) + rows.length;
+    lastRecordAt.Quakes = now();
+}
+
+async function recordFlights(geojson, theater, updatedAt) {
+    if (!geojson?.features?.length) return;
+    const ts = updatedAt || now();
+    const rows = geojson.features.map((f) => {
+        const p = f.properties || {};
+        const [lon, lat] = f.geometry?.coordinates || [];
+        return [
+            ts,
+            theater || '',
+            p.callsign || '',
+            lat ?? '',
+            lon ?? '',
+            p.altitude ?? '',
+            p.velocity ?? '',
+            p.originCountry || p.country || ''
+        ];
+    });
+    await appendRows('Flights', rows);
+    writeCount.Flights = (writeCount.Flights || 0) + rows.length;
+    lastRecordAt.Flights = now();
+}
+
+async function recordNga(items, updatedAt) {
+    if (!Array.isArray(items) || !items.length) return;
+    const ts = updatedAt || now();
+    const rows = items.map((n) => [
+        ts,
+        n.number || '',
+        (n.title || '').substring(0, 300),
+        n.area || '',
+        n.issued || '',
+        n.expires || ''
+    ]);
+    await appendRows('NGA', rows);
+    writeCount.NGA = (writeCount.NGA || 0) + rows.length;
+    lastRecordAt.NGA = now();
+}
+
 // ── Public: Record Escalation (called separately, throttled) ──
 let lastEscRecord = 0;
 
@@ -340,6 +444,26 @@ export async function recordToSheets(cacheKey, payload, updatedAt) {
         }
         else if (cacheKey.startsWith('gdelt') || cacheKey.startsWith('sentiment')) {
             await recordSentiment(payload, updatedAt);
+        }
+        else if (cacheKey.startsWith('firms:')) {
+            const theater = cacheKey.split(':')[1] || 'middleeast';
+            await recordFirms(payload, theater, updatedAt);
+        }
+        else if (cacheKey === 'oil-prices') {
+            const items = Array.isArray(payload) ? payload : (payload?.items || []);
+            await recordOilPrice(items, updatedAt);
+        }
+        else if (cacheKey.startsWith('quakes:')) {
+            const theater = cacheKey.split(':')[1] || 'middleeast';
+            await recordQuakes(payload, theater, updatedAt);
+        }
+        else if (cacheKey.startsWith('airplanes:') || cacheKey.startsWith('opensky:')) {
+            const theater = cacheKey.split(':')[1] || 'middleeast';
+            await recordFlights(payload, theater, updatedAt);
+        }
+        else if (cacheKey === 'nga-warnings') {
+            const items = Array.isArray(payload) ? payload : (payload?.warnings || []);
+            await recordNga(items, updatedAt);
         }
     } catch (err) {
         console.warn(`[SHEETS] Record failed for ${cacheKey}:`, err.message);

@@ -9,23 +9,40 @@ const ME_CITIES = [
     { name: 'Riyadh', tz: 'Asia/Riyadh' },
     { name: 'Beirut', tz: 'Asia/Beirut' },
     { name: 'Beijing', tz: 'Asia/Shanghai' },
-    { name: 'Kyiv', tz: 'Europe/Kiev' },
+    { name: 'Kyiv', tz: 'Europe/Kyiv' },
 ];
 
-const APAC_CITIES = [
+const INDO_PACIFIC_CITIES = [
+    { name: 'Singapore', tz: 'Asia/Singapore', label: 'Singapore (SG)', primary: true },
+    { name: 'Bangkok', tz: 'Asia/Bangkok' },
+    { name: 'Jakarta', tz: 'Asia/Jakarta' },
+    { name: 'Manila', tz: 'Asia/Manila' },
+    { name: 'Tokyo', tz: 'Asia/Tokyo' },
+    { name: 'Delhi', tz: 'Asia/Kolkata' },
+    { name: 'Canberra', tz: 'Australia/Sydney' },
+    { name: 'Honolulu', tz: 'Pacific/Honolulu' },
+    { name: 'Washington', tz: 'America/New_York' },
+];
+
+const THAILAND_CITIES = [
     { name: 'Bangkok', tz: 'Asia/Bangkok', label: 'Bangkok (TH)', primary: true },
+    { name: 'Chiang Mai', tz: 'Asia/Bangkok' },
+    { name: 'Khon Kaen', tz: 'Asia/Bangkok' },
+    { name: 'Phuket', tz: 'Asia/Bangkok' },
     { name: 'Singapore', tz: 'Asia/Singapore' },
     { name: 'Tokyo', tz: 'Asia/Tokyo' },
     { name: 'Beijing', tz: 'Asia/Shanghai' },
-    { name: 'Delhi', tz: 'Asia/Kolkata' },
+    { name: 'Sydney', tz: 'Australia/Sydney' },
     { name: 'London', tz: 'Europe/London' },
     { name: 'Washington', tz: 'America/New_York' },
-    { name: 'Sydney', tz: 'Australia/Sydney' },
-    { name: 'Dubai', tz: 'Asia/Dubai' },
 ];
 
 const WorldClock = ({ viewMode = 'middleeast' }) => {
-    const cities = viewMode === 'depa' ? APAC_CITIES : ME_CITIES;
+    const cities = viewMode === 'thailand'
+        ? THAILAND_CITIES
+        : viewMode === 'indopacific'
+            ? INDO_PACIFIC_CITIES
+            : ME_CITIES;
     const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {

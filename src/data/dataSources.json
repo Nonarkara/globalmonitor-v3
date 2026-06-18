@@ -65,16 +65,16 @@
     "apiEndpoint": "/api/quakes"
   },
   {
-    "id": "opensky",
-    "name": "OpenSky Network",
-    "fullName": "OpenSky Network ADS-B",
+    "id": "airplanes-live",
+    "name": "Airplanes.live",
+    "fullName": "Airplanes.live ADS-B",
     "type": "Flight Tracking",
-    "url": "https://opensky-network.org",
+    "url": "https://airplanes.live",
     "reliability": 8,
-    "updateFrequency": "Every 10 seconds",
+    "updateFrequency": "Real-time ADS-B",
     "cacheTTL": "2 minutes",
-    "methodology": "Crowd-sourced ADS-B receiver network tracking transponder-equipped aircraft. Coverage varies by region.",
-    "coverage": "Global — density varies by receiver coverage",
+    "methodology": "Crowd-sourced ADS-B receiver network. Multi-point 250 nm queries cover the Middle East theater. Heading vectors projected 10 min forward.",
+    "coverage": "Theater-scoped — Middle East, Indo-Pacific, Thailand",
     "apiEndpoint": "/api/flights"
   },
   {

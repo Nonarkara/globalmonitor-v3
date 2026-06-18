@@ -11,7 +11,7 @@ import { computeStrikeStats } from '../server/lib/strikeStats.mjs';
 import { fetchHumanitarianPayload } from '../server/lib/humanitarian.mjs';
 import { computeInfrastructureStatus } from '../server/lib/infrastructure.mjs';
 import { fetchGdeltSentiment } from '../server/lib/gdelt.mjs';
-import { fetchOpenSkyPayload } from '../server/lib/opensky.mjs';
+import { fetchFlightsPayload } from '../server/lib/flights.mjs';
 import { computeFrontStatus } from '../server/lib/frontStatus.mjs';
 import { fetchAcledEvents } from '../server/lib/acled.mjs';
 import { fetchOilPriceTimeline } from '../server/lib/eia.mjs';
@@ -149,8 +149,8 @@ export default async function handler(req, res) {
 
         if (pathname === '/api/flights' || pathname === '/api/flights/') {
             const theater = url.searchParams.get('theater') || 'middleeast';
-            const result = await useCached(`opensky:${theater}`, 120000,
-                () => fetchOpenSkyPayload(theater), (p) => p?.type === 'FeatureCollection');
+            const result = await useCached(`airplanes:${theater}`, 120000,
+                () => fetchFlightsPayload(theater), (p) => p?.type === 'FeatureCollection');
             return json(res, 200, result.payload, result.meta);
         }
 

@@ -16,7 +16,7 @@ import { computeStrikeStats } from './lib/strikeStats.mjs';
 import { fetchHumanitarianPayload } from './lib/humanitarian.mjs';
 import { computeInfrastructureStatus } from './lib/infrastructure.mjs';
 import { fetchGdeltSentiment } from './lib/gdelt.mjs';
-import { fetchOpenSkyPayload } from './lib/opensky.mjs';
+import { fetchFlightsPayload } from './lib/flights.mjs';
 import { computeFrontStatus } from './lib/frontStatus.mjs';
 import { fetchNgaWarnings } from './lib/ngaWarnings.mjs';
 import { fetchUsgsQuakes } from './lib/usgsQuakes.mjs';
@@ -28,7 +28,10 @@ import { listPresets as listEvalscriptPresets } from './lib/evalscripts.mjs';
 import { probeCog } from './lib/cogReader.mjs';
 import { recordToSheets, recordEscalation, getRecordingHealth } from './lib/sheetsRecorder.mjs';
 import { ingestRegionalNews } from './lib/regionalNewsIngest.mjs';
-import { isSupabaseEnabled, getSupabaseStatusMessage } from './lib/supabase.mjs';
+import {
+    isSupabaseEnabled, getSupabaseStatusMessage,
+    upsertAcledEvents, upsertFirmsHotspots, upsertMarketQuotes, upsertSentimentReadings
+} from './lib/supabase.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = path.resolve(__dirname, '..', 'dist');
@@ -136,6 +139,20 @@ const server = http.createServer(async (request, response) => {
             'Access-Control-Allow-Headers': 'Content-Type'
         });
         response.end();
+        return;
+    }
+
+    if (request.method === 'POST' && request.url?.startsWith('/api/refresh-all')) {
+        // Bust the server-side in-memory cache for all live data keys.
+        const BUST_PREFIXES = ['ticker:', 'briefing:', 'firms:', 'acled:', 'markets', 'gdelt:', 'airplanes:', 'quakes:', 'nga-warnings', 'oil-prices', 'humanitarian:', 'regional-news:'];
+        let cleared = 0;
+        for (const key of cache.keys()) {
+            if (BUST_PREFIXES.some((p) => key.startsWith(p))) {
+                cache.delete(key);
+                cleared++;
+            }
+        }
+        json(response, 200, { ok: true, cleared }, { status: 'live', updatedAt: new Date().toISOString(), cache: 'miss' });
         return;
     }
 
@@ -262,6 +279,7 @@ const server = http.createServer(async (request, response) => {
                 () => fetchFirmsPayload(theater),
                 (payload) => payload?.type === 'FeatureCollection'
             );
+            if (result.meta.cache !== 'hit') upsertFirmsHotspots(result.payload, theater).catch(() => {});
             json(response, 200, result.payload, result.meta);
             return;
         }
@@ -334,6 +352,7 @@ const server = http.createServer(async (request, response) => {
                 () => fetchGdeltSentiment(theater),
                 (p) => Array.isArray(p?.timeline)
             );
+            if (result.meta.cache !== 'hit') upsertSentimentReadings(result.payload).catch(() => {});
             json(response, 200, result.payload, result.meta);
             return;
         }
@@ -341,9 +360,9 @@ const server = http.createServer(async (request, response) => {
         if (url.pathname === '/api/flights') {
             const theater = url.searchParams.get('theater') || 'middleeast';
             const result = await useCached(
-                `opensky:${theater}`,
+                `airplanes:${theater}`,
                 2 * 60 * 1000,
-                () => fetchOpenSkyPayload(theater),
+                () => fetchFlightsPayload(theater),
                 (p) => p?.type === 'FeatureCollection'
             );
             json(response, 200, result.payload, result.meta);
@@ -359,6 +378,7 @@ const server = http.createServer(async (request, response) => {
                 () => fetchAcledEvents(since ? { since } : {}),
                 (p) => p?.type === 'FeatureCollection'
             );
+            if (result.meta.cache !== 'hit') upsertAcledEvents(result.payload).catch(() => {});
             json(response, 200, result.payload, result.meta);
             return;
         }
@@ -381,6 +401,7 @@ const server = http.createServer(async (request, response) => {
                 () => fetchMarketPayload(),
                 (payload) => Array.isArray(payload) && payload.length > 0
             );
+            if (result.meta.cache !== 'hit') upsertMarketQuotes(result.payload).catch(() => {});
             json(response, 200, result.payload, result.meta);
             return;
         }

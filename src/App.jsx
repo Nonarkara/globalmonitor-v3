@@ -191,81 +191,53 @@ function App() {
         </ErrorBoundary>
 
         {/* Row 2: Header bar — 3-section layout: logos | center title | controls */}
-        <div className="header-bar grid-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="header-bar grid-panel">
           {/* Left: Sponsor logos in white pill */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: '0 0 auto', background: '#fff', padding: '3px 8px', borderRadius: '5px' }}>
-            <img src={`${import.meta.env.BASE_URL}pmua-logo.webp`} alt="PMUA" style={{ height: '18px', objectFit: 'contain' }} />
-            <img src={`${import.meta.env.BASE_URL}Logo depa-01.png`} alt="depa" style={{ height: '14px', objectFit: 'contain' }} />
-            <img src={`${import.meta.env.BASE_URL}axiom-logo.png`} alt="Axiom" style={{ height: '14px', objectFit: 'contain' }} />
-            <img src={`${import.meta.env.BASE_URL}retl-logo.svg`} alt="ReTL" style={{ height: '14px', objectFit: 'contain' }} />
+          <div className="header-brand-strip" aria-label="Project partners">
+            <img src={`${import.meta.env.BASE_URL}pmua-logo.webp`} alt="PMUA" className="header-brand-logo header-brand-logo-pmua" />
+            <img src={`${import.meta.env.BASE_URL}Logo depa-01.png`} alt="depa" className="header-brand-logo header-brand-logo-depa" />
+            <img src={`${import.meta.env.BASE_URL}axiom-logo.png`} alt="Axiom" className="header-brand-logo header-brand-logo-axiom" />
+            <img src={`${import.meta.env.BASE_URL}retl-logo.svg`} alt="ReTL" className="header-brand-logo header-brand-logo-retl" />
           </div>
 
           {/* Center: Title + Escalation + Status */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: '1 1 auto', justifyContent: 'center' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2, textAlign: 'center' }}>
-              <span style={{ fontWeight: 300, letterSpacing: '2.5px', fontSize: '0.7rem', color: 'rgba(255,255,255,0.9)', textTransform: 'uppercase' }}>
+          <div className="header-status">
+            <div className="header-title-lockup">
+              <span className="header-title">
                 Global Political Dashboard
               </span>
-              <span style={{ fontWeight: 500, letterSpacing: '1.5px', fontSize: '0.42rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase' }}>
+              <span className="header-subtitle">
                 {getRegion(viewMode).label} · GlobeWatch · v8.0
               </span>
             </div>
             <ErrorBoundary inline label="Escalation">
               <EscalationGauge />
             </ErrorBoundary>
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '5px',
-              fontSize: '0.55rem', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.5px',
-              fontFamily: 'var(--font-mono)'
-            }}>
+            <div className="header-visitor-count" aria-label={`${visitorCount.toLocaleString()} visitors tracked`}>
               <Eye size={9} style={{ opacity: 0.35 }} />
               {visitorCount.toLocaleString()}
             </div>
             {!backendUp && (
-              <span style={{
-                fontSize: '0.45rem', fontWeight: 700, letterSpacing: '1px',
-                color: '#ef4444', padding: '2px 6px',
-                background: 'rgba(239,68,68,0.1)', borderRadius: '4px',
-                border: '1px solid rgba(239,68,68,0.2)'
-              }}>
+              <span className="header-offline-pill">
                 OFFLINE
               </span>
             )}
           </div>
           {/* Right: Controls */}
-          <div style={{ display: 'flex', gap: '6px', flex: '0 0 auto' }}>
+          <div className="header-controls">
             {viewMode === 'middleeast' && (
               <button
                 onClick={() => setIsNetworkOpen(true)}
                 aria-label="Open actor and faction network analysis"
-                style={{
-                  background: 'rgba(139,92,246,0.08)',
-                  border: '1px solid rgba(139,92,246,0.15)',
-                  color: 'rgba(139,92,246,0.7)',
-                  padding: '5px 12px',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  cursor: 'pointer',
-                  fontSize: '0.6rem',
-                  fontFamily: 'inherit',
-                  transition: 'all 0.3s',
-                  letterSpacing: '0.5px'
-                }}
+                className="header-button header-button-actors"
               >
                 <Network size={11} aria-hidden="true" /> Actors
               </button>
             )}
             <div
+              className="header-region-tabs"
               role="tablist"
               aria-label="Theater region selector"
-              style={{
-                display: 'inline-flex',
-                gap: 0,
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-              }}
             >
               {Object.values(REGIONS).map((r) => {
                 const isActive = viewMode === r.id;
@@ -274,6 +246,8 @@ function App() {
                     key={r.id}
                     role="tab"
                     aria-selected={isActive}
+                    aria-label={`Switch dashboard to ${r.label}`}
+                    tabIndex={isActive ? 0 : -1}
                     onClick={() => {
                       setViewMode(r.id);
                       setActiveRegion(r.id === 'middleeast' ? 'middleeast' : r.id === 'indopacific' ? 'asean' : 'thailand');
@@ -283,20 +257,7 @@ function App() {
                         : APAC_SOURCES.map(s => s.id));
                       setSelectedCountryCode(null);
                     }}
-                    style={{
-                      background: isActive ? 'rgba(56,189,248,0.18)' : 'transparent',
-                      border: 'none',
-                      borderLeft: r.id === 'middleeast' ? 'none' : '1px solid rgba(255,255,255,0.08)',
-                      color: isActive ? '#dbeafe' : 'rgba(255,255,255,0.55)',
-                      padding: '6px 14px',
-                      cursor: 'pointer',
-                      fontSize: '0.65rem',
-                      fontFamily: 'inherit',
-                      letterSpacing: '0.6px',
-                      textTransform: 'uppercase',
-                      transition: 'all 0.2s',
-                      minHeight: 28,
-                    }}
+                    className={`header-region-tab ${isActive ? 'is-active' : ''}`}
                   >
                     {r.label}
                   </button>
@@ -304,33 +265,27 @@ function App() {
               })}
             </div>
             <button onClick={() => setIsSourceHealthOpen(true)} title="Data Sources & Health" aria-label="View data source health and provenance"
-              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.35)',
-                padding: '5px 8px', borderRadius: '8px', display: 'flex', alignItems: 'center', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.3s' }}>
+              className="header-icon-button">
               <Database size={11} aria-hidden="true" />
             </button>
             <button onClick={() => setIsActivityLogOpen(true)} title="Session Activity Log" aria-label="View session activity log"
-              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.35)',
-                padding: '5px 8px', borderRadius: '8px', display: 'flex', alignItems: 'center', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.3s' }}>
+              className="header-icon-button">
               <FileText size={11} aria-hidden="true" />
             </button>
             <button onClick={() => { logActivity(LOG_TYPES.USER_ACTION, 'Print briefing initiated'); window.print(); }} title="Print Briefing" aria-label="Print intelligence briefing"
-              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.35)',
-                padding: '5px 8px', borderRadius: '8px', display: 'flex', alignItems: 'center', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.3s' }}>
+              className="header-icon-button">
               <Printer size={11} aria-hidden="true" />
             </button>
             <button onClick={() => setIsAboutOpen(true)} title="About this project" aria-label="About this project"
-              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.35)',
-                padding: '5px 8px', borderRadius: '8px', display: 'flex', alignItems: 'center', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.3s' }}>
+              className="header-icon-button">
               <Info size={11} aria-hidden="true" />
             </button>
             <button onClick={handleRefreshAll} title="Refresh all data sources" aria-label="Refresh all data sources" disabled={isRefreshingAll}
-              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.06)', color: isRefreshingAll ? 'rgba(56,189,248,0.8)' : 'rgba(255,255,255,0.35)',
-                padding: '5px 8px', borderRadius: '8px', display: 'flex', alignItems: 'center', cursor: isRefreshingAll ? 'wait' : 'pointer', fontFamily: 'inherit', transition: 'all 0.3s' }}>
+              className={`header-icon-button ${isRefreshingAll ? 'is-busy' : ''}`}>
               <RefreshCw size={11} aria-hidden="true" className={isRefreshingAll ? 'spin-anim' : ''} />
             </button>
             <button onClick={() => setIsSettingsOpen(true)} title="Settings" aria-label="Open intelligence source settings"
-              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.35)',
-                padding: '5px 8px', borderRadius: '8px', display: 'flex', alignItems: 'center', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.3s' }}>
+              className="header-icon-button">
               <Settings size={11} aria-hidden="true" />
             </button>
           </div>
@@ -629,12 +584,12 @@ function App() {
 
         {/* Modal: About */}
         {isAboutOpen && (
-          <div style={{
+          <div className="modal-overlay" style={{
             position: 'fixed', inset: 0, zIndex: 10000,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)'
           }} onClick={() => setIsAboutOpen(false)}>
-            <div style={{
+            <div role="dialog" aria-modal="true" aria-labelledby="about-dashboard-title" style={{
               width: '560px', maxWidth: '92vw', maxHeight: '85vh',
               background: 'rgba(14,18,28,0.95)', backdropFilter: 'blur(24px)',
               borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)',
@@ -661,7 +616,7 @@ function App() {
                 <img src={`${import.meta.env.BASE_URL}retl-logo.svg`} alt="ReTL" style={{ height: '18px', objectFit: 'contain', filter: 'brightness(1.8) invert(1)', opacity: 0.8 }} />
               </div>
 
-              <h2 style={{ fontSize: '1rem', fontWeight: 600, color: 'rgba(255,255,255,0.9)', marginBottom: '4px', letterSpacing: '0.5px' }}>
+              <h2 id="about-dashboard-title" style={{ fontSize: '1rem', fontWeight: 600, color: 'rgba(255,255,255,0.9)', marginBottom: '4px', letterSpacing: '0.5px' }}>
                 Global Political Dashboard
               </h2>
               <p style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-mono)', letterSpacing: '1px', marginBottom: '14px' }}>
@@ -697,7 +652,7 @@ function App() {
                 <span style={{ fontSize: '0.45rem', color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font-mono)' }}>
                   12 data sources · PMUA · depa · Axiom · ReTL
                 </span>
-                <button onClick={() => setIsAboutOpen(false)} style={{
+                <button onClick={() => setIsAboutOpen(false)} aria-label="Close about panel" style={{
                   background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
                   borderRadius: '6px', padding: '6px 16px', color: 'rgba(255,255,255,0.6)',
                   cursor: 'pointer', fontSize: '0.65rem', fontFamily: 'inherit'

@@ -30,13 +30,20 @@ const SettingsModal = ({ isOpen, onClose, activeSources, toggleSource, setAllSou
     });
 
     return (
-        <div className="modal-overlay">
-            <div className="grid-panel" style={{ width: '800px', maxWidth: '90vw', maxHeight: '85vh', padding: 0, display: 'flex', flexDirection: 'column' }}>
+        <div className="modal-overlay" onClick={onClose}>
+            <div
+                className="grid-panel"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="settings-modal-title"
+                onClick={(event) => event.stopPropagation()}
+                style={{ width: '800px', maxWidth: '90vw', maxHeight: '85vh', padding: 0, display: 'flex', flexDirection: 'column' }}
+            >
 
                 {/* Header */}
                 <div style={{ padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #333' }}>
-                    <h2 style={{ margin: 0, fontSize: '1.2rem', letterSpacing: '2px', fontWeight: 600 }}>SETTINGS</h2>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}>
+                    <h2 id="settings-modal-title" style={{ margin: 0, fontSize: '1.2rem', letterSpacing: '2px', fontWeight: 600 }}>SETTINGS</h2>
+                    <button onClick={onClose} aria-label="Close settings" style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}>
                         <X size={24} />
                     </button>
                 </div>

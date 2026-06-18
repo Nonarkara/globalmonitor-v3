@@ -71,7 +71,7 @@ const Sidebar = ({
         {
             id: 'flights',
             title: 'Flight Tracking',
-            desc: 'OpenSky live aircraft',
+            desc: 'ADS-B positions + heading vectors',
             icon: <Plane size={18} />
         }
     ];

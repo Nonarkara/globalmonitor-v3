@@ -1,0 +1,10 @@
+[
+  {
+    "id": "forecast-event-count-global",
+    "file": "forecast-event-count-global.json",
+    "label": "event-count",
+    "aoi": "global",
+    "horizon": 30,
+    "model": "google/timesfm-2.5-200m-pytorch"
+  }
+]
