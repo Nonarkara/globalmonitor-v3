@@ -39,7 +39,7 @@ const FlightRadarEmbed = () => (
                 ADS-B Exchange <ExternalLink size={8} />
             </span>
             <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.2)' }}>
-                OpenSky · Military + Civil
+                airplanes.live · Military + Civil
             </span>
         </a>
     </div>
