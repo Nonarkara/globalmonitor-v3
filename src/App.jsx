@@ -51,7 +51,7 @@ import { useEscapeKey } from './hooks/useEscapeKey';
 import './styles/print.css';
 
 function App() {
-  const [activeLayers, setActiveLayers] = useState(['disasters', 'weather', 'economy', 'conflicts', 'aqi', 'firms']);
+  const [activeLayers, setActiveLayers] = useState(['disasters', 'weather', 'economy', 'conflicts', 'aqi', 'firms', 'flights']);
   const [activeRegion, setActiveRegion] = useState('middleeast');
   const [selectedEvent, setSelectedEvent] = useState(null);
   // Three-way region nav: 'middleeast' | 'indopacific' | 'thailand'
@@ -322,7 +322,11 @@ function App() {
           </ErrorBoundary>
           {viewMode === 'middleeast' && (
             <ErrorBoundary inline label="Flight Radar">
-              <FlightRadarEmbed />
+              <FlightRadarEmbed
+                flightsActive={activeLayers.includes('flights')}
+                flightCount={flightCount}
+                onToggleFlights={() => toggleLayer('flights')}
+              />
             </ErrorBoundary>
           )}
           {/* Live TV is always present so switching regions just swaps channels

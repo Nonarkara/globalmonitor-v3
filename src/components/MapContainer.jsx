@@ -11,6 +11,7 @@ import { fetchAirQuality } from '../services/airQuality';
 import { fetchFirmsData } from '../services/firms';
 import { fetchInfrastructure } from '../services/infrastructure';
 import { fetchFlights } from '../services/flights.js';
+import { fetchVessels } from '../services/vessels.js';
 import { fetchAcledEvents } from '../services/acled.js';
 import { useLiveResource } from '../hooks/useLiveResource';
 import { EO_TILE_LAYERS, getEoLayerById } from '../services/eoTiles';
@@ -409,6 +410,7 @@ const MapContainer = ({
     // Cursor position in lat/lng — updated on mousemove for the readout overlay.
     const [cursor, setCursor] = useState(null);
     const [copied, setCopied] = useState(false);
+    const [mapIconsReady, setMapIconsReady] = useState(false);
 
     // Wire MapLibre's runtime error events. react-map-gl's <Map onError> only
     // surfaces some errors; the underlying map.on('error') is the canonical hook
@@ -429,6 +431,50 @@ const MapContainer = ({
         };
         map.on('error', handler);
         return () => { map.off('error', handler); };
+    }, [mapStyle]);
+
+    // Load custom SVG icons into the MapLibre sprite; re-run on style change
+    // because setStyle() wipes all user-added images.
+    useEffect(() => {
+        const map = mapRef.current?.getMap?.();
+        if (!map) return;
+
+        const PLANE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><g fill="#38bdf8"><ellipse cx="16" cy="16" rx="3" ry="12"/><path d="M2,13 L30,13 L16,20 Z"/><path d="M11,27 L16,24 L21,27 L16,30 Z"/></g></svg>`;
+        const SHIP_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="24" height="32"><path d="M12,2 L20,10 L20,26 Q12,30 4,26 L4,10 Z" fill="#f59e0b"/><rect x="8" y="13" width="8" height="6" rx="1" fill="#fbbf24" opacity="0.55"/></svg>`;
+
+        let pending = 0;
+        let loaded = 0;
+        const markIconLoaded = () => {
+            loaded += 1;
+            if (loaded >= pending) {
+                setMapIconsReady(true);
+                try { map.triggerRepaint(); } catch { /* ignore */ }
+            }
+        };
+
+        const addSvgImage = (name, svg, w, h) => {
+            pending += 1;
+            try { if (map.hasImage(name)) map.removeImage(name); } catch { /* ignore */ }
+            const img = new Image(w, h);
+            img.onload = () => {
+                try { map.addImage(name, img); } catch { /* already added */ }
+                markIconLoaded();
+            };
+            img.onerror = markIconLoaded;
+            img.src = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+        };
+
+        const loadIcons = () => {
+            pending = 0;
+            loaded = 0;
+            setMapIconsReady(false);
+            addSvgImage('plane-icon', PLANE_SVG, 32, 32);
+            addSvgImage('ship-icon', SHIP_SVG, 24, 32);
+        };
+
+        if (map.isStyleLoaded()) loadIcons();
+        map.on('style.load', loadIcons);
+        return () => { map.off('style.load', loadIcons); };
     }, [mapStyle]);
 
     const handleMouseMove = useCallback((event) => {
@@ -508,6 +554,12 @@ const MapContainer = ({
         intervalMs: 60 * 60 * 1000,
         isUsable: hasFeatureData
     });
+    const vesselsResource = useLiveResource(useCallback(() => fetchVessels(), []), {
+        cacheKey: 'map:vessels',
+        enabled: activeLayers.includes('vessels'),
+        intervalMs: 60 * 1000,
+        isUsable: hasFeatureData
+    });
 
     const disastersData = disasterResource.data;
     const crisesData = conflictResource.data;
@@ -520,6 +572,7 @@ const MapContainer = ({
     const flightsData = flightsResource.data;
     const flightPaths = useMemo(() => buildFlightPaths(flightsData), [flightsData]);
     const flightCount = flightsData?.features?.length ?? 0;
+    const vesselsData = vesselsResource.data;
     const flightsLayerActive = activeLayers.includes('flights');
 
     useEffect(() => {
@@ -994,9 +1047,9 @@ const MapContainer = ({
                     </Source>
                 )}
 
-                {/* Flights Layer — glow circle + rotated plane icon for ADS-B positions */}
+                {/* Flights Layer — high-contrast glow dots + rotated plane icons */}
                 {flightsLayerActive && flightCount > 0 && (
-                    <Source id="flights-data" type="geojson" data={flightsData}>
+                    <Source id="flights-data" type="geojson" data={flightsData} key={mapIconsReady ? 'flights-icons-ready' : 'flights-icons-pending'}>
                         <Layer
                             id="flights-glow"
                             type="circle"
@@ -1006,33 +1059,26 @@ const MapContainer = ({
                                     ['==', ['get', 'military'], true], '#f59e0b',
                                     '#58a6ff'
                                 ],
-                                'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 5, 6, 7, 10, 9],
-                                'circle-opacity': 0.72,
-                                'circle-stroke-width': 1.5,
+                                'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, 4, 4, 6, 7, 8, 10, 10],
+                                'circle-opacity': 0.88,
+                                'circle-stroke-width': 2,
                                 'circle-stroke-color': '#ffffff',
-                                'circle-stroke-opacity': 0.85
+                                'circle-stroke-opacity': 0.9
                             }}
                         />
                         <Layer
                             id="flights-icons"
                             type="symbol"
                             layout={{
-                                'text-field': '✈',
-                                'text-size': ['interpolate', ['linear'], ['zoom'], 3, 14, 6, 18, 10, 22],
-                                'text-rotate': ['get', 'heading'],
-                                'text-rotation-alignment': 'map',
-                                'text-allow-overlap': true,
-                                'text-ignore-placement': true
+                                'icon-image': 'plane-icon',
+                                'icon-size': ['interpolate', ['linear'], ['zoom'], 2, 0.7, 4, 0.9, 7, 1.15, 10, 1.35],
+                                'icon-rotate': ['get', 'heading'],
+                                'icon-rotation-alignment': 'map',
+                                'icon-allow-overlap': true,
+                                'icon-ignore-placement': true,
+                                'icon-pitch-alignment': 'map',
                             }}
-                            paint={{
-                                'text-color': '#ffffff',
-                                'text-halo-color': [
-                                    'case',
-                                    ['==', ['get', 'military'], true], '#92400e',
-                                    '#0c4a6e'
-                                ],
-                                'text-halo-width': 2
-                            }}
+                            paint={{ 'icon-opacity': 0.98 }}
                         />
                     </Source>
                 )}
@@ -1081,6 +1127,36 @@ const MapContainer = ({
                                 'circle-opacity': 0.75,
                                 'circle-stroke-width': 1,
                                 'circle-stroke-color': 'rgba(255,255,255,0.3)'
+                            }}
+                        />
+                    </Source>
+                )}
+
+                {/* Vessels Layer — ship icons at strait chokepoints, all three theaters */}
+                {activeLayers.includes('vessels') && vesselsData?.features?.length > 0 && (
+                    <Source id="vessels-data" type="geojson" data={vesselsData}>
+                        <Layer
+                            id="vessels-icons"
+                            type="symbol"
+                            layout={{
+                                'icon-image': 'ship-icon',
+                                'icon-size': ['interpolate', ['linear'], ['zoom'], 2, 0.45, 5, 0.65, 9, 0.9],
+                                'icon-rotate': ['get', 'heading'],
+                                'icon-rotation-alignment': 'map',
+                                'icon-allow-overlap': true,
+                                'icon-ignore-placement': true,
+                                'icon-pitch-alignment': 'map',
+                                'text-field': ['step', ['zoom'], '', 7, ['get', 'name']],
+                                'text-size': 9,
+                                'text-offset': [0, 1.6],
+                                'text-anchor': 'top',
+                                'text-allow-overlap': false,
+                            }}
+                            paint={{
+                                'icon-opacity': 0.9,
+                                'text-color': '#f59e0b',
+                                'text-halo-color': 'rgba(0,0,0,0.7)',
+                                'text-halo-width': 1,
                             }}
                         />
                     </Source>
