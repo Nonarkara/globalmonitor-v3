@@ -12,6 +12,7 @@ import { fetchFirmsData } from '../services/firms';
 import { fetchInfrastructure } from '../services/infrastructure';
 import { fetchFlights } from '../services/flights.js';
 import { fetchVessels } from '../services/vessels.js';
+import { fetchRainviewerTiles } from '../services/rainviewer.js';
 import { fetchAcledEvents } from '../services/acled.js';
 import { useLiveResource } from '../hooks/useLiveResource';
 import { EO_TILE_LAYERS, getEoLayerById } from '../services/eoTiles';
@@ -19,9 +20,12 @@ import { fetchSdgLayer } from '../services/undpSdg';
 import { getRegion } from '../data/regions.js';
 
 // ponytail: no route/origin-destination API exists (airplanes.live gives position + track + speed
-// only), so a "flight path" is the ~10-min look-ahead projected along each plane's heading.
+// only), so a "flight path" is a short heading projection — not a route spiderweb.
 const EARTH_RADIUS_M = 6371000;
-const PATH_LOOKAHEAD_S = 600;
+const PATH_LOOKAHEAD_S = 180; // 3 min look-ahead
+const MAX_PATH_DISTANCE_M = 25000; // cap at 25 km regardless of speed
+const MIN_PATH_VELOCITY_MS = 40; // skip slow / taxiing traffic
+const MIN_PATH_ALTITUDE_M = 500;
 
 const projectForward = (lon, lat, headingDeg, distanceM) => {
     const delta = distanceM / EARTH_RADIUS_M;
@@ -39,10 +43,17 @@ const projectForward = (lon, lat, headingDeg, distanceM) => {
 const buildFlightPaths = (flights) => {
     if (!flights?.features?.length) return null;
     const features = flights.features
-        .filter((f) => !f.properties?.onGround && f.properties?.velocity > 0)
+        .filter((f) => {
+            const p = f.properties || {};
+            return !p.onGround
+                && (p.velocity || 0) >= MIN_PATH_VELOCITY_MS
+                && (p.altitude || 0) >= MIN_PATH_ALTITUDE_M
+                && Number.isFinite(p.heading);
+        })
         .map((f) => {
             const [lon, lat] = f.geometry.coordinates;
-            const end = projectForward(lon, lat, f.properties.heading || 0, f.properties.velocity * PATH_LOOKAHEAD_S);
+            const distanceM = Math.min(f.properties.velocity * PATH_LOOKAHEAD_S, MAX_PATH_DISTANCE_M);
+            const end = projectForward(lon, lat, f.properties.heading, distanceM);
             return {
                 type: 'Feature',
                 geometry: { type: 'LineString', coordinates: [[lon, lat], end] },
@@ -51,6 +62,9 @@ const buildFlightPaths = (flights) => {
         });
     return { type: 'FeatureCollection', features };
 };
+
+const MAP_MIN_ZOOM = 2.5;
+const MAP_MAX_ZOOM = 18;
 
 const STRATEGIC_ZONES = {
     type: 'FeatureCollection',
@@ -411,6 +425,29 @@ const MapContainer = ({
     const [cursor, setCursor] = useState(null);
     const [copied, setCopied] = useState(false);
     const [mapIconsReady, setMapIconsReady] = useState(false);
+    const [rainviewerTiles, setRainviewerTiles] = useState(null);
+
+    const handleMove = useCallback((event) => {
+        const vs = event.viewState;
+        onMove({
+            ...vs,
+            zoom: Math.min(Math.max(vs.zoom, MAP_MIN_ZOOM), MAP_MAX_ZOOM)
+        });
+    }, [onMove]);
+
+    const flightsLayerActive = activeLayers.includes('flights');
+    const weatherLayerActive = activeLayers.includes('weather');
+
+    useEffect(() => {
+        if (!weatherLayerActive) return undefined;
+        let cancelled = false;
+        fetchRainviewerTiles()
+            .then((payload) => {
+                if (!cancelled && payload?.tiles?.length) setRainviewerTiles(payload);
+            })
+            .catch(() => { /* radar overlay optional */ });
+        return () => { cancelled = true; };
+    }, [weatherLayerActive]);
 
     // Wire MapLibre's runtime error events. react-map-gl's <Map onError> only
     // surfaces some errors; the underlying map.on('error') is the canonical hook
@@ -573,7 +610,8 @@ const MapContainer = ({
     const flightPaths = useMemo(() => buildFlightPaths(flightsData), [flightsData]);
     const flightCount = flightsData?.features?.length ?? 0;
     const vesselsData = vesselsResource.data;
-    const flightsLayerActive = activeLayers.includes('flights');
+    const vesselCount = vesselsData?.features?.length ?? 0;
+    const vesselsNeedKey = vesselsData?.meta?.requiresKey;
 
     useEffect(() => {
         onFlightCountChange?.(flightsLayerActive ? flightCount : 0);
@@ -629,13 +667,15 @@ const MapContainer = ({
             <Map
                 ref={mapRef}
                 mapLib={maplibregl}
-                minZoom={2.5}
+                minZoom={MAP_MIN_ZOOM}
+                maxZoom={MAP_MAX_ZOOM}
+                renderWorldCopies={false}
                 maxPitch={60}
                 pitchWithRotate
                 dragRotate
                 touchZoomRotate
                 {...viewState}
-                onMove={(event) => onMove(event.viewState)}
+                onMove={handleMove}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
                 style={{ width: '100%', height: '100%' }}
@@ -795,16 +835,18 @@ const MapContainer = ({
                     </>
                 )}
 
-                {activeLayers.includes('weather') && (
+                {activeLayers.includes('weather') && rainviewerTiles?.tiles?.length > 0 && (
                     <Source
                         id="rainviewer"
                         type="raster"
-                        tiles={['https://tilecache.rainviewer.com/v2/radar/nowcast/256/{z}/{x}/{y}/2/1_1.png']}
+                        tiles={rainviewerTiles.tiles}
                         tileSize={256}
+                        maxzoom={rainviewerTiles.maxzoom || 12}
                     >
                         <Layer
                             id="rainviewer-layer"
                             type="raster"
+                            maxzoom={rainviewerTiles.maxzoom || 12}
                             paint={{ 'raster-opacity': 0.42 }}
                         />
                     </Source>
@@ -847,6 +889,7 @@ const MapContainer = ({
                             <Layer
                                 id={`${eoLayer.id}-layer`}
                                 type="raster"
+                                maxzoom={eoLayer.maxzoom || 8}
                                 paint={{ 'raster-opacity': eoLayer.opacity || 0.6 }}
                             />
                         </Source>
@@ -1040,8 +1083,8 @@ const MapContainer = ({
                                     ['==', ['get', 'military'], true], '#f59e0b',
                                     '#58a6ff'
                                 ],
-                                'line-width': ['interpolate', ['linear'], ['zoom'], 3, 1.2, 6, 2, 10, 3],
-                                'line-opacity': 0.78
+                                'line-width': ['interpolate', ['linear'], ['zoom'], 3, 0.8, 6, 1.4, 10, 2],
+                                'line-opacity': ['interpolate', ['linear'], ['zoom'], 3, 0.45, 6, 0.65, 10, 0.78]
                             }}
                         />
                     </Source>
@@ -1310,8 +1353,29 @@ const MapContainer = ({
                     </div>
                     <div className="map-legend-item">
                         <span className="map-legend-line" style={{ background: '#f59e0b' }} />
-                        <span>Heading vectors · 10 min look-ahead</span>
+                        <span>Heading vectors · 3 min look-ahead</span>
                     </div>
+                </div>
+            )}
+
+            {activeLayers.includes('vessels') && (
+                <div
+                    className="map-legend"
+                    style={{ top: flightsLayerActive && flightCount > 0 ? 88 : 12, bottom: 'auto', right: 10, left: 'auto' }}
+                    aria-live="polite"
+                >
+                    <div className="map-legend-title">SHIP TRACKING</div>
+                    {vesselCount > 0 ? (
+                        <div className="map-legend-item">
+                            <span className="map-legend-line" style={{ background: '#f59e0b' }} />
+                            <span>{vesselCount.toLocaleString()} vessels · aisstream.io AIS</span>
+                        </div>
+                    ) : (
+                        <div className="map-legend-item">
+                            <span className="map-legend-line" style={{ background: 'rgba(245,158,11,0.35)' }} />
+                            <span>{vesselsNeedKey ? 'AIS key required · aisstream.io' : 'Awaiting AIS feed…'}</span>
+                        </div>
+                    )}
                 </div>
             )}
 

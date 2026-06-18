@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Layers, Activity, CloudRain, Flame, AlertTriangle, Wind, Zap, Building2, Plane } from 'lucide-react';
+import { Layers, Activity, CloudRain, Flame, AlertTriangle, Wind, Zap, Building2, Plane, Ship } from 'lucide-react';
 import CopernicusPreviewPanel from './CopernicusPreviewPanel';
 import SourceStack from './SourceStack';
 import { EO_TILE_LAYERS } from '../services/eoTiles';
@@ -74,6 +74,12 @@ const Sidebar = ({
             title: 'Flight Tracking',
             desc: 'airplanes.live ADS-B · heading vectors',
             icon: <Plane size={18} />
+        },
+        {
+            id: 'vessels',
+            title: 'Ship Tracking',
+            desc: 'AIS · straits & chokepoints worldwide',
+            icon: <Ship size={18} />
         }
     ];
     // Compact mono labels replace emoji on satellite layer chips — fits the tactical aesthetic

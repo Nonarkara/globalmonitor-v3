@@ -28,6 +28,8 @@ import { listPresets as listEvalscriptPresets } from './lib/evalscripts.mjs';
 import { probeCog } from './lib/cogReader.mjs';
 import { recordToSheets, recordEscalation, getRecordingHealth } from './lib/sheetsRecorder.mjs';
 import { ingestRegionalNews } from './lib/regionalNewsIngest.mjs';
+import { startAisStream, getVesselsGeoJson } from './lib/aisVessels.mjs';
+import { getRainviewerRadarTiles } from './lib/rainviewer.mjs';
 import {
     isSupabaseEnabled, getSupabaseStatusMessage,
     upsertAcledEvents, upsertFirmsHotspots, upsertMarketQuotes, upsertSentimentReadings
@@ -369,6 +371,26 @@ const server = http.createServer(async (request, response) => {
             return;
         }
 
+        if (url.pathname === '/api/vessels') {
+            const payload = getVesselsGeoJson();
+            json(response, 200, payload, {
+                status: payload.meta.connected ? 'live' : (payload.meta.requiresKey ? 'unconfigured' : 'stale'),
+                updatedAt: payload.meta.fetchedAt
+            });
+            return;
+        }
+
+        if (url.pathname === '/api/rainviewer') {
+            const result = await useCached(
+                'rainviewer:radar',
+                5 * 60 * 1000,
+                () => getRainviewerRadarTiles(),
+                (p) => Array.isArray(p?.tiles) && p.tiles.length > 0
+            );
+            json(response, 200, result.payload, result.meta);
+            return;
+        }
+
         if (url.pathname === '/api/acled') {
             const since = url.searchParams.get('since');
             const cacheKey = since ? `acled:middleeast:${since}` : 'acled:middleeast';
@@ -527,4 +549,5 @@ server.listen(PORT, HOST, () => {
     if (fs.existsSync(DIST_DIR)) {
         console.log(`Serving static files from ${DIST_DIR}`);
     }
+    startAisStream();
 });

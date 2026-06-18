@@ -216,7 +216,7 @@ export const EO_TILE_LAYERS = [
         group: 'satellite',
         icon: '🌧️',
         tiles: [
-            `https://tilecache.rainviewer.com/v2/radar/${Math.floor(Date.now() / 600000) * 600}/256/{z}/{x}/{y}/2/1_1.png`
+            'https://tilecache.rainviewer.com/v2/radar/644896ac8ee5/256/{z}/{x}/{y}/2/1_1.png'
         ],
         tileSize: 256,
         attribution: 'RainViewer',
