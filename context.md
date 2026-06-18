@@ -100,9 +100,18 @@ Pattern: extend [server/lib/supabase.mjs](server/lib/supabase.mjs) with an `upse
 
 ## Ship tracking (AIS)
 - Layer wired: toggle **Ship Tracking** in sidebar → `/api/vessels` → `server/lib/aisVessels.mjs` (WebSocket to aisstream.io)
+- **GitHub repo**: https://github.com/aisstream/aisstream — free global AIS WebSocket API (like airplanes-live for flights)
+- **Coverage**: worldwide bounding box `[-180,-90] → [180,90]` plus Hormuz/Malacca/Taiwan Strait supplements
 - **Requires env var**: `AISSTREAM_API_KEY` — free registration at https://aisstream.io/authenticate
+- Local: put key in `.env.local` (gitignored via `*.local`). Also in `shared/.secrets-backup/dashboards_2026-Dashboard_.env.local`
 - Without key: layer shows legend "AIS key required"; API returns empty FeatureCollection with `meta.requiresKey: true`
-- No other free live AIS REST source in stack; aisstream.io is the chosen provider
+- Default layers: flights + vessels both on at startup
+
+## Flight tracking (ADS-B)
+- **GitHub repo**: https://github.com/airplanes-live/api — free REST API, no key
+- **Coverage**: 15 overlapping 250 nm query points worldwide when `theater=global` or `theater=worldwide`
+- Endpoint: `GET /api/flights?theater=global` (default). Map always fetches global regardless of theater nav
+- Rate limit: 1 req/sec; server caches 2 min
 
 ## RainViewer radar (2026-06-18 fix)
 - Legacy URL `/v2/radar/nowcast/…` returns **404** → MapLibre grey "Zoom Level Not Supported" tiles when Weather layer on

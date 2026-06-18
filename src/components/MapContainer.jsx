@@ -579,8 +579,8 @@ const MapContainer = ({
         intervalMs: 10 * 60 * 1000,
         isUsable: hasFeatureData
     });
-    const flightsResource = useLiveResource(useCallback(() => fetchFlights(viewMode), [viewMode]), {
-        cacheKey: `map:flights:${viewMode}`,
+    const flightsResource = useLiveResource(useCallback(() => fetchFlights('global'), []), {
+        cacheKey: 'map:flights:global',
         enabled: activeLayers.includes('flights'),
         intervalMs: 2 * 60 * 1000,
         isUsable: hasFeatureData
@@ -1349,7 +1349,7 @@ const MapContainer = ({
                     <div className="map-legend-title">FLIGHT TRACKING</div>
                     <div className="map-legend-item">
                         <span className="map-legend-line" style={{ background: '#58a6ff' }} />
-                        <span>{flightCount.toLocaleString()} aircraft · airplanes.live ADS-B</span>
+                        <span>{flightCount.toLocaleString()} aircraft · worldwide ADS-B</span>
                     </div>
                     <div className="map-legend-item">
                         <span className="map-legend-line" style={{ background: '#f59e0b' }} />
@@ -1368,7 +1368,7 @@ const MapContainer = ({
                     {vesselCount > 0 ? (
                         <div className="map-legend-item">
                             <span className="map-legend-line" style={{ background: '#f59e0b' }} />
-                            <span>{vesselCount.toLocaleString()} vessels · aisstream.io AIS</span>
+                            <span>{vesselCount.toLocaleString()} vessels · worldwide AIS</span>
                         </div>
                     ) : (
                         <div className="map-legend-item">

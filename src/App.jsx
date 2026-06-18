@@ -51,7 +51,7 @@ import { useEscapeKey } from './hooks/useEscapeKey';
 import './styles/print.css';
 
 function App() {
-  const [activeLayers, setActiveLayers] = useState(['disasters', 'weather', 'economy', 'conflicts', 'aqi', 'firms', 'flights']);
+  const [activeLayers, setActiveLayers] = useState(['disasters', 'weather', 'economy', 'conflicts', 'aqi', 'firms', 'flights', 'vessels']);
   const [activeRegion, setActiveRegion] = useState('middleeast');
   const [selectedEvent, setSelectedEvent] = useState(null);
   // Three-way region nav: 'middleeast' | 'indopacific' | 'thailand'

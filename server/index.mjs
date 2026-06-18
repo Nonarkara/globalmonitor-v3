@@ -36,6 +36,25 @@ import {
 } from './lib/supabase.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT_DIR = path.resolve(__dirname, '..');
+
+const loadEnvFile = (filename) => {
+    const filePath = path.join(ROOT_DIR, filename);
+    if (!fs.existsSync(filePath)) return;
+    for (const line of fs.readFileSync(filePath, 'utf8').split('\n')) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        const eq = trimmed.indexOf('=');
+        if (eq < 0) continue;
+        const key = trimmed.slice(0, eq).trim();
+        const val = trimmed.slice(eq + 1).trim().replace(/^["']|["']$/g, '');
+        if (!process.env[key]) process.env[key] = val;
+    }
+};
+
+loadEnvFile('.env.local');
+loadEnvFile('.env');
+
 const DIST_DIR = path.resolve(__dirname, '..', 'dist');
 const PORT = Number(process.env.PORT || 4000);
 const cache = new Map();
@@ -360,12 +379,12 @@ const server = http.createServer(async (request, response) => {
         }
 
         if (url.pathname === '/api/flights') {
-            const theater = url.searchParams.get('theater') || 'middleeast';
+            const theater = url.searchParams.get('theater') || 'global';
             const result = await useCached(
                 `airplanes:${theater}`,
                 2 * 60 * 1000,
                 () => fetchFlightsPayload(theater),
-                (p) => p?.type === 'FeatureCollection'
+                (p) => p?.type === 'FeatureCollection' && p.features?.length > 0
             );
             json(response, 200, result.payload, result.meta);
             return;

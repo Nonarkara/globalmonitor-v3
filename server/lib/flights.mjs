@@ -4,7 +4,7 @@
 import { fetchAirplanesLivePayload } from './airplanesLive.mjs';
 import { fetchAviationEdgePayload } from './aviationEdge.mjs';
 
-export const fetchFlightsPayload = async (theater = 'middleeast') => {
+export const fetchFlightsPayload = async (theater = 'global') => {
     const primary = await fetchAirplanesLivePayload(theater);
     if (primary.features?.length > 0) return primary;
 

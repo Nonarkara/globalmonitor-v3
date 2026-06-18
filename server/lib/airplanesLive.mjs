@@ -5,9 +5,11 @@
  */
 
 const MAX_RADIUS_NM = 250;
-const REQUEST_GAP_MS = 1100;
+const REQUEST_GAP_MS = 1500;
 
 const THEATER_BOUNDS = {
+    global: { lamin: -90, lomin: -180, lamax: 90, lomax: 180 },
+    worldwide: { lamin: -90, lomin: -180, lamax: 90, lomax: 180 },
     middleeast: { lamin: 10, lomin: 24, lamax: 42, lomax: 65 },
     indopacific: { lamin: -10, lomin: 90, lamax: 25, lomax: 135 },
     thailand: { lamin: 5, lomin: 97, lamax: 21, lomax: 106 }
@@ -15,6 +17,19 @@ const THEATER_BOUNDS = {
 
 /** Overlapping 250 nm circles to cover each theater bbox. */
 const THEATER_QUERY_POINTS = {
+    global: [
+        { lat: 40.0, lon: -100.0 },  // North America
+        { lat: 51.0, lon: 0.0 },     // UK / Western Europe
+        { lat: 48.0, lon: 10.0 },    // Central Europe
+        { lat: 25.0, lon: 55.0 },    // Gulf / Middle East
+        { lat: 30.0, lon: 80.0 },    // South Asia
+        { lat: 35.0, lon: 135.0 },   // Japan
+        { lat: 20.0, lon: 110.0 },   // Southeast Asia
+        { lat: -25.0, lon: 135.0 },  // Australia
+        { lat: -15.0, lon: -50.0 },  // Brazil
+        { lat: -35.0, lon: 25.0 }    // South Africa
+    ],
+    worldwide: null, // alias → global
     middleeast: [
         { lat: 26.0, lon: 50.0 },  // Gulf
         { lat: 32.0, lon: 53.0 },  // Iran
@@ -35,9 +50,13 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const inBounds = (lat, lon, bounds) =>
     lat >= bounds.lamin && lat <= bounds.lamax && lon >= bounds.lomin && lon <= bounds.lomax;
 
-const fetchPoint = async (lat, lon) => {
+const fetchPoint = async (lat, lon, attempt = 0) => {
     const url = `https://api.airplanes.live/v2/point/${lat}/${lon}/${MAX_RADIUS_NM}`;
     const res = await fetch(url, { signal: AbortSignal.timeout(12000) });
+    if (res.status === 429 && attempt < 3) {
+        await sleep(1500 * (attempt + 1));
+        return fetchPoint(lat, lon, attempt + 1);
+    }
     if (!res.ok) throw new Error(`Airplanes.live ${res.status}`);
     const data = await res.json();
     return data.ac || [];
@@ -68,20 +87,31 @@ const toFeature = (ac) => {
     };
 };
 
-export const fetchAirplanesLivePayload = async (theater = 'middleeast') => {
-    const bounds = THEATER_BOUNDS[theater] || THEATER_BOUNDS.middleeast;
-    const points = THEATER_QUERY_POINTS[theater] || THEATER_QUERY_POINTS.middleeast;
+const resolveTheater = (theater) => {
+    if (theater === 'worldwide') return 'global';
+    return THEATER_BOUNDS[theater] ? theater : 'global';
+};
+
+export const fetchAirplanesLivePayload = async (theater = 'global') => {
+    const resolved = resolveTheater(theater);
+    const bounds = THEATER_BOUNDS[resolved];
+    const points = THEATER_QUERY_POINTS[resolved] || THEATER_QUERY_POINTS.global;
     const byHex = new Map();
+    const pointErrors = [];
 
     try {
         for (let i = 0; i < points.length; i++) {
             if (i > 0) await sleep(REQUEST_GAP_MS);
-            const aircraft = await fetchPoint(points[i].lat, points[i].lon);
-            for (const ac of aircraft) {
-                if (ac.lat == null || ac.lon == null) continue;
-                if (!inBounds(ac.lat, ac.lon, bounds)) continue;
-                const key = ac.hex || `${ac.lat},${ac.lon},${ac.flight || ''}`;
-                if (!byHex.has(key)) byHex.set(key, toFeature(ac));
+            try {
+                const aircraft = await fetchPoint(points[i].lat, points[i].lon);
+                for (const ac of aircraft) {
+                    if (ac.lat == null || ac.lon == null) continue;
+                    if (!inBounds(ac.lat, ac.lon, bounds)) continue;
+                    const key = ac.hex || `${ac.lat},${ac.lon},${ac.flight || ''}`;
+                    if (!byHex.has(key)) byHex.set(key, toFeature(ac));
+                }
+            } catch (pointErr) {
+                pointErrors.push(pointErr.message);
             }
         }
 
@@ -90,10 +120,12 @@ export const fetchAirplanesLivePayload = async (theater = 'middleeast') => {
             type: 'FeatureCollection',
             features,
             meta: {
-                theater,
+                theater: resolved,
                 count: features.length,
                 fetchedAt: new Date().toISOString(),
-                source: 'airplanes.live'
+                source: 'airplanes.live',
+                coverage: resolved === 'global' ? 'worldwide' : resolved,
+                ...(features.length === 0 && pointErrors.length ? { error: pointErrors[0] } : {})
             }
         };
     } catch (err) {
@@ -102,10 +134,11 @@ export const fetchAirplanesLivePayload = async (theater = 'middleeast') => {
             type: 'FeatureCollection',
             features: [],
             meta: {
-                theater,
+                theater: resolved,
                 count: 0,
                 fetchedAt: new Date().toISOString(),
                 source: 'airplanes.live',
+                coverage: resolved === 'global' ? 'worldwide' : resolved,
                 error: err.message
             }
         };

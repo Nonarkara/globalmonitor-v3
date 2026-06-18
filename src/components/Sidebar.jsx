@@ -72,13 +72,13 @@ const Sidebar = ({
         {
             id: 'flights',
             title: 'Flight Tracking',
-            desc: 'airplanes.live ADS-B · heading vectors',
+            desc: 'airplanes.live ADS-B · worldwide',
             icon: <Plane size={18} />
         },
         {
             id: 'vessels',
             title: 'Ship Tracking',
-            desc: 'AIS · straits & chokepoints worldwide',
+            desc: 'aisstream.io AIS · worldwide',
             icon: <Ship size={18} />
         }
     ];

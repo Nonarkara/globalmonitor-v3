@@ -1,45 +1,37 @@
 /**
  * AIS Vessel tracking via aisstream.io WebSocket.
- * Subscribes to key maritime chokepoints across all three theaters.
+ * Global AIS feed — all commercial vessels worldwide.
  * In-memory cache of vessel positions; prunes entries older than 30 minutes.
  *
- * Requires env: AISSTREAM_API_KEY
+ * Repo: https://github.com/aisstream/aisstream
+ * Requires env: AISSTREAM_API_KEY (free at https://aisstream.io/authenticate)
  */
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const WebSocket = require('ws');
 
-// Bounding boxes [SW_lon, SW_lat, NE_lon, NE_lat] for key straits across all theaters
-const STRAIT_BOXES = [
-    // Middle East
-    [55.0, 25.5,  57.5, 27.5],  // Strait of Hormuz
-    [42.5, 11.5,  44.0, 13.5],  // Bab-el-Mandeb
-    [29.5, 29.5,  33.0, 32.0],  // Suez Canal
-
-    // Indo-Pacific
+// Global bbox + regional supplements for dense chokepoints [minLon, minLat, maxLon, maxLat]
+const VESSEL_BOXES = [
+    [-180, -90, 180, 90],       // worldwide
+    [55.0, 25.5, 57.5, 27.5],   // Strait of Hormuz
+    [42.5, 11.5, 44.0, 13.5],   // Bab-el-Mandeb
     [100.0, 0.5, 104.5, 6.5],   // Strait of Malacca
     [118.5, 21.5, 122.5, 26.5], // Taiwan Strait
-    [115.0, 0.0, 118.5, 5.5],   // Strait of Lombok / Makassar
-    [124.0, 9.0, 127.5, 13.0],  // Luzon Strait (South China Sea north)
-    [141.0, 32.0, 142.5, 35.5], // Tsugaru Strait (Japan)
-
-    // Thailand region
-    [ 99.5,  5.5, 104.5,  9.5], // Gulf of Thailand entry / Malacca north
-    [100.2,  6.0, 101.0,  7.0], // Penang approaches
 ];
 
 // vessel_positions: Map<mmsi, { lon, lat, heading, speed, name, shipType, updatedAt }>
 const vessel_positions = new Map();
-const STALE_MS = 30 * 60 * 1000; // prune after 30 min
+const STALE_MS = 30 * 60 * 1000;
+const MAX_VESSELS = 8000;
 
 let ws_instance = null;
 let reconnect_timer = null;
 
 const SUBSCRIBE_MSG = () => ({
-    APIKey: process.env.AISSTREAM_API_KEY || '',
-    BoundingBoxes: STRAIT_BOXES.map(([minLon, minLat, maxLon, maxLat]) => [
-        [minLat, minLon],
-        [maxLat, maxLon]
+    APIkey: process.env.AISSTREAM_API_KEY || '',
+    BoundingBoxes: VESSEL_BOXES.map(([minLon, minLat, maxLon, maxLat]) => [
+        [minLon, minLat],
+        [maxLon, maxLat]
     ]),
     FilterMessageTypes: ['PositionReport', 'ShipStaticData'],
 });
@@ -48,6 +40,11 @@ function prune() {
     const cutoff = Date.now() - STALE_MS;
     for (const [mmsi, v] of vessel_positions) {
         if (v.updatedAt < cutoff) vessel_positions.delete(mmsi);
+    }
+    if (vessel_positions.size > MAX_VESSELS) {
+        const sorted = [...vessel_positions.entries()].sort((a, b) => a[1].updatedAt - b[1].updatedAt);
+        const excess = vessel_positions.size - MAX_VESSELS;
+        for (let i = 0; i < excess; i++) vessel_positions.delete(sorted[i][0]);
     }
 }
 
@@ -74,7 +71,7 @@ function connect() {
                     lon: pr.Longitude ?? meta.longitude ?? null,
                     lat: pr.Latitude ?? meta.latitude ?? null,
                     heading: pr.TrueHeading !== 511 ? (pr.TrueHeading || 0) : (pr.Cog || 0),
-                    speed: pr.Sog || 0,     // knots
+                    speed: pr.Sog || 0,
                     name: meta.ShipName?.trim() || mmsi,
                     shipType: vessel_positions.get(mmsi)?.shipType || 0,
                     updatedAt: Date.now(),
@@ -94,7 +91,6 @@ function connect() {
 
     ws.on('close', () => {
         ws_instance = null;
-        // reconnect after 15s
         reconnect_timer = setTimeout(connect, 15000);
     });
 
@@ -109,7 +105,6 @@ export function startAisStream() {
         return;
     }
     connect();
-    // Prune stale entries every 5 minutes
     setInterval(prune, 5 * 60 * 1000);
 }
 
@@ -127,7 +122,6 @@ export function getVesselsGeoJson() {
                 heading: v.heading,
                 speed: v.speed,
                 shipType: v.shipType,
-                // ponytail: colour bucket by ship type for layer paint
                 typeGroup: v.shipType >= 70 && v.shipType <= 79 ? 'cargo'
                     : v.shipType >= 80 && v.shipType <= 89 ? 'tanker'
                     : v.shipType === 0 ? 'unknown' : 'other',
@@ -143,6 +137,7 @@ export function getVesselsGeoJson() {
             fetchedAt: new Date().toISOString(),
             source: hasKey ? 'aisstream.io' : 'none',
             connected: ws_instance?.readyState === 1,
+            coverage: 'global',
             requiresKey: !hasKey,
             keyHint: hasKey ? null : 'Set AISSTREAM_API_KEY (free at aisstream.io/authenticate) to enable live AIS'
         }
