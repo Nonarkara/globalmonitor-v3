@@ -21,6 +21,7 @@ import { getRegion } from '../data/regions.js';
 import { setFlightCount } from '../services/flightCountBus.js';
 import { setVesselCount } from '../services/vesselCountBus.js';
 import { useInterpolatedTraffic } from '../hooks/useInterpolatedTraffic.js';
+import { loadTrafficIcons, FLIGHT_ICON_IMAGE, VESSEL_ICON_IMAGE } from '../services/mapTrafficIcons.js';
 
 // ponytail: no route/origin-destination API exists (airplanes.live gives position + track + speed
 // only), so a "flight path" is a short heading projection — not a route spiderweb.
@@ -502,48 +503,9 @@ const MapContainer = ({
         const map = mapRef.current?.getMap?.();
         if (!map) return;
 
-        const PLANE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><g fill="#38bdf8"><ellipse cx="16" cy="16" rx="3" ry="12"/><path d="M2,13 L30,13 L16,20 Z"/><path d="M11,27 L16,24 L21,27 L16,30 Z"/></g></svg>`;
-        const vesselTriangleSvg = (fill) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><polygon points="8,1 15,14 1,14" fill="${fill}" stroke="rgba(255,255,255,0.55)" stroke-width="0.6"/></svg>`;
-        const VESSEL_ICONS = [
-            ['vessel-cargo', vesselTriangleSvg('#22c55e')],
-            ['vessel-tanker', vesselTriangleSvg('#ef4444')],
-            ['vessel-passenger', vesselTriangleSvg('#3b82f6')],
-            ['vessel-fishing', vesselTriangleSvg('#f59e0b')],
-            ['vessel-tug', vesselTriangleSvg('#ea580c')],
-            ['vessel-pleasure', vesselTriangleSvg('#a855f7')],
-            ['vessel-other', vesselTriangleSvg('#94a3b8')],
-        ];
-
-        let pending = 0;
-        let loaded = 0;
-        const markIconLoaded = () => {
-            loaded += 1;
-            if (loaded >= pending) {
-                setMapIconsReady(true);
-                try { map.triggerRepaint(); } catch { /* ignore */ }
-            }
-        };
-
-        const addSvgImage = (name, svg, w, h) => {
-            pending += 1;
-            try { if (map.hasImage(name)) map.removeImage(name); } catch { /* ignore */ }
-            const img = new Image(w, h);
-            img.onload = () => {
-                try { map.addImage(name, img); } catch { /* already added */ }
-                markIconLoaded();
-            };
-            img.onerror = markIconLoaded;
-            img.src = `data:image/svg+xml,${encodeURIComponent(svg)}`;
-        };
-
         const loadIcons = () => {
-            pending = 0;
-            loaded = 0;
             setMapIconsReady(false);
-            addSvgImage('plane-icon', PLANE_SVG, 32, 32);
-            for (const [name, svg] of VESSEL_ICONS) {
-                addSvgImage(name, svg, 16, 16);
-            }
+            loadTrafficIcons(map, () => setMapIconsReady(true));
         };
 
         if (map.isStyleLoaded()) loadIcons();
@@ -1160,25 +1122,24 @@ const MapContainer = ({
                         <Layer
                             id="flights-glow"
                             type="circle"
+                            maxzoom={8}
                             paint={{
                                 'circle-color': [
                                     'case',
                                     ['==', ['get', 'military'], true], '#f59e0b',
                                     '#58a6ff'
                                 ],
-                                'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, 5, 4, 7, 7, 9, 10, 11],
-                                'circle-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.72, 6, 0.85, 10, 0.88],
-                                'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 2, 1.2, 6, 1.8, 10, 2],
-                                'circle-stroke-color': '#ffffff',
-                                'circle-stroke-opacity': 0.85
+                                'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, 4, 4, 6, 7, 7],
+                                'circle-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.22, 5, 0.18, 7, 0.1],
+                                'circle-blur': 0.65,
                             }}
                         />
                         <Layer
                             id="flights-icons"
                             type="symbol"
                             layout={{
-                                'icon-image': 'plane-icon',
-                                'icon-size': ['interpolate', ['linear'], ['zoom'], 2, 0.85, 4, 1.0, 7, 1.2, 10, 1.4],
+                                'icon-image': FLIGHT_ICON_IMAGE,
+                                'icon-size': ['interpolate', ['linear'], ['zoom'], 2, 0.72, 3, 0.85, 5, 1.0, 7, 1.15, 10, 1.35],
                                 'icon-rotate': ['get', 'heading'],
                                 'icon-rotation-alignment': 'map',
                                 'icon-allow-overlap': true,
@@ -1186,7 +1147,7 @@ const MapContainer = ({
                                 'icon-pitch-alignment': 'map',
                             }}
                             paint={{
-                                'icon-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.82, 6, 0.92, 10, 0.98]
+                                'icon-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.88, 6, 0.95, 10, 1]
                             }}
                         />
                     </Source>
@@ -1267,6 +1228,7 @@ const MapContainer = ({
                         <Layer
                             id="vessels-glow"
                             type="circle"
+                            maxzoom={8}
                             paint={{
                                 'circle-color': [
                                     'match', ['get', 'category'],
@@ -1278,28 +1240,17 @@ const MapContainer = ({
                                     'pleasure', '#a855f7',
                                     '#94a3b8'
                                 ],
-                                'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, 3.5, 4, 5, 7, 6.5, 10, 8],
-                                'circle-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.55, 6, 0.68, 10, 0.75],
-                                'circle-stroke-width': 0.8,
-                                'circle-stroke-color': 'rgba(255,255,255,0.5)',
-                                'circle-stroke-opacity': 0.6
+                                'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, 3, 4, 4.5, 7, 5.5],
+                                'circle-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.2, 5, 0.16, 7, 0.08],
+                                'circle-blur': 0.65,
                             }}
                         />
                         <Layer
                             id="vessels-icons"
                             type="symbol"
                             layout={{
-                                'icon-image': [
-                                    'match', ['get', 'category'],
-                                    'cargo', 'vessel-cargo',
-                                    'tanker', 'vessel-tanker',
-                                    'passenger', 'vessel-passenger',
-                                    'fishing', 'vessel-fishing',
-                                    'tug', 'vessel-tug',
-                                    'pleasure', 'vessel-pleasure',
-                                    'vessel-other'
-                                ],
-                                'icon-size': ['interpolate', ['linear'], ['zoom'], 2, 0.62, 4, 0.78, 7, 0.92, 10, 1.05],
+                                'icon-image': VESSEL_ICON_IMAGE,
+                                'icon-size': ['interpolate', ['linear'], ['zoom'], 2, 0.68, 3, 0.78, 5, 0.9, 7, 1.0, 10, 1.12],
                                 'icon-rotate': ['get', 'heading'],
                                 'icon-rotation-alignment': 'map',
                                 'icon-allow-overlap': true,
@@ -1312,7 +1263,7 @@ const MapContainer = ({
                                 'text-allow-overlap': false,
                             }}
                             paint={{
-                                'icon-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.78, 6, 0.88, 10, 0.94],
+                                'icon-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.86, 6, 0.93, 10, 0.98],
                                 'text-color': '#e2e8f0',
                                 'text-halo-color': 'rgba(0,0,0,0.75)',
                                 'text-halo-width': 1,
@@ -1488,7 +1439,7 @@ const MapContainer = ({
                     {flightsLayerActive && flightCount > 0 && (
                         <div className="map-legend-item">
                             <span className="map-legend-line" style={{ background: '#f59e0b' }} />
-                            <span>Cyan ✈ · colored ▲ · 3 min vectors</span>
+                            <span>Cyan/amber planes · hull icons · 3 min vectors</span>
                         </div>
                     )}
                 </div>
