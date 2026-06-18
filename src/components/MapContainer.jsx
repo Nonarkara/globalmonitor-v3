@@ -396,7 +396,8 @@ const MapContainer = ({
     showCopernicusOverlay,
     showStrategicContext,
     viewMode = 'middleeast',
-    onRegionDotClick
+    onRegionDotClick,
+    onFlightCountChange
 }) => {
     const region = getRegion(viewMode);
     const regionDots = region.dots;
@@ -518,6 +519,13 @@ const MapContainer = ({
     const infraData = infraResource.data;
     const flightsData = flightsResource.data;
     const flightPaths = useMemo(() => buildFlightPaths(flightsData), [flightsData]);
+    const flightCount = flightsData?.features?.length ?? 0;
+    const flightsLayerActive = activeLayers.includes('flights');
+
+    useEffect(() => {
+        onFlightCountChange?.(flightsLayerActive ? flightCount : 0);
+    }, [flightsLayerActive, flightCount, onFlightCountChange]);
+
     const acledData = acledResource.data;
     const publicSentinelLayerId = getPublicSentinelLayerId(copernicusMode);
     const publicSentinelLayer = getEoLayerById(publicSentinelLayerId);
@@ -967,47 +975,63 @@ const MapContainer = ({
                 )}
 
                 {/* Flight path vectors — heading look-ahead, drawn under the position dots */}
-                {activeLayers.includes('flights') && flightPaths?.features?.length > 0 && (
+                {flightsLayerActive && flightPaths?.features?.length > 0 && (
                     <Source id="flight-paths" type="geojson" data={flightPaths}>
                         <Layer
                             id="flight-paths-lines"
                             type="line"
-                            layout={{ 'line-cap': 'round' }}
+                            layout={{ 'line-cap': 'round', 'line-join': 'round' }}
                             paint={{
                                 'line-color': [
                                     'case',
                                     ['==', ['get', 'military'], true], '#f59e0b',
-                                    '#38bdf8'
+                                    '#58a6ff'
                                 ],
-                                'line-width': ['interpolate', ['linear'], ['zoom'], 3, 0.6, 8, 1.5],
-                                'line-opacity': 0.35
+                                'line-width': ['interpolate', ['linear'], ['zoom'], 3, 1.2, 6, 2, 10, 3],
+                                'line-opacity': 0.78
                             }}
                         />
                     </Source>
                 )}
 
-                {/* Flights Layer */}
-                {activeLayers.includes('flights') && flightsData?.features?.length > 0 && (
+                {/* Flights Layer — glow circle + rotated plane icon for ADS-B positions */}
+                {flightsLayerActive && flightCount > 0 && (
                     <Source id="flights-data" type="geojson" data={flightsData}>
+                        <Layer
+                            id="flights-glow"
+                            type="circle"
+                            paint={{
+                                'circle-color': [
+                                    'case',
+                                    ['==', ['get', 'military'], true], '#f59e0b',
+                                    '#58a6ff'
+                                ],
+                                'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 5, 6, 7, 10, 9],
+                                'circle-opacity': 0.72,
+                                'circle-stroke-width': 1.5,
+                                'circle-stroke-color': '#ffffff',
+                                'circle-stroke-opacity': 0.85
+                            }}
+                        />
                         <Layer
                             id="flights-icons"
                             type="symbol"
                             layout={{
                                 'text-field': '✈',
-                                'text-size': ['interpolate', ['linear'], ['zoom'], 3, 10, 8, 16],
+                                'text-size': ['interpolate', ['linear'], ['zoom'], 3, 14, 6, 18, 10, 22],
                                 'text-rotate': ['get', 'heading'],
                                 'text-rotation-alignment': 'map',
                                 'text-allow-overlap': true,
                                 'text-ignore-placement': true
                             }}
                             paint={{
-                                'text-color': [
+                                'text-color': '#ffffff',
+                                'text-halo-color': [
                                     'case',
-                                    ['==', ['get', 'military'], true], '#f59e0b',
-                                    '#38bdf8'
+                                    ['==', ['get', 'military'], true], '#92400e',
+                                    '#0c4a6e'
                                 ],
-                                'text-halo-color': 'rgba(5, 14, 32, 0.8)',
-                                'text-halo-width': 1
+                                'text-halo-width': 2
                             }}
                         />
                     </Source>
@@ -1194,6 +1218,24 @@ const MapContainer = ({
                 >
                     <AlertTriangle size={11} />
                     <span>{failedSources.size} layer{failedSources.size === 1 ? '' : 's'} unavailable</span>
+                </div>
+            )}
+
+            {flightsLayerActive && flightCount > 0 && (
+                <div
+                    className="map-legend"
+                    style={{ top: 12, bottom: 'auto', right: 10, left: 'auto' }}
+                    aria-live="polite"
+                >
+                    <div className="map-legend-title">FLIGHT TRACKING</div>
+                    <div className="map-legend-item">
+                        <span className="map-legend-line" style={{ background: '#58a6ff' }} />
+                        <span>{flightCount.toLocaleString()} aircraft · airplanes.live ADS-B</span>
+                    </div>
+                    <div className="map-legend-item">
+                        <span className="map-legend-line" style={{ background: '#f59e0b' }} />
+                        <span>Heading vectors · 10 min look-ahead</span>
+                    </div>
                 </div>
             )}
 

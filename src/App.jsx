@@ -69,6 +69,7 @@ function App() {
   const [copernicusMode, setCopernicusMode] = useState('true-color');
   const [showCopernicusOverlay, setShowCopernicusOverlay] = useState(true);
   const [showStrategicContext, setShowStrategicContext] = useState(false);
+  const [flightCount, setFlightCount] = useState(0);
 
   const [visitorCount, setVisitorCount] = useState(BASE_COUNT);
   useEffect(() => { getVisitorCount().then(setVisitorCount); }, []);
@@ -182,6 +183,7 @@ function App() {
                 }));
               }
             }}
+            onFlightCountChange={setFlightCount}
           />
         </ErrorBoundary>
 
@@ -315,6 +317,7 @@ function App() {
               showStrategicContext={showStrategicContext}
               setShowStrategicContext={setShowStrategicContext}
               copernicusResource={copernicusResource}
+              flightCount={flightCount}
             />
           </ErrorBoundary>
           {viewMode === 'middleeast' && (

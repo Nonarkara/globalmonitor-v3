@@ -15,7 +15,8 @@ const Sidebar = ({
     setShowCopernicusOverlay,
     showStrategicContext,
     setShowStrategicContext,
-    copernicusResource
+    copernicusResource,
+    flightCount = 0
 }) => {
     const contentRef = useRef(null);
 
@@ -71,7 +72,7 @@ const Sidebar = ({
         {
             id: 'flights',
             title: 'Flight Tracking',
-            desc: 'ADS-B positions + heading vectors',
+            desc: 'airplanes.live ADS-B · heading vectors',
             icon: <Plane size={18} />
         }
     ];
@@ -147,6 +148,9 @@ const Sidebar = ({
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {layerConfigs.map((layer) => {
                             const isActive = activeLayers.includes(layer.id);
+                            const layerDesc = layer.id === 'flights' && isActive && flightCount > 0
+                                ? `${flightCount.toLocaleString()} aircraft tracked · airplanes.live ADS-B`
+                                : layer.desc;
                             return (
                                 <div
                                     key={layer.id}
@@ -158,7 +162,7 @@ const Sidebar = ({
                                     </div>
                                     <div className="layer-info">
                                         <span className="layer-title">{layer.title}</span>
-                                        <span className="layer-desc">{layer.desc}</span>
+                                        <span className="layer-desc">{layerDesc}</span>
                                     </div>
                                 </div>
                             );
