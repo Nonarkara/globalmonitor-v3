@@ -1,12 +1,17 @@
 /**
- * AIS Vessel tracking via aisstream.io WebSocket.
- * Global AIS feed — all commercial vessels worldwide.
- * In-memory cache of vessel positions; prunes entries older than 30 minutes.
+ * AIS Vessel tracking via aisstream.io WebSocket + VesselFinder fleet overlay.
+ * Global AIS feed — all commercial vessels worldwide (aisstream).
+ * VesselFinder vesselslist supplements user's tracked fleet (when vessels added).
  *
  * Repo: https://github.com/aisstream/aisstream
  * Requires env: AISSTREAM_API_KEY (free at https://aisstream.io/authenticate)
+ * Optional: VESSELFINDER_FLEET_KEY, VESSELFINDER_API_KEY (https://api.vesselfinder.com/docs/)
  */
 import { createRequire } from 'node:module';
+import { mapShipTypeCategory } from './shipTypes.mjs';
+import { getFleetFeatures, getVesselFinderConfig, startVesselFinderRefresh } from './vesselFinder.mjs';
+
+export { startVesselFinderRefresh, mapShipTypeCategory };
 const require = createRequire(import.meta.url);
 const WebSocket = require('ws');
 
@@ -18,20 +23,6 @@ const VESSEL_BOXES = [
     [100.0, 0.5, 104.5, 6.5],   // Strait of Malacca
     [118.5, 21.5, 122.5, 26.5], // Taiwan Strait
 ];
-
-/** AIS ship type (ITU-R M.1371) → VesselFinder-style category */
-export function mapShipTypeCategory(shipType) {
-    const t = Number(shipType) || 0;
-    if (t >= 70 && t <= 79) return 'cargo';
-    if (t >= 80 && t <= 89) return 'tanker';
-    if (t >= 60 && t <= 69) return 'passenger';
-    if (t === 37 || t === 36) return 'pleasure';
-    if (t === 30 || t === 33 || t === 34) return 'fishing';
-    if (t === 31 || t === 32 || t === 52 || t === 53) return 'tug';
-    if (t >= 30 && t <= 39) return 'fishing';
-    if (t >= 50 && t <= 59) return 'tug';
-    return 'other';
-}
 
 // vessel_positions: Map<mmsi, { lon, lat, heading, course, speed, name, shipType, updatedAt }>
 const vessel_positions = new Map();
@@ -130,8 +121,20 @@ export function startAisStream() {
 export function getVesselsGeoJson() {
     prune();
     const features = [];
+    const seen = new Set();
+
+    // VesselFinder fleet overlay first (user-tracked vessels)
+    const fleet = getFleetFeatures();
+    for (const f of fleet) {
+        const mmsi = f.properties?.mmsi;
+        if (!mmsi) continue;
+        seen.add(mmsi);
+        features.push(f);
+    }
+
     for (const [mmsi, v] of vessel_positions) {
         if (v.lon == null || v.lat == null) continue;
+        if (seen.has(mmsi)) continue; // fleet entry wins
         features.push({
             type: 'Feature',
             geometry: { type: 'Point', coordinates: [v.lon, v.lat] },
@@ -143,21 +146,42 @@ export function getVesselsGeoJson() {
                 speed: v.speed,
                 shipType: v.shipType,
                 category: mapShipTypeCategory(v.shipType),
+                source: 'aisstream.io',
             }
         });
     }
-    const hasKey = Boolean(process.env.AISSTREAM_API_KEY);
+
+    const hasAisKey = Boolean(process.env.AISSTREAM_API_KEY);
+    const vfConfig = getVesselFinderConfig();
+    const sources = [];
+    if (hasAisKey) sources.push('aisstream.io');
+    if (vfConfig.fleetKey) sources.push('vesselfinder-fleet');
+
+    const fleetEmpty = vfConfig.fleetKey && fleet.length === 0;
+
     return {
         type: 'FeatureCollection',
         features,
         meta: {
             count: features.length,
             fetchedAt: new Date().toISOString(),
-            source: hasKey ? 'aisstream.io' : 'none',
+            source: sources.length ? sources.join('+') : 'none',
+            sources,
             connected: ws_instance?.readyState === 1,
-            coverage: 'global',
-            requiresKey: !hasKey,
-            keyHint: hasKey ? null : 'Set AISSTREAM_API_KEY (free at aisstream.io/authenticate) to enable live AIS'
+            coverage: hasAisKey ? 'global' : (vfConfig.fleetKey ? 'fleet-only' : 'none'),
+            requiresKey: !hasAisKey && !vfConfig.fleetKey,
+            vesselfinder: {
+                fleetKey: vfConfig.fleetKey,
+                apiKey: vfConfig.apiKey,
+                fleetCount: fleet.length,
+                fleetEmpty,
+                fleetHint: fleetEmpty
+                    ? 'Add vessels to your VesselFinder fleet (up to 10 on free plan) for tracked overlay'
+                    : null,
+                livedataNote: 'Worldwide area queries (LiveData) require paid VesselFinder subscription — global map uses aisstream.io',
+            },
+            keyHint: (hasAisKey || vfConfig.fleetKey) ? null
+                : 'Set AISSTREAM_API_KEY (aisstream.io) and/or VESSELFINDER_FLEET_KEY (vesselfinder.com)',
         }
     };
 }

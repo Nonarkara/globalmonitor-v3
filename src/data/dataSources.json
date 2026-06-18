@@ -156,6 +156,32 @@
     "apiEndpoint": "/api/markets"
   },
   {
+    "id": "aisstream",
+    "name": "AISStream",
+    "fullName": "aisstream.io Global AIS WebSocket",
+    "type": "Vessel Tracking",
+    "url": "https://aisstream.io",
+    "reliability": 8,
+    "updateFrequency": "Real-time AIS (WebSocket)",
+    "cacheTTL": "30 minutes (in-memory prune)",
+    "methodology": "Global AIS position reports and ship static data via WebSocket subscription. Worldwide bounding box with chokepoint supplements.",
+    "coverage": "Global — all commercial vessels in subscribed areas",
+    "apiEndpoint": "/api/vessels"
+  },
+  {
+    "id": "vesselfinder",
+    "name": "VesselFinder",
+    "fullName": "VesselFinder AIS API",
+    "type": "Vessel Tracking (Fleet Overlay)",
+    "url": "https://api.vesselfinder.com/docs/",
+    "reliability": 9,
+    "updateFrequency": "Every 10 minutes (cached)",
+    "cacheTTL": "10 minutes",
+    "methodology": "VesselsList subscription endpoint for user-defined fleet (IMO/MMSI). Credit-based /vessels and area LiveData require paid plans — not used for global map.",
+    "coverage": "Fleet-only overlay (up to 10 vessels on free plan); global map remains aisstream.io",
+    "apiEndpoint": "/api/vessels"
+  },
+  {
     "id": "curated",
     "name": "Curated Intelligence",
     "fullName": "Manually Verified Curated Data",

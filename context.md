@@ -1,6 +1,6 @@
 # Globalmonitor (v3-global) — Live Context
 
-Last updated: 2026-06-18.
+Last updated: 2026-06-19.
 
 ## VERIFY BEFORE RECOMMEND (mandatory for all agents)
 
@@ -99,12 +99,18 @@ All tables have public-read RLS policies. Writes restricted to `service_role`.
 Pattern: extend [server/lib/supabase.mjs](server/lib/supabase.mjs) with an `upsertX` function, write an ingestion lib that calls it + `recordIngestionRun()`, add the route to `server/index.mjs`. Existing loaders (FIRMS, ACLED, weather) are good next candidates — they already have `useCached` wrappers in `index.mjs`; piping the cached payload through `upsert` is a one-liner per loader.
 
 ## Ship tracking (AIS)
-- Layer wired: toggle **Ship Tracking** in sidebar → `/api/vessels` → `server/lib/aisVessels.mjs` (WebSocket to aisstream.io)
-- **GitHub repo**: https://github.com/aisstream/aisstream — free global AIS WebSocket API (like airplanes-live for flights)
-- **Coverage**: worldwide bounding box `[-180,-90] → [180,90]` plus Hormuz/Malacca/Taiwan Strait supplements
-- **Requires env var**: `AISSTREAM_API_KEY` — free registration at https://aisstream.io/authenticate
-- Local: `AISSTREAM_API_KEY` in `.env.local` (gitignored via `*.local`) — **configured 2026-06-19**; restart `npm run dev:stack`, allow ~60s AIS WebSocket warmup before `/api/vessels` fills
-- Without key: layer shows legend "AIS key required"; API returns empty FeatureCollection with `meta.requiresKey: true`
+- Layer wired: toggle **Ship Tracking** in sidebar → `/api/vessels` → merged feed
+- **Primary (global)**: `server/lib/aisVessels.mjs` — WebSocket to aisstream.io — worldwide coverage
+- **Fleet overlay**: `server/lib/vesselFinder.mjs` — VesselFinder `vesselslist` API for user-tracked fleet
+- **GitHub repo (aisstream)**: https://github.com/aisstream/aisstream — free global AIS WebSocket API
+- **VesselFinder docs**: https://api.vesselfinder.com/docs/ — `vesselslist` (fleet key), `vessels` (credit key), `livedata` (paid area subscription)
+- **Coverage**: aisstream worldwide `[-180,-90] → [180,90]`; VesselFinder free tier = fleet only (0–10 vessels), NOT worldwide LiveData
+- **Requires env vars**:
+  - `AISSTREAM_API_KEY` — free at https://aisstream.io/authenticate (global map)
+  - `VESSELFINDER_FLEET_KEY` — fleet subscription key for vesselslist overlay
+  - `VESSELFINDER_API_KEY` — credit-based container key (per-vessel lookups; optional, not used for map)
+- Local: keys in `.env.local` (gitignored via `*.local`) — restart `npm run dev:stack`, allow ~60s AIS WebSocket warmup
+- Without keys: layer shows legend "AIS key required"; API returns empty FeatureCollection with `meta.requiresKey: true`
 - Default layers: flights + vessels both on at startup
 
 ## Flight tracking (ADS-B)

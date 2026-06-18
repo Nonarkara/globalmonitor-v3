@@ -613,6 +613,7 @@ const MapContainer = ({
     const flightCount = flightsData?.features?.length ?? 0;
     const vesselCount = vesselsData?.features?.length ?? 0;
     const vesselsNeedKey = vesselsData?.meta?.requiresKey;
+    const vesselSourceLabel = vesselsData?.meta?.source?.replace('aisstream.io', 'AIS')?.replace('vesselfinder-fleet', 'fleet') || 'AIS';
     const vesselsLayerActive = activeLayers.includes('vessels');
 
     useEffect(() => {
@@ -1440,7 +1441,7 @@ const MapContainer = ({
                     />
                     <span style={{ fontVariantNumeric: 'tabular-nums', minWidth: '14ch', display: 'inline-block' }}>
                         {vesselCount > 0
-                            ? `${vesselCount.toLocaleString()} vessels · AIS`
+                            ? `${vesselCount.toLocaleString()} vessels · ${vesselSourceLabel}`
                             : vesselsNeedKey ? 'AIS key required' : 'Awaiting AIS feed…'}
                     </span>
                 </div>

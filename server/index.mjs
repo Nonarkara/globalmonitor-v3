@@ -28,7 +28,7 @@ import { listPresets as listEvalscriptPresets } from './lib/evalscripts.mjs';
 import { probeCog } from './lib/cogReader.mjs';
 import { recordToSheets, recordEscalation, getRecordingHealth } from './lib/sheetsRecorder.mjs';
 import { ingestRegionalNews } from './lib/regionalNewsIngest.mjs';
-import { startAisStream, getVesselsGeoJson } from './lib/aisVessels.mjs';
+import { startAisStream, startVesselFinderRefresh, getVesselsGeoJson } from './lib/aisVessels.mjs';
 import { getRainviewerRadarTiles } from './lib/rainviewer.mjs';
 import {
     isSupabaseEnabled, getSupabaseStatusMessage,
@@ -569,4 +569,5 @@ server.listen(PORT, HOST, () => {
         console.log(`Serving static files from ${DIST_DIR}`);
     }
     startAisStream();
+    startVesselFinderRefresh();
 });
