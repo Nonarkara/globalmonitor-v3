@@ -1130,8 +1130,8 @@ const MapContainer = ({
                                     ['==', ['get', 'military'], true], '#f59e0b',
                                     '#58a6ff'
                                 ],
-                                'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, 4, 4, 6, 7, 7],
-                                'circle-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.22, 5, 0.18, 7, 0.1],
+                                'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, 6, 4, 7, 7, 7],
+                                'circle-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.28, 5, 0.16, 7, 0.08],
                                 'circle-blur': 0.65,
                             }}
                         />
@@ -1140,7 +1140,7 @@ const MapContainer = ({
                             type="symbol"
                             layout={{
                                 'icon-image': FLIGHT_ICON_IMAGE,
-                                'icon-size': ['interpolate', ['linear'], ['zoom'], 2, 0.72, 3, 0.85, 5, 1.0, 7, 1.15, 10, 1.35],
+                                'icon-size': ['interpolate', ['linear'], ['zoom'], 2, 1.5, 3, 1.75, 5, 2.0, 7, 2.25, 10, 2.5],
                                 'icon-rotate': ['get', 'heading'],
                                 'icon-rotation-alignment': 'map',
                                 'icon-allow-overlap': true,
@@ -1241,8 +1241,8 @@ const MapContainer = ({
                                     'pleasure', '#a855f7',
                                     '#94a3b8'
                                 ],
-                                'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, 3, 4, 4.5, 7, 5.5],
-                                'circle-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.2, 5, 0.16, 7, 0.08],
+                                'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, 5.5, 4, 6, 7, 6],
+                                'circle-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.26, 5, 0.14, 7, 0.06],
                                 'circle-blur': 0.65,
                             }}
                         />
@@ -1251,7 +1251,7 @@ const MapContainer = ({
                             type="symbol"
                             layout={{
                                 'icon-image': VESSEL_ICON_IMAGE,
-                                'icon-size': ['interpolate', ['linear'], ['zoom'], 2, 0.68, 3, 0.78, 5, 0.9, 7, 1.0, 10, 1.12],
+                                'icon-size': ['interpolate', ['linear'], ['zoom'], 2, 1.45, 3, 1.65, 5, 1.85, 7, 2.1, 10, 2.35],
                                 'icon-rotate': ['get', 'heading'],
                                 'icon-rotation-alignment': 'map',
                                 'icon-allow-overlap': true,

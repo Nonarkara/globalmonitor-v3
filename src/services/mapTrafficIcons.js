@@ -6,21 +6,21 @@
 const PLANE_CIVILIAN = '#58a6ff';
 const PLANE_MILITARY = '#f59e0b';
 
-/** Nose-up top-down aircraft silhouette (heading 0 = north). */
+/** Nose-up top-down aircraft — narrow fuselage, wide swept wings. */
 const planeSvg = (fill) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <path fill="${fill}" stroke="rgba(255,255,255,0.55)" stroke-width="0.45" stroke-linejoin="round"
-    d="M16 1.5
-       L17.2 9.5 L24.5 12.5 L24.5 14.2 L18.2 13.2 L18.5 19.5
-       L22.5 25.5 L22.5 27.5 L16 26.2 L9.5 27.5 L9.5 25.5 L13.5 19.5 L13.8 13.2
-       L7.5 14.2 L7.5 12.5 L14.8 9.5 Z"/>
+  <path fill="${fill}" stroke="rgba(255,255,255,0.65)" stroke-width="0.7" stroke-linejoin="round"
+    d="M16 1
+       L17.4 10.5 L27 13.5 L27 16 L18.5 14.5 L19 22
+       L23.5 28.5 L23.5 30.5 L16 29 L8.5 30.5 L8.5 28.5 L13 22 L13.5 14.5
+       L5 16 L5 13.5 L14.6 10.5 Z"/>
 </svg>`;
 
-/** Nose-up top-down hull silhouette (bow at top). */
-const shipSvg = (fill) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-  <path fill="${fill}" stroke="rgba(255,255,255,0.5)" stroke-width="0.4" stroke-linejoin="round"
-    d="M12 1.2
-       L14.2 7.8 L14.2 15.5 L12.8 18.2 L11.2 18.2 L9.8 15.5 L9.8 7.8 Z
-       M11.2 18.2 L8.5 19.8 L8.5 21.2 L15.5 21.2 L15.5 19.8 L12.8 18.2 Z"/>
+/** Nose-up top-down hull — wide beam, flat stern, pointed bow. */
+const shipSvg = (fill) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <path fill="${fill}" stroke="rgba(255,255,255,0.6)" stroke-width="0.65" stroke-linejoin="round"
+    d="M16 2
+       L19.5 10 L20 17.5 L18 21 L14 21 L12 17.5 L12.5 10 Z
+       M10 21 L7.5 24.5 L24.5 24.5 L22 21 Z"/>
 </svg>`;
 
 export const TRAFFIC_ICON_NAMES = {
@@ -48,7 +48,7 @@ const VESSEL_COLORS = {
 const ICON_SPECS = [
     [TRAFFIC_ICON_NAMES.planeCivilian, planeSvg(PLANE_CIVILIAN), 32, 32],
     [TRAFFIC_ICON_NAMES.planeMilitary, planeSvg(PLANE_MILITARY), 32, 32],
-    ...Object.entries(VESSEL_COLORS).map(([name, color]) => [name, shipSvg(color), 24, 24]),
+    ...Object.entries(VESSEL_COLORS).map(([name, color]) => [name, shipSvg(color), 32, 32]),
 ];
 
 export const loadTrafficIcons = (map, onReady) => {
