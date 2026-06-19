@@ -366,10 +366,17 @@ const server = http.createServer(async (request, response) => {
 
         if (url.pathname === '/api/vessels') {
             const theater = url.searchParams.get('theater') || 'global';
-            const payload = typeof getVesselsGeoJsonForTheater === 'function'
-                ? getVesselsGeoJsonForTheater(theater)
-                : getVesselsGeoJson();
+            const result = await useCached(
+                `vessels:${theater}`,
+                15000,  // 15s — vessels are live, but cache smooths polling spikes
+                () => typeof getVesselsGeoJsonForTheater === 'function'
+                    ? getVesselsGeoJsonForTheater(theater)
+                    : getVesselsGeoJson(),
+                (p) => p?.type === 'FeatureCollection'
+            );
+            const payload = result.payload;
             json(response, 200, payload, {
+                ...result.meta,
                 status: payload.meta.connected ? 'live' : (payload.meta.requiresKey ? 'unconfigured' : 'stale'),
                 updatedAt: payload.meta.fetchedAt
             });

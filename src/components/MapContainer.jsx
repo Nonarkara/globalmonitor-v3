@@ -67,6 +67,47 @@ const buildFlightPaths = (flights) => {
     return { type: 'FeatureCollection', features };
 };
 
+// Vessel heading vectors: short look-ahead, low speed threshold, course-first direction.
+const VESSEL_LOOKAHEAD_S = 120; // 2 min look-ahead
+const MAX_VESSEL_PATH_M = 3000; // cap at 3 km
+const MIN_VESSEL_SPEED_KNOTS = 1;
+const KNOT_TO_MS = 0.514444;
+
+const VESSEL_CATEGORY_COLOR = {
+    cargo: '#f59e0b',
+    tanker: '#ef4444',
+    passenger: '#3b82f6',
+    fishing: '#22c55e',
+    pleasure: '#ec4899',
+    tug: '#a78bfa',
+    other: '#38bdf8'
+};
+
+const buildVesselPaths = (vessels) => {
+    if (!vessels?.features?.length) return null;
+    const features = vessels.features
+        .filter((f) => {
+            const p = f.properties || {};
+            const speedKnots = p.speed || 0;
+            const direction = p.course ?? p.heading;
+            return speedKnots >= MIN_VESSEL_SPEED_KNOTS && Number.isFinite(direction);
+        })
+        .map((f) => {
+            const [lon, lat] = f.geometry.coordinates;
+            const p = f.properties || {};
+            const speedMs = (p.speed || 0) * KNOT_TO_MS;
+            const distanceM = Math.min(speedMs * VESSEL_LOOKAHEAD_S, MAX_VESSEL_PATH_M);
+            const direction = p.course ?? p.heading;
+            const end = projectForward(lon, lat, direction, distanceM);
+            return {
+                type: 'Feature',
+                geometry: { type: 'LineString', coordinates: [[lon, lat], end] },
+                properties: { category: p.category || 'other' }
+            };
+        });
+    return { type: 'FeatureCollection', features };
+};
+
 const MAP_MIN_ZOOM = 2.5;
 const MAP_MAX_ZOOM = 18;
 
@@ -625,6 +666,7 @@ const MapContainer = ({
     const interpolatedFlights = useInterpolatedTraffic(flightsData, { idKey: 'hex', durationMs: 60_000, frameMs: 1500, enabled: flightsLayerActive });
     const interpolatedVessels = useInterpolatedTraffic(vesselsData, { idKey: 'mmsi', durationMs: 60_000, frameMs: 2000, enabled: vesselsLayerActive });
     const flightPaths = useMemo(() => buildFlightPaths(interpolatedFlights), [interpolatedFlights]);
+    const vesselPaths = useMemo(() => buildVesselPaths(interpolatedVessels), [interpolatedVessels]);
     const flightCount = flightsData?.features?.length ?? 0;
     const vesselCount = vesselsData?.features?.length ?? 0;
     const vesselsNeedKey = vesselsData?.meta?.requiresKey;
@@ -1215,6 +1257,27 @@ const MapContainer = ({
                                 'circle-opacity': 0.75,
                                 'circle-stroke-width': 1,
                                 'circle-stroke-color': 'rgba(255,255,255,0.3)'
+                            }}
+                        />
+                    </Source>
+                )}
+
+                {/* Vessel path vectors — heading look-ahead, drawn under the position dots */}
+                {vesselsLayerActive && vesselPaths?.features?.length > 0 && (
+                    <Source id="vessel-paths" type="geojson" data={vesselPaths}>
+                        <Layer
+                            id="vessel-paths-lines"
+                            type="line"
+                            layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+                            paint={{
+                                'line-color': [
+                                    'match',
+                                    ['get', 'category'],
+                                    ...Object.entries(VESSEL_CATEGORY_COLOR).flatMap(([k, v]) => [k, v]),
+                                    '#38bdf8'
+                                ],
+                                'line-width': ['interpolate', ['linear'], ['zoom'], 3, 0.5, 6, 0.9, 10, 1.5],
+                                'line-opacity': ['interpolate', ['linear'], ['zoom'], 3, 0.32, 6, 0.48, 10, 0.68]
                             }}
                         />
                     </Source>
