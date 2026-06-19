@@ -27,6 +27,7 @@ import SeismicPanel from './components/SeismicPanel';
 import TimeMachine from './components/TimeMachine';
 import HormuzTracker from './components/HormuzTracker';
 import OilPriceChart from './components/OilPriceChart';
+import MiddleEastOilDependency from './components/MiddleEastOilDependency';
 import SentimentChart from './components/SentimentChart';
 import AcledAnalytics from './components/AcledAnalytics';
 import FlightRadarEmbed from './components/FlightRadarEmbed';
@@ -449,6 +450,9 @@ function App() {
               {/* Row 1: Economics & Markets */}
               <ErrorBoundary inline label="Oil Price Chart">
                 <OilPriceChart />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="ME Oil Dependence">
+                <MiddleEastOilDependency />
               </ErrorBoundary>
               <ErrorBoundary inline label="War Cost">
                 <WarCostTracker />
