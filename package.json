@@ -1,7 +1,7 @@
 {
-  "name": "middle-east-monitor",
+  "name": "globalmonitor",
   "private": true,
-  "version": "2.0.0",
+  "version": "8.0.0",
   "type": "module",
   "scripts": {
     "api": "node server/index.mjs",
@@ -18,7 +18,6 @@
     "d3": "^7.9.0",
     "google-auth-library": "^10.6.2",
     "lucide-react": "^0.575.0",
-    "mapbox-gl": "^3.19.0",
     "maplibre-gl": "^3.6.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

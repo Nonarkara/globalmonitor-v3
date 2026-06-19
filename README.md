@@ -26,8 +26,10 @@ npm run dev:stack
 
 This starts:
 
-- the frontend on `http://127.0.0.1:5173`
+- the frontend on `http://127.0.0.1:5180`
 - the API cache layer on `http://127.0.0.1:4000`
+
+Primary evaluation: `npm run dev:stack` (frontend **5180**, API **4000**). `globalmonitor.fly.dev` is optional and stale unless you deploy (Fly billing). Static backup: build with `--base=/globalmonitor/` then `npx gh-pages -d dist` (no npm script in package.json yet).
 
 If you want to run them separately:
 

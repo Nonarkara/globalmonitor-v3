@@ -168,6 +168,21 @@ export const EO_TILE_LAYERS = [
         maxzoom: 6
     },
     {
+        id: 'eo-jaxa-soil-moisture',
+        name: 'JAXA GCOM-W Soil Moisture',
+        description: 'Land surface soil moisture from JAXA GCOM-W1 AMSR2 (LPRM downscaled C1 band, daytime daily)',
+        group: 'satellite',
+        icon: '🇯🇵',
+        tiles: gibsRedundant(
+            gibsTileUrl('LPRM_AMSR2_Downscaled_Surface_Soil_Moisture_C1_Band_Day_Daily', 'GoogleMapsCompatible_Level6', 'png')
+                .replace('{time}', yesterday())
+        ),
+        tileSize: 256,
+        attribution: 'JAXA GCOM-W / NASA GIBS',
+        opacity: 0.65,
+        maxzoom: 6
+    },
+    {
         id: 'eo-sentinel2-cloudless',
         name: 'Sentinel-2 Cloudless',
         description: 'Cloud-free mosaic from ESA Sentinel-2 (EOX)',
