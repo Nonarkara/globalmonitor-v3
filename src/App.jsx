@@ -10,7 +10,7 @@ import RegionalNewsPanel from './components/RegionalNewsPanel';
 import MarketRadarPanel from './components/MarketRadarPanel';
 import SettingsModal from './components/SettingsModal';
 import ErrorBoundary from './components/ErrorBoundary';
-import { INTELLIGENCE_SOURCES, APAC_SOURCES } from './services/liveNews';
+import { getDefaultSourceIdsForRegion } from './services/liveNews';
 import { REGIONS, getRegion } from './data/regions';
 import CountryNewsPanel from './components/CountryNewsPanel';
 import { fetchCopernicusPreview } from './services/copernicus';
@@ -50,9 +50,12 @@ import { logActivity, LOG_TYPES } from './services/activityLog';
 import { useEscapeKey } from './hooks/useEscapeKey';
 import './styles/print.css';
 
+const DASHBOARD_VERSION = 'v8.3';
+
 function App() {
-  const [activeLayers, setActiveLayers] = useState(['disasters', 'weather', 'economy', 'conflicts', 'aqi', 'firms', 'flights', 'vessels']);
+  const [activeLayers, setActiveLayers] = useState(['conflicts', 'firms', 'flights', 'vessels', 'eo-aerosol']);
   const [activeRegion, setActiveRegion] = useState('middleeast');
+  const [mapStyle, setMapStyle] = useState('dark');
   const [selectedEvent, setSelectedEvent] = useState(null);
   // Three-way region nav: 'middleeast' | 'indopacific' | 'thailand'
   const [viewMode, setViewMode] = useState('middleeast');
@@ -65,7 +68,7 @@ function App() {
   const [isActivityLogOpen, setIsActivityLogOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   useEscapeKey(isAboutOpen, () => setIsAboutOpen(false));
-  const [activeSources, setActiveSources] = useState(INTELLIGENCE_SOURCES.map((source) => source.id));
+  const [activeSources, setActiveSources] = useState(getDefaultSourceIdsForRegion('middleeast'));
   const [copernicusMode, setCopernicusMode] = useState('true-color');
   const [showCopernicusOverlay, setShowCopernicusOverlay] = useState(true);
   const [showStrategicContext, setShowStrategicContext] = useState(false);
@@ -104,12 +107,18 @@ function App() {
 
   const handleRegionSelect = useCallback((regionId, targetViewState) => {
     setActiveRegion(regionId);
+    if (viewMode === 'indopacific' && regionId !== 'asean') {
+      setSelectedCountryCode(regionId);
+    }
+    if (viewMode === 'thailand' && regionId !== 'thailand') {
+      setSelectedCountryCode(regionId);
+    }
     setViewTarget(prev => ({
       ...prev,
       ...targetViewState,
       transitionDuration: 1500,
     }));
-  }, []);
+  }, [viewMode]);
 
   const handleMapFlyTo = useCallback((target) => {
     setViewTarget(prev => ({
@@ -126,8 +135,7 @@ function App() {
   };
 
   const setAllSources = (enable) => {
-    const list = viewMode === 'middleeast' ? INTELLIGENCE_SOURCES : APAC_SOURCES;
-    setActiveSources(enable ? list.map((source) => source.id) : []);
+    setActiveSources(enable ? getDefaultSourceIdsForRegion(viewMode) : []);
   };
 
   const sourceSetKey = activeSources.join(',');
@@ -165,6 +173,7 @@ function App() {
             copernicusRuntimeSource={copernicusRuntimeSource}
             showCopernicusOverlay={showCopernicusOverlay}
             showStrategicContext={showStrategicContext}
+            mapStyle={mapStyle}
             timeMachineDate={timeMachineDate}
             viewMode={viewMode}
             onRegionDotClick={(props) => {
@@ -205,7 +214,7 @@ function App() {
                 Global Political Dashboard
               </span>
               <span className="header-subtitle">
-                {getRegion(viewMode).label} · GlobeWatch · v8.0
+                {getRegion(viewMode).label} · GlobeWatch · {DASHBOARD_VERSION}
               </span>
             </div>
             <ErrorBoundary inline label="Escalation">
@@ -252,9 +261,7 @@ function App() {
                       setViewMode(r.id);
                       setActiveRegion(r.id === 'middleeast' ? 'middleeast' : r.id === 'indopacific' ? 'asean' : 'thailand');
                       setViewTarget({ ...r.viewState, transitionDuration: 1200 });
-                      setActiveSources(r.id === 'middleeast'
-                        ? INTELLIGENCE_SOURCES.map(s => s.id)
-                        : APAC_SOURCES.map(s => s.id));
+                      setActiveSources(getDefaultSourceIdsForRegion(r.id));
                       setSelectedCountryCode(null);
                     }}
                     className={`header-region-tab ${isActive ? 'is-active' : ''}`}
@@ -315,6 +322,9 @@ function App() {
               showStrategicContext={showStrategicContext}
               setShowStrategicContext={setShowStrategicContext}
               copernicusResource={copernicusResource}
+              mapStyle={mapStyle}
+              setMapStyle={setMapStyle}
+              dashboardVersion={DASHBOARD_VERSION}
             />
           </ErrorBoundary>
           {viewMode === 'middleeast' && (
@@ -535,7 +545,7 @@ function App() {
 
         {/* Row 6: Live news ticker */}
         <ErrorBoundary inline label="Live Feed">
-          <LiveIntelligenceFeed key={`ticker:${sourceSetKey}`} activeSourceIds={activeSources} />
+          <LiveIntelligenceFeed key={`ticker:${viewMode}:${sourceSetKey}`} activeSourceIds={activeSources} />
         </ErrorBoundary>
 
         {/* Time Machine — date slider for historical data */}
@@ -617,7 +627,7 @@ function App() {
                 Global Political Dashboard
               </h2>
               <p style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-mono)', letterSpacing: '1px', marginBottom: '14px' }}>
-                GLOBEWATCH v8.0
+                GLOBEWATCH {DASHBOARD_VERSION}
               </p>
 
               <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, marginBottom: '14px' }}>

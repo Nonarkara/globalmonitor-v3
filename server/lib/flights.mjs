@@ -1,8 +1,9 @@
 /**
- * Unified flight payload — airplanes.live primary, OpenSky authenticated supplement, Aviation Edge optional.
+ * Unified flight payload — airplanes.live primary, OpenSky + aviationstack supplements, Aviation Edge fallback.
  */
 import { fetchAirplanesLivePayload } from './airplanesLive.mjs';
 import { fetchAviationEdgePayload } from './aviationEdge.mjs';
+import { fetchAviationStackPayload, isAviationStackConfigured } from './aviationStack.mjs';
 import { fetchOpenSkyPayload, isOpenSkyConfigured } from './opensky.mjs';
 
 const normalizeHex = (hex) => (hex || '').toLowerCase().replace(/^0x/, '');
@@ -40,7 +41,7 @@ const mergeFlightPayloads = (primary, supplement) => {
 
     const features = [...byHex.values()];
     const primarySource = primary.meta?.source || 'airplanes.live';
-    const supplementSource = supplement.meta?.source || 'opensky';
+    const supplementSource = supplement.meta?.source || 'supplement';
 
     return {
         type: 'FeatureCollection',
@@ -50,32 +51,83 @@ const mergeFlightPayloads = (primary, supplement) => {
             count: features.length,
             fetchedAt: new Date().toISOString(),
             source: `${primarySource}+${supplementSource}`,
-            openskyEnriched: enriched,
-            openskyAdded: added,
-            openskyConfigured: true
+            supplementEnriched: (primary.meta?.supplementEnriched || 0) + enriched,
+            supplementAdded: (primary.meta?.supplementAdded || 0) + added,
+            supplements: [
+                ...(Array.isArray(primary.meta?.supplements) ? primary.meta.supplements : []),
+                {
+                    source: supplementSource,
+                    count: supplement.features.length,
+                    added,
+                    enriched,
+                    cache: supplement.meta?.cache || null,
+                    fetchedAt: supplement.meta?.fetchedAt || null,
+                    error: supplement.meta?.error || null,
+                    nextRefreshAt: supplement.meta?.nextRefreshAt || null
+                }
+            ]
         }
     };
 };
 
 export const fetchFlightsPayload = async (theater = 'global') => {
-    const primary = await fetchAirplanesLivePayload(theater);
+    let payload = await fetchAirplanesLivePayload(theater);
 
     if (isOpenSkyConfigured()) {
         const opensky = await fetchOpenSkyPayload(theater);
         if (opensky.features?.length > 0) {
-            if (primary.features?.length > 0) return mergeFlightPayloads(primary, opensky);
-            return {
-                ...opensky,
+            if (payload.features?.length > 0) {
+                payload = mergeFlightPayloads(payload, opensky);
+            } else {
+                payload = {
+                    ...opensky,
+                    meta: {
+                        ...opensky.meta,
+                        source: 'opensky',
+                        fallback: 'airplanes.live empty'
+                    }
+                };
+            }
+        }
+    }
+
+    if (isAviationStackConfigured()) {
+        const aviationStack = await fetchAviationStackPayload(theater);
+        if (aviationStack.features?.length > 0) {
+            if (payload.features?.length > 0) {
+                payload = mergeFlightPayloads(payload, aviationStack);
+            } else {
+                payload = {
+                    ...aviationStack,
+                    meta: {
+                        ...aviationStack.meta,
+                        fallback: 'airplanes.live empty'
+                    }
+                };
+            }
+        } else {
+            payload = {
+                ...payload,
                 meta: {
-                    ...opensky.meta,
-                    source: 'opensky',
-                    fallback: 'airplanes.live empty'
+                    ...payload.meta,
+                    supplements: [
+                        ...(Array.isArray(payload.meta?.supplements) ? payload.meta.supplements : []),
+                        {
+                            source: 'aviationstack',
+                            count: 0,
+                            added: 0,
+                            enriched: 0,
+                            cache: aviationStack.meta?.cache || null,
+                            error: aviationStack.meta?.error || null,
+                            nextRefreshAt: aviationStack.meta?.nextRefreshAt || null
+                        }
+                    ]
                 }
             };
         }
     }
 
-    if (primary.features?.length > 0) return primary;
+    if (payload.features?.length > 0) return payload;
 
     const apiKey = process.env.AVIATION_EDGE_KEY;
     if (apiKey) {
@@ -83,5 +135,5 @@ export const fetchFlightsPayload = async (theater = 'global') => {
         if (fallback.features?.length > 0) return fallback;
     }
 
-    return primary;
+    return payload;
 };

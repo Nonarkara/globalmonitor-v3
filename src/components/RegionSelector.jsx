@@ -1,4 +1,5 @@
 import React from 'react';
+import { ASEAN_COUNTRIES, THAILAND_REGIONS } from '../data/regions';
 
 const regions = [
     {
@@ -34,14 +35,25 @@ const regions = [
 ];
 
 const RegionSelector = ({ activeRegion, onSelectRegion, viewMode }) => {
-    const activeRegions = viewMode === 'depa'
+    const activeRegions = viewMode === 'indopacific'
         ? [
-            { id: 'global', name: 'Global', viewState: { longitude: 0, latitude: 20, zoom: 1.5, pitch: 0, bearing: 0 } },
-            { id: 'asia', name: 'Asia', viewState: { longitude: 100, latitude: 35, zoom: 3, pitch: 0, bearing: 0 } },
             { id: 'asean', name: 'ASEAN', viewState: { longitude: 105, latitude: 10, zoom: 4, pitch: 0, bearing: 0 } },
-            { id: 'thailand', name: 'Thailand', viewState: { longitude: 100.9925, latitude: 15.8700, zoom: 5.5, pitch: 0, bearing: 0 } }
+            ...ASEAN_COUNTRIES.map((country) => ({
+                id: country.code,
+                name: country.name,
+                viewState: { longitude: country.lng, latitude: country.lat, zoom: 5.1, pitch: 0, bearing: 0 }
+            }))
         ]
-        : regions;
+        : viewMode === 'thailand'
+            ? [
+                { id: 'thailand', name: 'Thailand', viewState: { longitude: 100.9925, latitude: 15.87, zoom: 5.5, pitch: 0, bearing: 0 } },
+                ...THAILAND_REGIONS.map((region) => ({
+                    id: region.code,
+                    name: region.name,
+                    viewState: { longitude: region.lng, latitude: region.lat, zoom: 7.1, pitch: 10, bearing: 0 }
+                }))
+            ]
+            : regions;
 
     return (
         <div className="region-selector">

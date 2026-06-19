@@ -3,8 +3,8 @@
  * Loaded once per style via map.addImage — no DOM markers.
  */
 
-const PLANE_CIVILIAN = '#58a6ff';
-const PLANE_MILITARY = '#f59e0b';
+const PLANE_CIVILIAN = '#facc15';
+const PLANE_MILITARY = '#ef4444';
 
 /** Nose-up top-down aircraft — narrow fuselage, wide swept wings. */
 const planeSvg = (fill) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">

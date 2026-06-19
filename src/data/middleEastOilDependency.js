@@ -28,10 +28,32 @@ export const MIDDLE_EAST_OIL_DEPENDENCY = {
         { code: 'IN', name: 'India', pct: 45, major: true },
         { code: 'LT', name: 'Lithuania', pct: 40 },
         { code: 'CN', name: 'China', pct: 38, major: true },
+        { code: 'VN', name: 'Vietnam', pct: 36 },
         { code: 'IS', name: 'Iceland', pct: 34 },
+        { code: 'PH', name: 'Philippines', pct: 34 },
         { code: 'PL', name: 'Poland', pct: 34 },
+        { code: 'GR', name: 'Greece', pct: 33 },
+        { code: 'SD', name: 'Sudan', pct: 31 },
+        { code: 'SG', name: 'Singapore', pct: 28 },
+        { code: 'RS', name: 'Serbia', pct: 25 },
+        { code: 'MY', name: 'Malaysia', pct: 22 },
+        { code: 'BD', name: 'Bangladesh', pct: 20 },
+        { code: 'MZ', name: 'Mozambique', pct: 20 },
+        { code: 'BN', name: 'Brunei', pct: 19 },
+        { code: 'FR', name: 'France', pct: 18, major: true },
+        { code: 'IT', name: 'Italy', pct: 16, major: true },
+        { code: 'SI', name: 'Slovenia', pct: 12 },
+        { code: 'TR', name: 'Turkiye', pct: 11 },
+        { code: 'ID', name: 'Indonesia', pct: 10 },
+        { code: 'NL', name: 'Netherlands', pct: 10 },
+        { code: 'AT', name: 'Austria', pct: 9 },
+        { code: 'ES', name: 'Spain', pct: 9 },
+        { code: 'BE', name: 'Belgium', pct: 8 },
+        { code: 'GB', name: 'United Kingdom', pct: 8 },
         { code: 'DE', name: 'Germany', pct: 6, major: true },
+        { code: 'BR', name: 'Brazil', pct: 3 },
         { code: 'US', name: 'United States', pct: 3, major: true },
+        { code: 'NG', name: 'Nigeria', pct: 2 },
         { code: 'CA', name: 'Canada', pct: 1, major: true }
     ]
 };
@@ -39,6 +61,9 @@ export const MIDDLE_EAST_OIL_DEPENDENCY = {
 /** Major economies most relevant to Middle East oil-crisis intel narrative. */
 export const KEY_OIL_DEPENDENT_ECONOMIES = MIDDLE_EAST_OIL_DEPENDENCY.countries
     .filter((c) => c.major)
+    .sort((a, b) => b.pct - a.pct);
+
+export const MOST_OIL_RELIANT_COUNTRIES = [...MIDDLE_EAST_OIL_DEPENDENCY.countries]
     .sort((a, b) => b.pct - a.pct);
 
 export function dependencyColor(pct) {

@@ -1,24 +1,21 @@
 import React from 'react';
 import { Globe2, ExternalLink } from 'lucide-react';
 import {
-    KEY_OIL_DEPENDENT_ECONOMIES,
     MIDDLE_EAST_OIL_DEPENDENCY,
+    MOST_OIL_RELIANT_COUNTRIES,
     dependencyColor
 } from '../data/middleEastOilDependency';
 
-const PANEL_HEIGHT = 220;
-const CHART_HEIGHT = 148;
-
 const MiddleEastOilDependency = () => {
-    const maxPct = Math.max(...KEY_OIL_DEPENDENT_ECONOMIES.map((c) => c.pct), 1);
+    const maxPct = Math.max(...MOST_OIL_RELIANT_COUNTRIES.map((c) => c.pct), 1);
 
     return (
         <div
             className="bottom-card"
             style={{
-                padding: '10px 12px',
-                minHeight: PANEL_HEIGHT,
-                maxHeight: PANEL_HEIGHT,
+                padding: '0',
+                minHeight: 0,
+                height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden'
@@ -43,21 +40,20 @@ const MiddleEastOilDependency = () => {
                     fontSize: '0.42rem', color: 'rgba(255,255,255,0.35)',
                     fontFamily: 'var(--font-mono)'
                 }}>
-                    IEA {MIDDLE_EAST_OIL_DEPENDENCY.year}
+                    IEA {MIDDLE_EAST_OIL_DEPENDENCY.year} · MOST RELIANT
                 </span>
             </div>
 
             <div style={{
                 flex: 1,
                 minHeight: 0,
-                maxHeight: CHART_HEIGHT,
                 overflowY: 'auto',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '3px',
-                paddingRight: '2px'
+                padding: '0 10px 0 8px'
             }}>
-                {KEY_OIL_DEPENDENT_ECONOMIES.map((country) => {
+                {MOST_OIL_RELIANT_COUNTRIES.map((country) => {
                     const color = dependencyColor(country.pct);
                     const widthPct = Math.max((country.pct / maxPct) * 100, country.pct > 0 ? 4 : 0);
                     return (
@@ -96,7 +92,8 @@ const MiddleEastOilDependency = () => {
             <div style={{
                 marginTop: '6px', paddingTop: '5px', flexShrink: 0,
                 borderTop: '1px solid rgba(255,255,255,0.04)',
-                fontSize: '0.32rem', color: 'rgba(255,255,255,0.28)', lineHeight: 1.35
+                fontSize: '0.34rem', color: 'rgba(255,255,255,0.28)', lineHeight: 1.35,
+                padding: '5px 10px 7px'
             }}>
                 {MIDDLE_EAST_OIL_DEPENDENCY.metric}. Data:{' '}
                 <a

@@ -53,6 +53,37 @@ function prune() {
     }
 }
 
+// Regional bounding boxes for theater-scoped vessel feeds [minLon, minLat, maxLon, maxLat]
+const THEATER_BBOXES = {
+    thailand: [97, 5, 106, 21],
+    indopacific: [90, -10, 135, 25],
+    middleeast: [24, 10, 65, 42],
+};
+
+export function getVesselsGeoJsonForTheater(theater) {
+    const base = getVesselsGeoJson();
+    const bbox = THEATER_BBOXES[theater];
+    if (!bbox || theater === 'global') return base;
+
+    const [minLon, minLat, maxLon, maxLat] = bbox;
+    const filtered = base.features.filter((feature) => {
+        const coords = feature.geometry?.coordinates;
+        if (!Array.isArray(coords) || coords.length < 2) return false;
+        const [lon, lat] = coords;
+        return lon >= minLon && lon <= maxLon && lat >= minLat && lat <= maxLat;
+    });
+
+    return {
+        ...base,
+        features: filtered,
+        meta: {
+            ...base.meta,
+            count: filtered.length,
+            coverage: theater,
+        },
+    };
+}
+
 function connect() {
     if (!process.env.AISSTREAM_API_KEY) return;
 

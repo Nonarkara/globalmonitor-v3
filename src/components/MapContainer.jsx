@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useRef, useEffect, useMemo, useReducer } from 'react';
-import Map, { Marker, Source, Layer } from 'react-map-gl';
+import Map, { Marker, Source, Layer, Popup } from 'react-map-gl/maplibre';
 import maplibregl from 'maplibre-gl';
 import { Copy, Check, AlertTriangle } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -435,6 +435,7 @@ const MapContainer = ({
     showStrategicContext,
     viewMode = 'middleeast',
     onRegionDotClick,
+    mapStyle = 'dark',
 }) => {
     const region = getRegion(viewMode);
     const regionDots = region.dots;
@@ -443,7 +444,6 @@ const MapContainer = ({
         viewTarget,
         (initialViewTarget) => buildTargetViewState(initialViewTarget)
     );
-    const [mapStyle, setMapStyle] = useState('dark');
     const mapRef = useRef(null);
     // Track which raster sources have failed (auth / 404 / CORS / 5xx) so the
     // user sees what is missing instead of a silently-empty map.
@@ -453,12 +453,14 @@ const MapContainer = ({
     const [copied, setCopied] = useState(false);
     const [mapIconsReady, setMapIconsReady] = useState(false);
     const [rainviewerTiles, setRainviewerTiles] = useState(null);
+    const [hoverInfo, setHoverInfo] = useState(null);
 
     const handleMove = useCallback((event) => {
         dispatchViewState({ type: 'move', viewState: event.viewState });
     }, []);
 
     const flightsLayerActive = activeLayers.includes('flights');
+    const vesselsLayerActive = activeLayers.includes('vessels');
     const weatherLayerActive = activeLayers.includes('weather');
 
     useEffect(() => {
@@ -519,8 +521,19 @@ const MapContainer = ({
         if (typeof lat === 'number' && typeof lng === 'number') {
             setCursor({ lat, lng });
         }
+        const feature = event.features?.find(
+            (f) => f.layer?.id === 'flights-icons' || f.layer?.id === 'vessels-icons'
+        );
+        if (feature) {
+            setHoverInfo({ longitude: lng, latitude: lat, feature });
+        } else {
+            setHoverInfo(null);
+        }
     }, []);
-    const handleMouseLeave = useCallback(() => setCursor(null), []);
+    const handleMouseLeave = useCallback(() => {
+        setCursor(null);
+        setHoverInfo(null);
+    }, []);
     const copyCursor = useCallback(() => {
         if (!cursor) return;
         const text = `${cursor.lat.toFixed(5)}, ${cursor.lng.toFixed(5)}`;
@@ -578,11 +591,12 @@ const MapContainer = ({
         intervalMs: 10 * 60 * 1000,
         isUsable: hasFeatureData
     });
-    const flightsResource = useLiveResource(useCallback(() => fetchFlights('global'), []), {
-        cacheKey: 'map:flights:global',
+    const flightsResource = useLiveResource(useCallback(() => fetchFlights(viewMode), [viewMode]), {
+        cacheKey: `map:flights:${viewMode}`,
         enabled: activeLayers.includes('flights'),
-        intervalMs: 60 * 1000,
-        isUsable: hasFeatureData
+        intervalMs: 10 * 60 * 1000,
+        isUsable: (payload) => payload?.type === 'FeatureCollection',
+        maxRetries: 0
     });
     const acledResource = useLiveResource(useCallback(() => fetchAcledEvents(), []), {
         cacheKey: 'map:acled',
@@ -590,11 +604,12 @@ const MapContainer = ({
         intervalMs: 60 * 60 * 1000,
         isUsable: hasFeatureData
     });
-    const vesselsResource = useLiveResource(useCallback(() => fetchVessels(), []), {
-        cacheKey: 'map:vessels',
+    const vesselsResource = useLiveResource(useCallback(() => fetchVessels(viewMode), [viewMode]), {
+        cacheKey: `map:vessels:${viewMode}`,
         enabled: activeLayers.includes('vessels'),
-        intervalMs: 60 * 1000,
-        isUsable: hasFeatureData
+        intervalMs: 5 * 60 * 1000,
+        isUsable: (payload) => payload?.type === 'FeatureCollection',
+        maxRetries: 0
     });
 
     const disastersData = disasterResource.data;
@@ -607,22 +622,21 @@ const MapContainer = ({
     const infraData = infraResource.data;
     const flightsData = flightsResource.data;
     const vesselsData = vesselsResource.data;
-    const interpolatedFlights = useInterpolatedTraffic(flightsData, { idKey: 'hex', durationMs: 60_000 });
-    const interpolatedVessels = useInterpolatedTraffic(vesselsData, { idKey: 'mmsi', durationMs: 60_000 });
+    const interpolatedFlights = useInterpolatedTraffic(flightsData, { idKey: 'hex', durationMs: 60_000, frameMs: 1500, enabled: flightsLayerActive });
+    const interpolatedVessels = useInterpolatedTraffic(vesselsData, { idKey: 'mmsi', durationMs: 60_000, frameMs: 2000, enabled: vesselsLayerActive });
     const flightPaths = useMemo(() => buildFlightPaths(interpolatedFlights), [interpolatedFlights]);
     const flightCount = flightsData?.features?.length ?? 0;
     const vesselCount = vesselsData?.features?.length ?? 0;
     const vesselsNeedKey = vesselsData?.meta?.requiresKey;
     const vesselSourceLabel = vesselsData?.meta?.source?.replace('aisstream.io', 'AIS')?.replace('vesselfinder-fleet', 'fleet') || 'AIS';
-    const vesselsLayerActive = activeLayers.includes('vessels');
 
     useEffect(() => {
-        setFlightCount(flightsLayerActive ? flightCount : 0);
-    }, [flightsLayerActive, flightCount]);
+        setFlightCount(flightCount);
+    }, [flightCount]);
 
     useEffect(() => {
-        setVesselCount(vesselsLayerActive ? vesselCount : 0);
-    }, [vesselsLayerActive, vesselCount]);
+        setVesselCount(vesselCount);
+    }, [vesselCount]);
 
     const acledData = acledResource.data;
     const publicSentinelLayerId = getPublicSentinelLayerId(copernicusMode);
@@ -685,6 +699,7 @@ const MapContainer = ({
                 onMove={handleMove}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
+                interactiveLayerIds={['flights-icons', 'vessels-icons']}
                 style={{ width: '100%', height: '100%' }}
                 mapStyle={MAP_STYLES[mapStyle] || MAP_STYLES.dark}
             >
@@ -1087,11 +1102,11 @@ const MapContainer = ({
                             paint={{
                                 'line-color': [
                                     'case',
-                                    ['==', ['get', 'military'], true], '#f59e0b',
-                                    '#58a6ff'
+                                    ['==', ['get', 'military'], true], '#ef4444',
+                                    '#facc15'
                                 ],
-                                'line-width': ['interpolate', ['linear'], ['zoom'], 3, 0.8, 6, 1.4, 10, 2],
-                                'line-opacity': ['interpolate', ['linear'], ['zoom'], 3, 0.45, 6, 0.65, 10, 0.78]
+                                'line-width': ['interpolate', ['linear'], ['zoom'], 3, 0.65, 6, 1.1, 10, 1.8],
+                                'line-opacity': ['interpolate', ['linear'], ['zoom'], 3, 0.34, 6, 0.52, 10, 0.72]
                             }}
                         />
                     </Source>
@@ -1099,7 +1114,7 @@ const MapContainer = ({
 
                 {/* Flights Layer — density heatmap at world zoom + glow dots + plane icons */}
                 {flightsLayerActive && flightCount > 0 && (
-                    <Source id="flights-data" type="geojson" data={interpolatedFlights} key={mapIconsReady ? 'flights-icons-ready' : 'flights-icons-pending'}>
+                    <Source id="flights-data" type="geojson" data={interpolatedFlights}>
                         <Layer
                             id="flights-density"
                             type="heatmap"
@@ -1127,30 +1142,32 @@ const MapContainer = ({
                             paint={{
                                 'circle-color': [
                                     'case',
-                                    ['==', ['get', 'military'], true], '#f59e0b',
-                                    '#58a6ff'
+                                    ['==', ['get', 'military'], true], '#ef4444',
+                                    '#facc15'
                                 ],
-                                'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, 6, 4, 7, 7, 7],
-                                'circle-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.28, 5, 0.16, 7, 0.08],
+                                'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, 4, 4, 6, 7, 7],
+                                'circle-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.22, 5, 0.18, 7, 0.1],
                                 'circle-blur': 0.65,
                             }}
                         />
-                        <Layer
-                            id="flights-icons"
-                            type="symbol"
-                            layout={{
-                                'icon-image': FLIGHT_ICON_IMAGE,
-                                'icon-size': ['interpolate', ['linear'], ['zoom'], 2, 1.5, 3, 1.75, 5, 2.0, 7, 2.25, 10, 2.5],
-                                'icon-rotate': ['get', 'heading'],
-                                'icon-rotation-alignment': 'map',
-                                'icon-allow-overlap': true,
-                                'icon-ignore-placement': true,
-                                'icon-pitch-alignment': 'map',
-                            }}
-                            paint={{
-                                'icon-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.88, 6, 0.95, 10, 1]
-                            }}
-                        />
+                        {mapIconsReady && (
+                            <Layer
+                                id="flights-icons"
+                                type="symbol"
+                                layout={{
+                                    'icon-image': FLIGHT_ICON_IMAGE,
+                                    'icon-size': ['interpolate', ['linear'], ['zoom'], 2, 0.95, 3, 1.08, 5, 1.25, 7, 1.42, 10, 1.62],
+                                    'icon-rotate': ['get', 'heading'],
+                                    'icon-rotation-alignment': 'map',
+                                    'icon-allow-overlap': true,
+                                    'icon-ignore-placement': true,
+                                    'icon-pitch-alignment': 'map',
+                                }}
+                                paint={{
+                                    'icon-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.88, 6, 0.95, 10, 1]
+                                }}
+                            />
+                        )}
                     </Source>
                 )}
 
@@ -1205,7 +1222,7 @@ const MapContainer = ({
 
                 {/* Vessels Layer — density heatmap at world zoom + glow + triangles by category */}
                 {vesselsLayerActive && vesselsData?.features?.length > 0 && (
-                    <Source id="vessels-data" type="geojson" data={interpolatedVessels} key={mapIconsReady ? 'vessels-icons-ready' : 'vessels-icons-pending'}>
+                    <Source id="vessels-data" type="geojson" data={interpolatedVessels}>
                         <Layer
                             id="vessels-density"
                             type="heatmap"
@@ -1241,36 +1258,109 @@ const MapContainer = ({
                                     'pleasure', '#a855f7',
                                     '#94a3b8'
                                 ],
-                                'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, 5.5, 4, 6, 7, 6],
-                                'circle-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.26, 5, 0.14, 7, 0.06],
+                                'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, 3, 4, 4.5, 7, 5.5],
+                                'circle-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.2, 5, 0.16, 7, 0.08],
                                 'circle-blur': 0.65,
                             }}
                         />
-                        <Layer
-                            id="vessels-icons"
-                            type="symbol"
-                            layout={{
-                                'icon-image': VESSEL_ICON_IMAGE,
-                                'icon-size': ['interpolate', ['linear'], ['zoom'], 2, 1.45, 3, 1.65, 5, 1.85, 7, 2.1, 10, 2.35],
-                                'icon-rotate': ['get', 'heading'],
-                                'icon-rotation-alignment': 'map',
-                                'icon-allow-overlap': true,
-                                'icon-ignore-placement': true,
-                                'icon-pitch-alignment': 'map',
-                                'text-field': ['step', ['zoom'], '', 8, ['get', 'name']],
-                                'text-size': 9,
-                                'text-offset': [0, 1.4],
-                                'text-anchor': 'top',
-                                'text-allow-overlap': false,
-                            }}
-                            paint={{
-                                'icon-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.86, 6, 0.93, 10, 0.98],
-                                'text-color': '#e2e8f0',
-                                'text-halo-color': 'rgba(0,0,0,0.75)',
-                                'text-halo-width': 1,
-                            }}
-                        />
+                        {mapIconsReady && (
+                            <Layer
+                                id="vessels-icons"
+                                type="symbol"
+                                layout={{
+                                    'icon-image': VESSEL_ICON_IMAGE,
+                                    'icon-size': ['interpolate', ['linear'], ['zoom'], 2, 0.68, 3, 0.78, 5, 0.9, 7, 1.0, 10, 1.12],
+                                    'icon-rotate': ['get', 'heading'],
+                                    'icon-rotation-alignment': 'map',
+                                    'icon-allow-overlap': true,
+                                    'icon-ignore-placement': true,
+                                    'icon-pitch-alignment': 'map',
+                                    'text-field': ['step', ['zoom'], '', 8, ['get', 'name']],
+                                    'text-size': 9,
+                                    'text-offset': [0, 1.4],
+                                    'text-anchor': 'top',
+                                    'text-allow-overlap': false,
+                                }}
+                                paint={{
+                                    'icon-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.86, 6, 0.93, 10, 0.98],
+                                    'text-color': '#e2e8f0',
+                                    'text-halo-color': 'rgba(0,0,0,0.75)',
+                                    'text-halo-width': 1,
+                                }}
+                            />
+                        )}
                     </Source>
+                )}
+
+                {hoverInfo && (
+                    <Popup
+                        longitude={hoverInfo.longitude}
+                        latitude={hoverInfo.latitude}
+                        anchor="bottom"
+                        closeButton={false}
+                        closeOnClick={false}
+                        offset={[0, -8]}
+                        className={`traffic-tooltip ${hoverInfo.feature.layer?.id === 'vessels-icons' ? 'traffic-tooltip--vessel' : ''}`}
+                    >
+                        {(() => {
+                            const p = hoverInfo.feature.properties || {};
+                            const isFlight = hoverInfo.feature.layer?.id === 'flights-icons' || p.hex;
+                            if (isFlight) {
+                                const header = p.callsign ? p.callsign.toUpperCase() : p.hex;
+                                return (
+                                    <div className="traffic-tooltip-content">
+                                        <div className="traffic-tooltip-header">{header}</div>
+                                        <div className="traffic-tooltip-row">
+                                            <span>Altitude</span>
+                                            <span>{Math.round(p.altitude)} m</span>
+                                        </div>
+                                        <div className="traffic-tooltip-row">
+                                            <span>Speed</span>
+                                            <span>{Math.round((p.velocity || 0) * 1.94384)} kt</span>
+                                        </div>
+                                        <div className="traffic-tooltip-row">
+                                            <span>Heading</span>
+                                            <span>{Math.round(p.heading)}°</span>
+                                        </div>
+                                        <div className="traffic-tooltip-row">
+                                            <span>Type</span>
+                                            <span>{p.type || p.desc || '—'}</span>
+                                        </div>
+                                        {p.origin && (
+                                            <div className="traffic-tooltip-row">
+                                                <span>Origin</span>
+                                                <span>
+                                                    {p.origin}
+                                                    {p.destination ? ` → ${p.destination}` : ''}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }
+                            return (
+                                <div className="traffic-tooltip-content">
+                                    <div className="traffic-tooltip-header">{p.name || p.mmsi || 'Vessel'}</div>
+                                    <div className="traffic-tooltip-row">
+                                        <span>Type</span>
+                                        <span>{p.category || '—'}</span>
+                                    </div>
+                                    <div className="traffic-tooltip-row">
+                                        <span>Speed</span>
+                                        <span>{p.speed} kt</span>
+                                    </div>
+                                    <div className="traffic-tooltip-row">
+                                        <span>Course</span>
+                                        <span>{Math.round(p.course)}°</span>
+                                    </div>
+                                    <div className="traffic-tooltip-row">
+                                        <span>MMSI</span>
+                                        <span>{p.mmsi}</span>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+                    </Popup>
                 )}
 
                 {activeLayers.includes('conflicts') && renderSpatialAura(crisesData, 'conflicts', '#ef4444', 16)}
@@ -1321,22 +1411,6 @@ const MapContainer = ({
 
             <div className="map-vignette" aria-hidden="true" />
             <div className="map-grid-overlay" aria-hidden="true" />
-
-            {/* Satellite/Map style toggle */}
-            <div className="map-style-toggle">
-                {Object.entries({ dark: '🌑', satellite: '🛰️', voyager: '🗺️' }).map(([key, icon]) => (
-                    <button
-                        key={key}
-                        className={`map-style-btn ${mapStyle === key ? 'active' : ''}`}
-                        onClick={() => setMapStyle(key)}
-                        aria-label={`Switch map to ${key} view`}
-                        aria-pressed={mapStyle === key}
-                        title={`${key.charAt(0).toUpperCase() + key.slice(1)} view`}
-                    >
-                        {icon}
-                    </button>
-                ))}
-            </div>
 
             {/* Cursor lat/lng readout — bottom-left of map. Mono, hairline border, copy button. */}
             {cursor && (
@@ -1426,7 +1500,7 @@ const MapContainer = ({
                     className="map-legend-item"
                     style={{ visibility: flightsLayerActive ? 'visible' : 'hidden' }}
                 >
-                    <span className="map-legend-line" style={{ background: '#58a6ff' }} />
+                    <span className="map-legend-line" style={{ background: '#facc15' }} />
                     <span style={{ fontVariantNumeric: 'tabular-nums', minWidth: '14ch', display: 'inline-block' }}>
                         {flightCount > 0 ? `${flightCount.toLocaleString()} aircraft · ADS-B` : '… aircraft · ADS-B'}
                     </span>
@@ -1449,8 +1523,8 @@ const MapContainer = ({
                     className="map-legend-item"
                     style={{ visibility: flightsLayerActive ? 'visible' : 'hidden' }}
                 >
-                    <span className="map-legend-line" style={{ background: '#f59e0b' }} />
-                    <span>Cyan/amber planes · hull icons · 3 min vectors</span>
+                    <span className="map-legend-line" style={{ background: '#facc15' }} />
+                    <span>Yellow aircraft · colored hulls · 3 min vectors</span>
                 </div>
             </div>
 

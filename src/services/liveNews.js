@@ -44,7 +44,22 @@ export const INTELLIGENCE_SOURCES = [
     { id: 'tasnim', name: 'Tasnim News', url: buildGoogleNewsSearchUrl('Tasnim News Agency Iran'), group: 'middle-east', trustScore: 8 },
 ];
 
-export const APAC_SOURCES = INTELLIGENCE_SOURCES;
+export const SOURCE_IDS_BY_REGION = {
+    middleeast: INTELLIGENCE_SOURCES
+        .filter((source) => ['worldwide', 'middle-east'].includes(source.group))
+        .map((source) => source.id),
+    indopacific: INTELLIGENCE_SOURCES
+        .filter((source) => ['worldwide', 'asia', 'thailand'].includes(source.group))
+        .map((source) => source.id),
+    thailand: INTELLIGENCE_SOURCES
+        .filter((source) => ['worldwide', 'asia', 'thailand'].includes(source.group))
+        .map((source) => source.id),
+};
+
+export const APAC_SOURCES = INTELLIGENCE_SOURCES.filter((source) => ['worldwide', 'asia', 'thailand'].includes(source.group));
+
+export const getDefaultSourceIdsForRegion = (regionId = 'middleeast') =>
+    SOURCE_IDS_BY_REGION[regionId] || SOURCE_IDS_BY_REGION.middleeast;
 
 export const BRIEFING_DEFINITIONS = {
     iranStrikes: {

@@ -28,7 +28,7 @@ import { listPresets as listEvalscriptPresets } from './lib/evalscripts.mjs';
 import { probeCog } from './lib/cogReader.mjs';
 import { recordToSheets, recordEscalation, getRecordingHealth } from './lib/sheetsRecorder.mjs';
 import { ingestRegionalNews } from './lib/regionalNewsIngest.mjs';
-import { startAisStream, startVesselFinderRefresh, getVesselsGeoJson } from './lib/aisVessels.mjs';
+import { startAisStream, startVesselFinderRefresh, getVesselsGeoJson, getVesselsGeoJsonForTheater } from './lib/aisVessels.mjs';
 import { getRainviewerRadarTiles } from './lib/rainviewer.mjs';
 import {
     isSupabaseEnabled, getSupabaseStatusMessage,
@@ -153,6 +153,13 @@ const server = http.createServer(async (request, response) => {
         return;
     }
 
+    // Reject path traversal attempts before URL normalization collapses them.
+    const rawRequestUrl = request.url;
+    if (rawRequestUrl.includes('..') || decodeURIComponent(rawRequestUrl).includes('..')) {
+        json(response, 403, { error: 'Forbidden' }, { status: 'offline' });
+        return;
+    }
+
     if (request.method === 'OPTIONS') {
         response.writeHead(204, {
             'Access-Control-Allow-Origin': '*',
@@ -165,7 +172,7 @@ const server = http.createServer(async (request, response) => {
 
     if (request.method === 'POST' && request.url?.startsWith('/api/refresh-all')) {
         // Bust the server-side in-memory cache for all live data keys.
-        const BUST_PREFIXES = ['ticker:', 'briefing:', 'firms:', 'acled:', 'markets', 'gdelt:', 'airplanes:', 'quakes:', 'nga-warnings', 'oil-prices', 'humanitarian:', 'regional-news:'];
+        const BUST_PREFIXES = ['ticker:', 'briefing:', 'firms:', 'acled:', 'markets', 'gdelt:', 'flights:', 'quakes:', 'nga-warnings', 'oil-prices', 'humanitarian:', 'regional-news:'];
         let cleared = 0;
         for (const key of cache.keys()) {
             if (BUST_PREFIXES.some((p) => key.startsWith(p))) {
@@ -186,39 +193,6 @@ const server = http.createServer(async (request, response) => {
     const sourceIds = parseSourceIds(url.searchParams);
 
     try {
-        // ── CORS proxy relay (replaces dead allorigins.win / codetabs for v1 HTML page) ──
-        // /api/proxy/get?url=<encoded>  → { contents: "..." }  (allorigins /get format)
-        // /api/proxy/raw?url=<encoded>  → raw text             (allorigins /raw format)
-        if (url.pathname === '/api/proxy/get' || url.pathname === '/api/proxy/raw') {
-            const targetUrl = url.searchParams.get('url');
-            if (!targetUrl) {
-                json(response, 400, { error: 'Missing ?url= parameter' }, { status: 'offline' });
-                return;
-            }
-            try {
-                const upstream = await fetch(decodeURIComponent(targetUrl), {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                        'Accept-Language': 'en-US,en;q=0.5',
-                        'Referer': 'https://www.google.com/',
-                        'Cache-Control': 'no-cache',
-                    },
-                    signal: AbortSignal.timeout(12000),
-                });
-                const text = await upstream.text();
-                if (url.pathname === '/api/proxy/get') {
-                    json(response, 200, { contents: text, status: { url: targetUrl, content_type: upstream.headers.get('content-type') || '' } }, { status: 'live', updatedAt: new Date().toISOString(), cache: 'miss' });
-                } else {
-                    response.writeHead(200, { 'Content-Type': upstream.headers.get('content-type') || 'text/plain', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' });
-                    response.end(text);
-                }
-            } catch (err) {
-                json(response, 502, { error: 'Proxy fetch failed', message: err.message }, { status: 'offline' });
-            }
-            return;
-        }
-
         if (url.pathname === '/api/sheets-health') {
             json(response, 200, getRecordingHealth(), { status: 'live', updatedAt: new Date().toISOString(), cache: 'miss' });
             return;
@@ -382,16 +356,19 @@ const server = http.createServer(async (request, response) => {
             const theater = url.searchParams.get('theater') || 'global';
             const result = await useCached(
                 `flights:${theater}`,
-                2 * 60 * 1000,
+                10 * 60 * 1000,
                 () => fetchFlightsPayload(theater),
-                (p) => p?.type === 'FeatureCollection' && p.features?.length > 0
+                (p) => p?.type === 'FeatureCollection'
             );
             json(response, 200, result.payload, result.meta);
             return;
         }
 
         if (url.pathname === '/api/vessels') {
-            const payload = getVesselsGeoJson();
+            const theater = url.searchParams.get('theater') || 'global';
+            const payload = typeof getVesselsGeoJsonForTheater === 'function'
+                ? getVesselsGeoJsonForTheater(theater)
+                : getVesselsGeoJson();
             json(response, 200, payload, {
                 status: payload.meta.connected ? 'live' : (payload.meta.requiresKey ? 'unconfigured' : 'stale'),
                 updatedAt: payload.meta.fetchedAt
@@ -518,6 +495,12 @@ const server = http.createServer(async (request, response) => {
             return;
         }
 
+        // Unknown API routes should 404, not fall through to the SPA fallback.
+        if (url.pathname.startsWith('/api/')) {
+            json(response, 404, { error: 'Not found' }, { status: 'offline' });
+            return;
+        }
+
         // --- Static file serving for production ---
         if (fs.existsSync(DIST_DIR)) {
             const MIME_TYPES = {
@@ -529,7 +512,14 @@ const server = http.createServer(async (request, response) => {
                 '.webm': 'video/webm', '.mp4': 'video/mp4',
             };
 
-            let filePath = path.join(DIST_DIR, url.pathname === '/' ? 'index.html' : url.pathname);
+            const rawPath = url.pathname === '/' ? 'index.html' : url.pathname;
+            const resolvedPath = path.normalize(path.join(DIST_DIR, rawPath));
+            if (!resolvedPath.startsWith(path.normalize(DIST_DIR + path.sep))) {
+                json(response, 403, { error: 'Forbidden' }, { status: 'offline' });
+                return;
+            }
+
+            let filePath = resolvedPath;
             if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
                 filePath = path.join(DIST_DIR, 'index.html');
             }

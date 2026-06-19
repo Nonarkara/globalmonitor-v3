@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Layers, Activity, CloudRain, Flame, AlertTriangle, Wind, Zap, Building2, Plane, Ship } from 'lucide-react';
+import { Layers, Activity, CloudRain, Flame, AlertTriangle, Wind, Zap, Building2, Plane, Ship, Moon, Satellite, Map as MapIcon } from 'lucide-react';
 import CopernicusPreviewPanel from './CopernicusPreviewPanel';
 import SourceStack from './SourceStack';
 import { EO_TILE_LAYERS } from '../services/eoTiles';
@@ -18,12 +18,13 @@ const Sidebar = ({
     showStrategicContext,
     setShowStrategicContext,
     copernicusResource,
+    mapStyle,
+    setMapStyle,
+    dashboardVersion = 'v8.3',
 }) => {
     const flightCount = useFlightCount();
     const vesselCount = useVesselCount();
     const contentRef = useRef(null);
-    const flightsActive = activeLayers.includes('flights');
-    const vesselsActive = activeLayers.includes('vessels');
 
     useEffect(() => {
         if (contentRef.current) {
@@ -31,61 +32,37 @@ const Sidebar = ({
         }
     }, [viewMode]);
 
-    const layerConfigs = [
+    const basemapConfigs = [
+        { id: 'dark', title: 'Dark', desc: 'Low-glare operations map', icon: <Moon size={16} /> },
+        { id: 'satellite', title: 'Satellite', desc: 'Esri imagery + labels', icon: <Satellite size={16} /> },
+        { id: 'voyager', title: 'Political', desc: 'Borders and place context', icon: <MapIcon size={16} /> },
+    ];
+
+    const layerGroups = [
         {
-            id: 'firms',
-            title: 'Fire / Strikes',
-            desc: 'NASA VIIRS thermal anomalies',
-            icon: <Zap size={18} />
+            title: 'Operational',
+            layers: [
+                { id: 'firms', title: 'Fire / Strikes', desc: 'NASA VIIRS thermal anomalies', icon: <Zap size={18} /> },
+                { id: 'conflicts', title: 'Conflicts', desc: 'Hotspots & humanitarian risk', icon: <Flame size={18} /> },
+                { id: 'infrastructure', title: 'Infrastructure', desc: 'Energy, ports, chokepoints', icon: <Building2 size={18} /> },
+            ],
         },
         {
-            id: 'conflicts',
-            title: 'Conflicts',
-            desc: 'Hotspots & humanitarian risk',
-            icon: <Flame size={18} />
+            title: 'Mobility',
+            layers: [
+                { id: 'flights', title: 'Flights', desc: 'ADS-B + aviationstack cache', icon: <Plane size={18} /> },
+                { id: 'vessels', title: 'Ships', desc: 'AIS traffic + fleet fallback', icon: <Ship size={18} /> },
+            ],
         },
         {
-            id: 'disasters',
-            title: 'Disasters',
-            desc: 'Active events (NASA EONET)',
-            icon: <AlertTriangle size={18} />
+            title: 'Environment',
+            layers: [
+                { id: 'weather', title: 'Precipitation', desc: 'RainViewer radar tiles', icon: <CloudRain size={18} /> },
+                { id: 'aqi', title: 'Air Quality', desc: 'PM2.5 & AQI', icon: <Wind size={18} /> },
+                { id: 'disasters', title: 'Disasters', desc: 'Active events (NASA EONET)', icon: <AlertTriangle size={18} /> },
+                { id: 'economy', title: 'Economy', desc: 'GDP baselines (World Bank)', icon: <Activity size={18} /> },
+            ],
         },
-        {
-            id: 'economy',
-            title: 'Economy',
-            desc: 'GDP baselines (World Bank)',
-            icon: <Activity size={18} />
-        },
-        {
-            id: 'weather',
-            title: 'Weather',
-            desc: 'Conditions (Open-Meteo)',
-            icon: <CloudRain size={18} />
-        },
-        {
-            id: 'aqi',
-            title: 'Air Quality',
-            desc: 'PM2.5 & AQI',
-            icon: <Wind size={18} />
-        },
-        {
-            id: 'infrastructure',
-            title: 'Infrastructure',
-            desc: 'Energy, ports, chokepoints',
-            icon: <Building2 size={18} />
-        },
-        {
-            id: 'flights',
-            title: 'Flight Tracking',
-            desc: 'airplanes.live + OpenSky ADS-B · worldwide',
-            icon: <Plane size={18} />
-        },
-        {
-            id: 'vessels',
-            title: 'Ship Tracking',
-            desc: 'aisstream.io AIS · worldwide',
-            icon: <Ship size={18} />
-        }
     ];
     // Compact mono labels replace emoji on satellite layer chips — fits the tactical aesthetic
     // and avoids the duplicate-emoji confusion (🌊 for SST + Bathymetry, 🌧️ for Precip + Radar).
@@ -115,10 +92,12 @@ const Sidebar = ({
     const renderEoLayer = (layer) => {
         const isActive = activeLayers.includes(layer.id);
         return (
-            <div
+            <button
+                type="button"
                 key={layer.id}
                 className={`layer-card ${isActive ? 'active' : ''}`}
                 onClick={() => toggleLayer(layer.id)}
+                aria-pressed={isActive}
                 style={{ padding: '10px 14px', gap: '10px' }}
             >
                 <span style={{
@@ -135,11 +114,11 @@ const Sidebar = ({
                 }}>
                     {SAT_MONO_LABEL[layer.id] || layer.id.replace('eo-', '').slice(0, 5).toUpperCase()}
                 </span>
-                <div className="layer-info">
+                <span className="layer-info">
                     <span className="layer-title" style={{ fontSize: '0.85rem' }}>{layer.name}</span>
                     <span className="layer-desc" style={{ fontSize: '0.72rem' }}>{layer.description}</span>
-                </div>
-            </div>
+                </span>
+            </button>
         );
     };
 
@@ -149,54 +128,90 @@ const Sidebar = ({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                     <span style={{ fontSize: '0.75rem', fontWeight: 300, letterSpacing: '0.3px', color: 'var(--text-main)' }}>Global Political Dashboard</span>
                     <span style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.4)', fontWeight: 500, letterSpacing: '1.2px', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
-                        {viewMode === 'thailand' ? 'Thailand' : viewMode === 'indopacific' ? 'Indo-Pacific' : 'Middle East'} · GlobeWatch v8.0
+                        {viewMode === 'thailand' ? 'Thailand' : viewMode === 'indopacific' ? 'Southeast Asia' : 'Middle East'} · GlobeWatch {dashboardVersion}
                     </span>
                 </div>
             </div>
             <div ref={contentRef} className="sidebar-content">
                 <div>
-                    <h3 className="section-title">Data Layers</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {layerConfigs.map((layer) => {
-                            const isActive = activeLayers.includes(layer.id);
-                            const layerDesc = layer.id === 'flights' && isActive
-                                ? `${flightCount > 0 ? flightCount.toLocaleString() : '…'} aircraft · ADS-B`
-                                : layer.id === 'vessels' && isActive
-                                    ? `${vesselCount > 0 ? vesselCount.toLocaleString() : '…'} vessels · AIS`
-                                    : layer.desc;
+                    <h3 className="section-title">Basemap</h3>
+                    <div className="basemap-grid" role="radiogroup" aria-label="Map basemap">
+                        {basemapConfigs.map((base) => {
+                            const isActive = mapStyle === base.id;
                             return (
-                                <div
-                                    key={layer.id}
-                                    className={`layer-card ${isActive ? 'active' : ''}`}
-                                    onClick={() => toggleLayer(layer.id)}
+                                <button
+                                    key={base.id}
+                                    type="button"
+                                    className={`basemap-option ${isActive ? 'active' : ''}`}
+                                    onClick={() => setMapStyle(base.id)}
+                                    role="radio"
+                                    aria-checked={isActive}
                                 >
-                                    <div className="layer-icon-wrapper">
-                                        {layer.icon}
-                                    </div>
-                                    <div className="layer-info">
-                                        <span className="layer-title">{layer.title}</span>
-                                        <span className="layer-desc">{layerDesc}</span>
-                                    </div>
-                                </div>
+                                    <span className="basemap-option-icon">{base.icon}</span>
+                                    <span className="basemap-option-copy">
+                                        <span className="layer-title">{base.title}</span>
+                                        <span className="layer-desc">{base.desc}</span>
+                                    </span>
+                                </button>
                             );
                         })}
                     </div>
                 </div>
 
                 <div>
+                    <h3 className="section-title">Layers</h3>
+                    <div className="layer-group-stack">
+                        {layerGroups.map((group) => (
+                            <div className="layer-group" key={group.title}>
+                                <div className="layer-group-title">{group.title}</div>
+                                <div className="layer-list">
+                                    {group.layers.map((layer) => {
+                                        const isActive = activeLayers.includes(layer.id);
+                                        const layerDesc = layer.id === 'flights' && isActive
+                                            ? `${flightCount > 0 ? flightCount.toLocaleString() : '...'} aircraft · ADS-B`
+                                            : layer.id === 'vessels' && isActive
+                                                ? `${vesselCount > 0 ? vesselCount.toLocaleString() : '...'} vessels · AIS`
+                                                : layer.desc;
+                                        return (
+                                            <button
+                                                key={layer.id}
+                                                type="button"
+                                                className={`layer-card ${isActive ? 'active' : ''}`}
+                                                onClick={() => toggleLayer(layer.id)}
+                                                aria-pressed={isActive}
+                                            >
+                                                <span className="layer-icon-wrapper">
+                                                    {layer.icon}
+                                                </span>
+                                                <span className="layer-info">
+                                                    <span className="layer-title">{layer.title}</span>
+                                                    <span className="layer-desc">{layerDesc}</span>
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div>
                     <h3 className="section-title">Map Framing</h3>
-                    <div
+                    <button
+                        type="button"
                         className={`layer-card ${showStrategicContext ? 'active' : ''}`}
                         onClick={() => setShowStrategicContext((value) => !value)}
+                        aria-pressed={showStrategicContext}
                     >
-                        <div className="layer-icon-wrapper">
+                        <span className="layer-icon-wrapper">
                             <Layers size={20} />
-                        </div>
-                        <div className="layer-info">
+                        </span>
+                        <span className="layer-info">
                             <span className="layer-title">Strategic Context</span>
                             <span className="layer-desc">Optional reference corridors, zones, and city anchors</span>
-                        </div>
-                    </div>
+                        </span>
+                    </button>
                 </div>
 
                 <div>

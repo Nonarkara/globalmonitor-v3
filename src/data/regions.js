@@ -215,7 +215,7 @@ export const REGIONS = {
     },
     indopacific: {
         id: 'indopacific',
-        label: 'Indo-Pacific',
+        label: 'Southeast Asia',
         viewState: REGION_VIEW_STATES.indopacific,
         dots: ASEAN_DOTS_GEOJSON,
         channels: TV_CHANNELS_INDOPACIFIC

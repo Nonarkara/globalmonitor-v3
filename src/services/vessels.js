@@ -1,3 +1,3 @@
 import { fetchBackendJson } from './backendClient.js';
 
-export const fetchVessels = async () => fetchBackendJson('/api/vessels');
+export const fetchVessels = async (theater = 'middleeast') => fetchBackendJson('/api/vessels', { theater });
