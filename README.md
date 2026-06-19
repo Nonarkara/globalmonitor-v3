@@ -1,21 +1,31 @@
-# Tech Monitor
+# Globalmonitor v3
 
-A React + Vite dashboard for urban operations monitoring, with a lightweight Node API cache layer for the most time-sensitive panels.
+Global Political Dashboard / GlobeWatch v8.3: a React + Vite geopolitical intelligence dashboard with a lightweight Node API cache layer for the most time-sensitive panels.
 
-It combines map layers, market context, and structured intelligence briefings so planners can read transport, climate, conflict, and policy signals as one operating picture.
+It combines live map layers, flight and vessel tracking, market context, humanitarian indicators, regional news, and structured intelligence briefings so planners can read conflict, climate, mobility, and policy signals as one operating picture.
+
+## Live Status
+
+- Current source repo: `Nonarkara/globalmonitor`
+- Clean v3 mirror: `Nonarkara/globalmonitor-v3`
+- Live static frontend: `https://globalmonitor.pages.dev`
+- API backend: `https://globalmonitor.fly.dev`
+
+As of 2026-06-20, the Cloudflare Pages frontend is current, but the Fly backend is still an older deployment because Fly blocks new releases until billing/payment information is added. Local development is the authoritative full-stack verification path until Fly is unblocked.
 
 ## What It Tracks
 
-- Natural disasters via NASA EONET
-- Conflict and humanitarian hotspots via curated signals plus ReliefWeb fallback
+- Conflict and humanitarian hotspots via ACLED, curated fallbacks, UNHCR, and ReliefWeb
+- Flight positions via airplanes.live, OpenSky, and optional aviationstack supplement
+- Ship positions via AIS/VesselFinder feeds, with map heading vectors
+- NASA FIRMS thermal anomalies and NASA GIBS environmental/satellite overlays
 - Weather and air quality via Open-Meteo
-- Macro growth baselines via the World Bank API
-- Crypto, FX, and reference commodities
+- Seismic activity via USGS
+- Market radar, energy/oil indicators, sanctions, and defense panels
 - Topic-based intelligence briefings for:
-  - Iran flight and conflict disruption
-  - Thailand digital and city programs
-  - Urban systems and mobility
-  - Urban politics and governance
+  - Middle East conflict, Hormuz, energy, and diplomacy
+  - Southeast Asia / Indo-Pacific security and maritime issues
+  - Thailand security, border, depa, MDES, and tech ecosystem monitoring
 
 ## Run Locally
 
@@ -26,10 +36,10 @@ npm run dev:stack
 
 This starts:
 
-- the frontend on `http://127.0.0.1:5180`
-- the API cache layer on `http://127.0.0.1:4000`
+- frontend on `http://127.0.0.1:5180`
+- API cache layer on `http://127.0.0.1:4000`
 
-Primary evaluation: `npm run dev:stack` (frontend **5180**, API **4000**). `globalmonitor.fly.dev` is optional and stale unless you deploy (Fly billing). Static backup: build with `--base=/globalmonitor/` then `npx gh-pages -d dist` (no npm script in package.json yet).
+Primary evaluation: `npm run dev:stack` (frontend **5180**, API **4000**). Do not treat `globalmonitor.fly.dev` as current until a Fly release succeeds.
 
 If you want to run them separately:
 
@@ -42,6 +52,19 @@ Build for production:
 
 ```bash
 npm run build
+```
+
+Deploy the current static frontend to Cloudflare Pages:
+
+```bash
+VITE_API_BASE_URL=https://globalmonitor.fly.dev npm run build
+npx wrangler pages deploy dist --project-name=globalmonitor --branch=main --commit-dirty=true
+```
+
+Deploy the full backend/frontend image to Fly after billing is unblocked:
+
+```bash
+fly deploy --remote-only -a globalmonitor
 ```
 
 ## Copernicus Sentinel Starter
@@ -83,4 +106,5 @@ Notes:
 
 - Key live panels now prefer the backend API at `/api/*`, which adds caching and returns live or stale payloads explicitly.
 - The frontend still has browser-side fallbacks, so the dashboard keeps working while the backend is unavailable.
-- For production-grade flight and traffic monitoring, add dedicated APIs such as OpenSky, FlightAware, GTFS Realtime, and TomTom instead of relying only on media feeds.
+- Flight traffic uses a conservative cache-first strategy to protect free API quotas. aviationstack is Middle-East bounded and cached server-side.
+- Heavy panels and the map are code-split with `React.lazy` so the initial app bundle stays small while the map chunk loads separately.

@@ -1,6 +1,6 @@
 # Globalmonitor (v3-global) — Live Context
 
-Last updated: 2026-06-19 (GlobeWatch v8.3 sync).
+Last updated: 2026-06-20 (GlobeWatch v8.3 / v3 mirror sync).
 
 ## VERIFY BEFORE RECOMMEND (mandatory for all agents)
 
@@ -12,6 +12,11 @@ Cursor rule: [.cursor/rules/verify-before-recommend.mdc](.cursor/rules/verify-be
 
 ## Live URL
 
+- **Current frontend URL**: https://globalmonitor.pages.dev/ — Cloudflare Pages, static frontend, latest split bundle.
+- **Current source repo**: https://github.com/Nonarkara/globalmonitor
+- **Clean v3 mirror repo**: https://github.com/Nonarkara/globalmonitor-v3
+- **Backend URL**: https://globalmonitor.fly.dev/ — currently stale until Fly billing is unblocked and a new release succeeds.
+
 ## GlobeWatch v8.3 (Codex pass — in repo)
 - UI label: `GlobeWatch v8.3` in [src/App.jsx](src/App.jsx) / [Sidebar.jsx](src/components/Sidebar.jsx)
 - Region-aware traffic interpolation ([useInterpolatedTraffic.js](src/hooks/useInterpolatedTraffic.js)), theater bboxes ([MapContainer.jsx](src/components/MapContainer.jsx))
@@ -21,8 +26,9 @@ Cursor rule: [.cursor/rules/verify-before-recommend.mdc](.cursor/rules/verify-be
 - Ports in repo: **5180** (Vite) + **4000** (API) — not Codex 5183/4010 unless overridden by env
 
 - **Primary eval (laptop, no Fly billing)**: http://localhost:5180 — `npm run dev:stack` (Vite + API proxy). API direct: http://127.0.0.1:4000
-- **Production (optional)**: https://globalmonitor.fly.dev/ (Fly.io — deploy not required for dev)
-- **Static backup**: https://nonarkara.github.io/globalmonitor/ (GitHub Pages)
+- **Live static frontend**: https://globalmonitor.pages.dev/ (Cloudflare Pages project `globalmonitor`)
+- **Production backend (blocked)**: https://globalmonitor.fly.dev/ (Fly.io — stale until a paid release succeeds)
+- **Legacy static backup**: https://nonarkara.github.io/globalmonitor/ (GitHub Pages)
 - Fallback config: `render.yaml` (vercel.json removed from repo)
 
 ## Local dev (one command)
@@ -39,12 +45,13 @@ When reporting whether work is shipped, agents MUST state one of:
 
 GitHub Pages backup deploys separately from Fly.io; if only gh-pages has the change, use `Committed on URL: https://nonarkara.github.io/globalmonitor/`. Never imply fly.dev live until push + deploy are verified (`git status` vs `origin/main`, deploy logs).
 
-## Deploy status (2026-06-19)
-- **Git**: sync `main` to GitHub after push (GlobeWatch v8.3 commit `122e229` + follow-up cleanup). Do **not** `fly deploy` while billing blocked.
-- **Local eval (verified this session)**: http://127.0.0.1:5180/ HTTP 200; http://127.0.0.1:4000/api/flights?theater=middleeast HTTP 200 — `npm run dev:stack`
-- **Fly**: **deprecated for Dr Non's workflow** — `globalmonitor.fly.dev` serves an older bundle until a paid deploy succeeds
-- **GitHub Pages**: no `deploy:gh-pages` script in package.json; manual: `npm run build -- --base=/globalmonitor/ && cp dist/index.html dist/404.html && npx gh-pages -d dist`
-- **Fly unblock (optional)**: `npm run build && fly deploy --remote-only -a globalmonitor`
+## Deploy status (2026-06-20)
+- **Git**: `main` is pushed to `Nonarkara/globalmonitor` and mirrored to `Nonarkara/globalmonitor-v3` at `fad9406`.
+- **Local eval**: another agent verified `npm run dev:stack` with frontend `http://127.0.0.1:5180/` HTTP 200 and API `http://127.0.0.1:4000` regional endpoints HTTP 200.
+- **Cloudflare Pages**: `https://globalmonitor.pages.dev/` serves the latest static frontend. Build with `VITE_API_BASE_URL=https://globalmonitor.fly.dev`.
+- **Fly**: blocked by billing. `fly deploy --remote-only -a globalmonitor` fails with: `We need your payment information to continue`.
+- **Live backend caveat**: `globalmonitor.fly.dev` still serves older API behavior. It ignores theater for ACLED, lacks aviationstack metadata, and `/api/vessels` may fall through to HTML until Fly is redeployed.
+- **GitHub Pages**: legacy only; manual command remains `npm run build -- --base=/globalmonitor/ && cp dist/index.html dist/404.html && npx gh-pages -d dist`.
 
 ## Three-Region Theater Nav
 Global Monitor now has three theaters: Middle East, Indo-Pacific, Thailand.
@@ -144,7 +151,8 @@ Pattern: extend [server/lib/supabase.mjs](server/lib/supabase.mjs) with an `upse
   - `npm audit --audit-level=moderate`
   - `npm run lint`
   - `npm run build`
-- Existing `.github/workflows/cloudflare-pages.yml` remains unchanged (Cloudflare Pages deploy on `main`).
+- `.github/workflows/cloudflare-pages.yml` deploys `dist` to the Cloudflare Pages project `globalmonitor` with `VITE_API_BASE_URL=https://globalmonitor.fly.dev`.
+- GitHub Actions may be disabled on the account; if so, deploy Cloudflare manually with Wrangler.
 
 ## Ship tracking (AIS)
 - Layer wired: toggle **Ship Tracking** in sidebar → `/api/vessels` → merged feed
