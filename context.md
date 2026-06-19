@@ -75,6 +75,8 @@ Single source of truth: [src/data/regions.js](src/data/regions.js) — viewState
 - **Tile error handler**: `map.on('error')` is now wired in [MapContainer.jsx](src/components/MapContainer.jsx). Failed sources surface as a small amber "N layers unavailable" badge bottom-right.
 - **NASA GIBS redundancy**: every GIBS layer in [eoTiles.js](src/services/eoTiles.js) now uses 3 subdomain mirrors (`gibs`, `gibs-a`, `gibs-b`) for round-robin tile loads.
 - **Cursor lat/lng readout**: bottom-left of map. Mono, hairline cyan border, copy-to-clipboard button.
+- **Flight & vessel heading vectors**: [MapContainer.jsx](src/components/MapContainer.jsx) renders short course/heading look-ahead lines for flights (yellow/red, 3 min) and ships (category-colored, 2 min). Ships use `course` when available, fall back to `heading`.
+- **Vessel backend cache**: `/api/vessels?theater=` now uses a 15-second `useCached` layer to smooth polling and provide a stale snapshot on restart.
 
 ## Per-Country News
 - ASEAN-10 capitals + 8 Thai sub-regions are rendered as clickable dots when in Indo-Pacific / Thailand mode.
