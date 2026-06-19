@@ -192,10 +192,12 @@ export const upsertMarketQuotes = async (items) => {
         change_perc: String(m.changePerc || m.change || ''),
         is_positive: Boolean(m.isPositive)
     }));
-    const { error } = await sb.from('gm_market_quotes').insert(rows);
+    const { data, error } = await sb
+        .from('gm_market_quotes')
+        .upsert(rows, { onConflict: 'symbol', ignoreDuplicates: false });
     await recordIngestionRun({
         loader: 'markets', status: error ? 'fail' : 'ok',
-        rowsInserted: error ? 0 : rows.length,
+        rowsInserted: error ? 0 : data?.length || rows.length,
         errorMessage: error?.message || null,
         durationMs: Date.now() - t0
     });
@@ -215,10 +217,12 @@ export const upsertSentimentReadings = async (data) => {
         reading_date: t.date || null
     })).filter((r) => r.reading_date);
     if (!rows.length) return;
-    const { error } = await sb.from('gm_sentiment_readings').insert(rows);
+    const { data: upsertData, error } = await sb
+        .from('gm_sentiment_readings')
+        .upsert(rows, { onConflict: 'query,reading_date', ignoreDuplicates: false });
     await recordIngestionRun({
         loader: 'sentiment', status: error ? 'fail' : 'ok',
-        rowsInserted: error ? 0 : rows.length,
+        rowsInserted: error ? 0 : upsertData?.length || rows.length,
         errorMessage: error?.message || null,
         durationMs: Date.now() - t0
     });

@@ -58,7 +58,7 @@ const WarningItem = ({ warning, expanded, onToggle }) => {
     );
 };
 
-const MaritimeWarningsPanel = () => {
+const MaritimeWarningsPanel = ({ viewMode = 'middleeast' }) => {
     const [expandedId, setExpandedId] = useState(null);
     const fetcher = useCallback(() => fetchNgaWarnings(), []);
     const { data, isLoading, isRefreshing, isStale, error, retryCount, refresh } = useLiveResource(fetcher, {
@@ -97,7 +97,7 @@ const MaritimeWarningsPanel = () => {
                 retryCount={retryCount}
                 data={data}
                 isEmpty={data && warnings.length === 0}
-                emptyMessage="No active maritime warnings for Middle East region"
+                emptyMessage={`No active maritime warnings for ${viewMode === 'indopacific' ? 'Indo-Pacific' : viewMode === 'thailand' ? 'Thailand' : 'Middle East'} region`}
                 refresh={refresh}
             >
                 <div className="panel-content" style={{

@@ -43,22 +43,22 @@ const Sparkline = ({ data, color, width = 160, height = 32 }) => {
 
 const API_BASE = import.meta.env.DEV ? 'http://localhost:4000' : '';
 
-const HumanitarianPanel = () => {
+const HumanitarianPanel = ({ viewMode = 'middleeast' }) => {
     const acledFetcher = useCallback(() =>
-        fetch(`${API_BASE}/api/acled`).then(r => r.json()), []);
+        fetch(`${API_BASE}/api/acled?theater=${encodeURIComponent(viewMode)}`).then(r => r.json()), [viewMode]);
     const humanFetcher = useCallback(() =>
-        fetch(`${API_BASE}/api/humanitarian`).then(r => r.json()).catch(() => null), []);
+        fetch(`${API_BASE}/api/humanitarian?theater=${encodeURIComponent(viewMode)}`).then(r => r.json()).catch(() => null), [viewMode]);
     const infraFetcher = useCallback(() =>
         fetch(`${API_BASE}/api/infrastructure`).then(r => r.json()).catch(() => null), []);
 
     const { data: acledData, isLoading, isRefreshing, isStale, error, retryCount, refresh } = useLiveResource(acledFetcher, {
-        cacheKey: 'humanitarian-acled',
+        cacheKey: `humanitarian-acled:${viewMode}`,
         intervalMs: 10 * 60 * 1000,
         isUsable: (d) => d?.features?.length > 0
     });
 
     const { data: humanData } = useLiveResource(humanFetcher, {
-        cacheKey: 'humanitarian-unhcr',
+        cacheKey: `humanitarian-unhcr:${viewMode}`,
         intervalMs: 30 * 60 * 1000,
         isUsable: (d) => d != null
     });
@@ -126,7 +126,7 @@ const HumanitarianPanel = () => {
                     </span>
                 </div>
                 <span style={{ fontSize: '0.42rem', color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--font-mono)' }}>
-                    ACLED + UNHCR
+                    ACLED + UNHCR · {viewMode.toUpperCase()}
                 </span>
             </div>
 

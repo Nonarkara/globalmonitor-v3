@@ -52,15 +52,15 @@ const CumulativeChart = ({ data, color, width = 180, height = 36 }) => {
     );
 };
 
-const AcledAnalytics = () => {
+const AcledAnalytics = ({ viewMode = 'middleeast' }) => {
     const [showActors, setShowActors] = useState(false);
     const showTrend = true;
 
     const fetcher = useCallback(() =>
-        fetch(`${API_BASE}/api/acled`).then(r => r.json()), []);
+        fetch(`${API_BASE}/api/acled?theater=${encodeURIComponent(viewMode)}`).then(r => r.json()), [viewMode]);
 
     const { data, isLoading, isRefreshing, isStale, error, retryCount, refresh } = useLiveResource(fetcher, {
-        cacheKey: 'acled-analytics',
+        cacheKey: `acled-analytics:${viewMode}`,
         intervalMs: 10 * 60 * 1000,
         isUsable: (d) => d?.features?.length > 0
     });
@@ -143,7 +143,7 @@ const AcledAnalytics = () => {
                     </span>
                 </div>
                 <span style={{ fontSize: '0.45rem', color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--font-mono)' }}>
-                    ACLED · {analysis?.source === 'acled' ? 'LIVE' : 'CURATED'}
+                    ACLED · {analysis?.source === 'acled' ? 'LIVE' : 'CURATED'} · {viewMode.toUpperCase()}
                 </span>
             </div>
 

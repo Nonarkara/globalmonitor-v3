@@ -1,51 +1,24 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import MapContainer from './components/MapContainer';
+import React, { useState, useCallback, useEffect, Suspense } from 'react';
 import Sidebar from './components/Sidebar';
 import RegionSelector from './components/RegionSelector';
-import EventDetailsPanel from './components/EventDetailsPanel';
 import WorldClock from './components/WorldClock';
 import LiveIntelligenceFeed from './components/LiveIntelligenceFeed';
-import IntelligencePanel from './components/IntelligencePanel';
-import RegionalNewsPanel from './components/RegionalNewsPanel';
-import MarketRadarPanel from './components/MarketRadarPanel';
 import SettingsModal from './components/SettingsModal';
 import ErrorBoundary from './components/ErrorBoundary';
 import { getDefaultSourceIdsForRegion } from './services/liveNews';
 import { REGIONS, getRegion } from './data/regions';
-import CountryNewsPanel from './components/CountryNewsPanel';
 import { fetchCopernicusPreview } from './services/copernicus';
 import { useLiveResource } from './hooks/useLiveResource';
 import { Settings, RefreshCw, Eye, Network, Database, FileText, Printer, Info } from 'lucide-react';
 import { getVisitorCount, BASE_COUNT } from './services/visitorTracker';
 import EscalationGauge from './components/EscalationGauge';
-import LiveTVPanel from './components/LiveTVPanel';
-import MultiFrontBoard from './components/MultiFrontBoard';
-import IranWarPanel from './components/IranWarPanel';
 import AlertBanner from './components/AlertBanner';
-import MaritimeWarningsPanel from './components/MaritimeWarningsPanel';
-import SeismicPanel from './components/SeismicPanel';
-import TimeMachine from './components/TimeMachine';
-import HormuzTracker from './components/HormuzTracker';
-import OilPriceChart from './components/OilPriceChart';
-import MiddleEastOilDependency from './components/MiddleEastOilDependency';
-import SentimentChart from './components/SentimentChart';
-import AcledAnalytics from './components/AcledAnalytics';
-import FlightRadarEmbed from './components/FlightRadarEmbed';
-import { useOnlineStatus } from './hooks/useOnlineStatus';
-// Long-term intelligence components
-import HumanitarianPanel from './components/HumanitarianPanel';
-import SanctionsPanel from './components/SanctionsPanel';
-import WarCostTracker from './components/WarCostTracker';
-import ActorNetworkModal from './components/ActorNetworkModal';
-import NuclearTrackerPanel from './components/NuclearTrackerPanel';
-import KeyFiguresPanel from './components/KeyFiguresPanel';
-import InternationalResponsePanel from './components/InternationalResponsePanel';
-import RefugeePanel from './components/RefugeePanel';
-import ArmsDefensePanel from './components/ArmsDefensePanel';
-// Government best-practice components
 import ClassificationBanner from './components/ClassificationBanner';
+import { useOnlineStatus } from './hooks/useOnlineStatus';
+import ActorNetworkModal from './components/ActorNetworkModal';
 import SourceHealthModal from './components/SourceHealthModal';
 import ActivityLogModal from './components/ActivityLogModal';
+import { LazyMapContainer, LazyPanel } from './components/LazyPanels';
 import { logActivity, LOG_TYPES } from './services/activityLog';
 import { useEscapeKey } from './hooks/useEscapeKey';
 import './styles/print.css';
@@ -164,32 +137,34 @@ function App() {
       <div className="app-container" id="main-content" role="main">
         {/* Full-screen map underneath */}
         <ErrorBoundary label="Map">
-          <MapContainer
-            viewTarget={viewTarget}
-            activeLayers={activeLayers}
-            onMarkerClick={setSelectedEvent}
-            copernicusPreview={copernicusResource.data}
-            copernicusMode={copernicusMode}
-            copernicusRuntimeSource={copernicusRuntimeSource}
-            showCopernicusOverlay={showCopernicusOverlay}
-            showStrategicContext={showStrategicContext}
-            mapStyle={mapStyle}
-            timeMachineDate={timeMachineDate}
-            viewMode={viewMode}
-            onRegionDotClick={(props) => {
-              const code = props?.countryCode || props?.regionCode;
-              if (code) setSelectedCountryCode(code);
-              if (typeof props?.latitude === 'number' && typeof props?.longitude === 'number') {
-                setViewTarget((prev) => ({
-                  ...prev,
-                  longitude: props.longitude,
-                  latitude: props.latitude,
-                  zoom: Math.max(prev.zoom, viewMode === 'thailand' ? 6.5 : 4.5),
-                  transitionDuration: 800,
-                }));
-              }
-            }}
-          />
+          <Suspense fallback={<div className="map-loading" /> }>
+            <LazyMapContainer
+              viewTarget={viewTarget}
+              activeLayers={activeLayers}
+              onMarkerClick={setSelectedEvent}
+              copernicusPreview={copernicusResource.data}
+              copernicusMode={copernicusMode}
+              copernicusRuntimeSource={copernicusRuntimeSource}
+              showCopernicusOverlay={showCopernicusOverlay}
+              showStrategicContext={showStrategicContext}
+              mapStyle={mapStyle}
+              timeMachineDate={timeMachineDate}
+              viewMode={viewMode}
+              onRegionDotClick={(props) => {
+                const code = props?.countryCode || props?.regionCode;
+                if (code) setSelectedCountryCode(code);
+                if (typeof props?.latitude === 'number' && typeof props?.longitude === 'number') {
+                  setViewTarget((prev) => ({
+                    ...prev,
+                    longitude: props.longitude,
+                    latitude: props.latitude,
+                    zoom: Math.max(prev.zoom, viewMode === 'thailand' ? 6.5 : 4.5),
+                    transitionDuration: 800,
+                  }));
+                }
+              }}
+            />
+          </Suspense>
         </ErrorBoundary>
 
         {/* Row 1: World Clock */}
@@ -302,7 +277,7 @@ function App() {
         {viewMode === 'middleeast' && (
           <div className="multi-front-row">
             <ErrorBoundary inline label="Multi-Front Board">
-              <MultiFrontBoard />
+              <LazyPanel name="MultiFrontBoard" />
             </ErrorBoundary>
           </div>
         )}
@@ -329,7 +304,8 @@ function App() {
           </ErrorBoundary>
           {viewMode === 'middleeast' && (
             <ErrorBoundary inline label="Flight Radar">
-              <FlightRadarEmbed
+              <LazyPanel
+                name="FlightRadarEmbed"
                 flightsActive={activeLayers.includes('flights')}
                 onToggleFlights={() => toggleLayer('flights')}
               />
@@ -338,14 +314,15 @@ function App() {
           {/* Live TV is always present so switching regions just swaps channels
               instead of unmounting the iframe — keeps panel stable across nav. */}
           <ErrorBoundary inline label="Live TV">
-            <LiveTVPanel viewMode={viewMode} />
+            <LazyPanel name="LiveTVPanel" viewMode={viewMode} />
           </ErrorBoundary>
         </div>
 
         {/* Row 3: Right sidebar */}
         <div className="right-sidebar">
           {selectedEvent && (
-            <EventDetailsPanel
+            <LazyPanel
+              name="EventDetailsPanel"
               event={selectedEvent}
               onClose={() => setSelectedEvent(null)}
             />
@@ -353,98 +330,94 @@ function App() {
           {viewMode === 'middleeast' && (
             <>
               <ErrorBoundary inline label="Iran War Theater">
-                <IranWarPanel activeSourceIds={activeSources} />
+                <LazyPanel name="IranWarPanel" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Humanitarian Impact">
-                <HumanitarianPanel />
+                <LazyPanel name="HumanitarianPanel" viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Conflict Analytics">
-                <AcledAnalytics />
+                <LazyPanel name="AcledAnalytics" viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Key Figures">
-                <KeyFiguresPanel />
+                <LazyPanel name="KeyFiguresPanel" />
               </ErrorBoundary>
               <ErrorBoundary inline label="International Response">
-                <InternationalResponsePanel />
+                <LazyPanel name="InternationalResponsePanel" />
               </ErrorBoundary>
               <ErrorBoundary inline label="Displacement Tracker">
-                <RefugeePanel />
+                <LazyPanel name="RefugeePanel" viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Arms & Defense">
-                <ArmsDefensePanel />
+                <LazyPanel name="ArmsDefensePanel" viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Gulf Security">
-                <IntelligencePanel key={`gulfSecurity:${sourceSetKey}`} briefingId="gulfSecurity" activeSourceIds={activeSources} />
+                <LazyPanel name="IntelligencePanel" panelKey={`gulfSecurity:${sourceSetKey}`} briefingId="gulfSecurity" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Energy & Oil Impact">
-                <IntelligencePanel key={`energyMarkets:${sourceSetKey}`} briefingId="energyMarkets" activeSourceIds={activeSources} />
+                <LazyPanel name="IntelligencePanel" panelKey={`energyMarkets:${sourceSetKey}`} briefingId="energyMarkets" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Regional Headlines">
-                <RegionalNewsPanel regionName="Middle East" title="Regional Headlines" activeSourceIds={activeSources} />
+                <LazyPanel name="RegionalNewsPanel" regionName="Middle East" title="Regional Headlines" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
             </>
           )}
           {viewMode === 'indopacific' && (
             <>
               <ErrorBoundary inline label="ASEAN Country News">
-                <CountryNewsPanel
-                  mode="indopacific"
+                <LazyPanel name="CountryNewsPanel" mode="indopacific"
                   selectedCode={selectedCountryCode}
-                  onSelect={setSelectedCountryCode}
-                />
+                  onSelect={setSelectedCountryCode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="South China Sea">
-                <IntelligencePanel key={`southChinaSea:${sourceSetKey}`} briefingId="southChinaSea" activeSourceIds={activeSources} />
+                <LazyPanel name="IntelligencePanel" panelKey={`southChinaSea:${sourceSetKey}`} briefingId="southChinaSea" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="ASEAN Geopolitics">
-                <IntelligencePanel key={`aseanDiplomacy:${sourceSetKey}`} briefingId="aseanDiplomacy" activeSourceIds={activeSources} />
+                <LazyPanel name="IntelligencePanel" panelKey={`aseanDiplomacy:${sourceSetKey}`} briefingId="aseanDiplomacy" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Myanmar Conflict">
-                <IntelligencePanel key={`myanmarConflict:${sourceSetKey}`} briefingId="myanmarConflict" activeSourceIds={activeSources} />
+                <LazyPanel name="IntelligencePanel" panelKey={`myanmarConflict:${sourceSetKey}`} briefingId="myanmarConflict" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Humanitarian Crisis">
-                <HumanitarianPanel />
+                <LazyPanel name="HumanitarianPanel" viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Displacement Tracker">
-                <RefugeePanel />
+                <LazyPanel name="RefugeePanel" viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Conflict Analytics">
-                <AcledAnalytics />
+                <LazyPanel name="AcledAnalytics" viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Arms & Defense">
-                <ArmsDefensePanel />
+                <LazyPanel name="ArmsDefensePanel" viewMode={viewMode} />
               </ErrorBoundary>
             </>
           )}
           {viewMode === 'thailand' && (
             <>
               <ErrorBoundary inline label="Thailand Region News">
-                <CountryNewsPanel
-                  mode="thailand"
+                <LazyPanel name="CountryNewsPanel" mode="thailand"
                   selectedCode={selectedCountryCode}
-                  onSelect={setSelectedCountryCode}
-                />
+                  onSelect={setSelectedCountryCode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Thailand Security">
-                <IntelligencePanel key={`thaiSecurity:${sourceSetKey}`} briefingId="thaiSecurity" activeSourceIds={activeSources} />
+                <LazyPanel name="IntelligencePanel" panelKey={`thaiSecurity:${sourceSetKey}`} briefingId="thaiSecurity" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Myanmar Border Crisis">
-                <IntelligencePanel key={`myanmarConflict:${sourceSetKey}`} briefingId="myanmarConflict" activeSourceIds={activeSources} />
+                <LazyPanel name="IntelligencePanel" panelKey={`myanmarConflict:${sourceSetKey}`} briefingId="myanmarConflict" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Humanitarian Crisis">
-                <HumanitarianPanel />
+                <LazyPanel name="HumanitarianPanel" viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Displacement Tracker">
-                <RefugeePanel />
+                <LazyPanel name="RefugeePanel" viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Conflict Analytics">
-                <AcledAnalytics />
+                <LazyPanel name="AcledAnalytics" viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Thai Tech Ecosystem">
-                <RegionalNewsPanel regionName="Thailand" title="Thailand Tech Ecosystem" activeSourceIds={activeSources} />
+                <LazyPanel name="RegionalNewsPanel" regionName="Thailand" title="Thailand Tech Ecosystem" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="depa Directives">
-                <RegionalNewsPanel regionName="DEPA" title="depa & MDES Directives" activeSourceIds={activeSources} />
+                <LazyPanel name="RegionalNewsPanel" regionName="DEPA" title="depa & MDES Directives" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
             </>
           )}
@@ -453,91 +426,91 @@ function App() {
         {/* Row 4: Bottom bar — 5-column grid, 2 rows */}
         <div className="bottom-bar">
           <ErrorBoundary inline label="Market Radar">
-            <MarketRadarPanel viewMode={viewMode} />
+            <LazyPanel name="MarketRadarPanel" viewMode={viewMode} />
           </ErrorBoundary>
           {viewMode === 'middleeast' && (
             <>
               {/* Row 1: Economics & Markets */}
               <ErrorBoundary inline label="Oil Price Chart">
-                <OilPriceChart />
+                <LazyPanel name="OilPriceChart" />
               </ErrorBoundary>
               <ErrorBoundary inline label="ME Oil Dependence">
-                <MiddleEastOilDependency />
+                <LazyPanel name="MiddleEastOilDependency" />
               </ErrorBoundary>
               <ErrorBoundary inline label="War Cost">
-                <WarCostTracker />
+                <LazyPanel name="WarCostTracker" />
               </ErrorBoundary>
               <ErrorBoundary inline label="Sanctions Tracker">
-                <SanctionsPanel />
+                <LazyPanel name="SanctionsPanel" />
               </ErrorBoundary>
               <ErrorBoundary inline label="Hormuz Crisis">
-                <HormuzTracker />
+                <LazyPanel name="HormuzTracker" />
               </ErrorBoundary>
               {/* Row 2: Military & Intelligence */}
               <ErrorBoundary inline label="Nuclear Program">
-                <NuclearTrackerPanel onFlyTo={handleMapFlyTo} />
+                <LazyPanel name="NuclearTrackerPanel" onFlyTo={handleMapFlyTo} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Diplomacy & Sanctions">
-                <IntelligencePanel key={`iranDiplomacy:${sourceSetKey}`} briefingId="iranDiplomacy" activeSourceIds={activeSources} />
+                <LazyPanel name="IntelligencePanel" panelKey={`iranDiplomacy:${sourceSetKey}`} briefingId="iranDiplomacy" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Proxy Theater">
-                <IntelligencePanel key={`proxyTheater:${sourceSetKey}`} briefingId="proxyTheater" activeSourceIds={activeSources} />
+                <LazyPanel name="IntelligencePanel" panelKey={`proxyTheater:${sourceSetKey}`} briefingId="proxyTheater" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Media Sentiment">
-                <SentimentChart />
+                <LazyPanel name="SentimentChart" viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Seismic Activity">
-                <SeismicPanel />
+                <LazyPanel name="SeismicPanel" viewMode={viewMode} />
               </ErrorBoundary>
             </>
           )}
           {viewMode === 'indopacific' && (
             <>
               <ErrorBoundary inline label="South China Sea Watch">
-                <RegionalNewsPanel regionName="SouthChinaSea" title="South China Sea Watch" activeSourceIds={activeSources} />
+                <LazyPanel name="RegionalNewsPanel" regionName="SouthChinaSea" title="South China Sea Watch" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Taiwan Strait">
-                <RegionalNewsPanel regionName="Taiwan" title="Taiwan Strait" activeSourceIds={activeSources} />
+                <LazyPanel name="RegionalNewsPanel" regionName="Taiwan" title="Taiwan Strait" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="ASEAN Diplomacy">
-                <RegionalNewsPanel regionName="ASEAN" title="ASEAN Diplomacy" activeSourceIds={activeSources} />
+                <LazyPanel name="RegionalNewsPanel" regionName="ASEAN" title="ASEAN Diplomacy" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Global Tech News">
-                <RegionalNewsPanel regionName="SEA" title="Indo-Pacific Tech" activeSourceIds={activeSources} />
+                <LazyPanel name="RegionalNewsPanel" regionName="SEA" title="Indo-Pacific Tech" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Global Macro">
-                <RegionalNewsPanel regionName="Global" title="Global Macro & Policy" activeSourceIds={activeSources} />
+                <LazyPanel name="RegionalNewsPanel" regionName="Global" title="Global Macro & Policy" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Maritime Warnings">
-                <MaritimeWarningsPanel />
+                <LazyPanel name="MaritimeWarningsPanel" viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Media Sentiment">
-                <SentimentChart />
+                <LazyPanel name="SentimentChart" viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Seismic Activity">
-                <SeismicPanel />
+                <LazyPanel name="SeismicPanel" viewMode={viewMode} />
               </ErrorBoundary>
             </>
           )}
           {viewMode === 'thailand' && (
             <>
               <ErrorBoundary inline label="Myanmar Border Crisis">
-                <RegionalNewsPanel regionName="Myanmar" title="Myanmar Border Crisis" activeSourceIds={activeSources} />
+                <LazyPanel name="RegionalNewsPanel" regionName="Myanmar" title="Myanmar Border Crisis" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="ASEAN Watch">
-                <RegionalNewsPanel regionName="ASEAN" title="ASEAN Watch" activeSourceIds={activeSources} />
+                <LazyPanel name="RegionalNewsPanel" regionName="ASEAN" title="ASEAN Watch" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Thailand Tech">
-                <RegionalNewsPanel regionName="Thailand" title="Thailand Tech Ecosystem" activeSourceIds={activeSources} />
+                <LazyPanel name="RegionalNewsPanel" regionName="Thailand" title="Thailand Tech Ecosystem" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="depa Directives">
-                <RegionalNewsPanel regionName="DEPA" title="depa & MDES" activeSourceIds={activeSources} />
+                <LazyPanel name="RegionalNewsPanel" regionName="DEPA" title="depa & MDES" activeSourceIds={activeSources} viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Media Sentiment">
-                <SentimentChart />
+                <LazyPanel name="SentimentChart" viewMode={viewMode} />
               </ErrorBoundary>
               <ErrorBoundary inline label="Seismic Activity">
-                <SeismicPanel />
+                <LazyPanel name="SeismicPanel" viewMode={viewMode} />
               </ErrorBoundary>
             </>
           )}
@@ -545,13 +518,13 @@ function App() {
 
         {/* Row 6: Live news ticker */}
         <ErrorBoundary inline label="Live Feed">
-          <LiveIntelligenceFeed key={`ticker:${viewMode}:${sourceSetKey}`} activeSourceIds={activeSources} />
+          <LiveIntelligenceFeed key={`ticker:${viewMode}:${sourceSetKey}`} activeSourceIds={activeSources} viewMode={viewMode} />
         </ErrorBoundary>
 
         {/* Time Machine — date slider for historical data */}
         {viewMode === 'middleeast' && (
           <ErrorBoundary inline label="Time Machine">
-            <TimeMachine onDateChange={setTimeMachineDate} />
+            <LazyPanel name="TimeMachine" onDateChange={setTimeMachineDate} />
           </ErrorBoundary>
         )}
 

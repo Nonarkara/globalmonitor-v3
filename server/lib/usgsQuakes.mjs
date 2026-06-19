@@ -16,6 +16,12 @@ const THEATERS = {
         maxlatitude: 25,
         minlongitude: 90,
         maxlongitude: 135
+    },
+    thailand: {
+        minlatitude: 5,
+        maxlatitude: 21,
+        minlongitude: 97,
+        maxlongitude: 106
     }
 };
 

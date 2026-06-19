@@ -3,9 +3,11 @@
  */
 
 export const fetchGdeltSentiment = async (theater = 'middleeast') => {
-    const query = theater === 'indopacific'
-        ? 'Thailand OR Singapore OR Vietnam OR Philippines'
-        : 'Iran OR Israel OR Gulf OR Hormuz';
+    const query = theater === 'thailand'
+        ? 'Thailand OR Bangkok OR Myanmar border'
+        : theater === 'indopacific'
+            ? 'Thailand OR Singapore OR Vietnam OR Philippines'
+            : 'Iran OR Israel OR Gulf OR Hormuz';
 
     const url = `https://api.gdeltproject.org/api/v2/doc/doc?query=${encodeURIComponent(query)}&mode=timelinetone&timespan=7d&format=json`;
 

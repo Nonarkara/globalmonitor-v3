@@ -579,8 +579,8 @@ const MapContainer = ({
         intervalMs: 24 * 60 * 60 * 1000,
         isUsable: (d) => d?.features?.length > 0
     });
-    const firmsResource = useLiveResource(useCallback(() => fetchFirmsData(), []), {
-        cacheKey: 'map:firms',
+    const firmsResource = useLiveResource(useCallback(() => fetchFirmsData(viewMode), [viewMode]), {
+        cacheKey: `map:firms:${viewMode}`,
         enabled: activeLayers.includes('firms'),
         intervalMs: 10 * 60 * 1000,
         isUsable: hasFeatureData
@@ -598,8 +598,8 @@ const MapContainer = ({
         isUsable: (payload) => payload?.type === 'FeatureCollection',
         maxRetries: 0
     });
-    const acledResource = useLiveResource(useCallback(() => fetchAcledEvents(), []), {
-        cacheKey: 'map:acled',
+    const acledResource = useLiveResource(useCallback(() => fetchAcledEvents(viewMode), [viewMode]), {
+        cacheKey: `map:acled:${viewMode}`,
         enabled: activeLayers.includes('conflicts'),
         intervalMs: 60 * 60 * 1000,
         isUsable: hasFeatureData

@@ -389,11 +389,12 @@ const server = http.createServer(async (request, response) => {
 
         if (url.pathname === '/api/acled') {
             const since = url.searchParams.get('since');
-            const cacheKey = since ? `acled:middleeast:${since}` : 'acled:middleeast';
+            const theater = url.searchParams.get('theater') || 'middleeast';
+            const cacheKey = since ? `acled:${theater}:${since}` : `acled:${theater}`;
             const result = await useCached(
                 cacheKey,
                 60 * 60 * 1000,  // 1 hour cache
-                () => fetchAcledEvents(since ? { since } : {}),
+                () => fetchAcledEvents(since ? { since, theater } : { theater }),
                 (p) => p?.type === 'FeatureCollection'
             );
             if (result.meta.cache !== 'hit') upsertAcledEvents(result.payload).catch(() => {});

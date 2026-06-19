@@ -7,7 +7,8 @@ const FIRMS_MAP_KEY = process.env.FIRMS_MAP_KEY || '';
 
 const THEATER_BBOX = {
     middleeast: '24,10,65,42',
-    indopacific: '90,-10,135,25'
+    indopacific: '90,-10,135,25',
+    thailand: '97,5,106,21'
 };
 
 const parseCsvLine = (line) => {
@@ -45,6 +46,10 @@ const getMockFirmsData = (theater = 'middleeast') => {
         { lat: 31.0461, lon: 34.8516, name: 'Gaza (Gaza Strip)', confidence: 'high', frp: 340 },
         { lat: 31.5454, lon: 35.1892, name: 'Jordan (Border region)', confidence: 'low', frp: 150 },
         { lat: 24.4539, lon: 54.3773, name: 'UAE (Port region)', confidence: 'low', frp: 120 }
+    ] : theater === 'thailand' ? [
+        { lat: 13.7563, lon: 100.5018, name: 'Thailand (Bangkok)', confidence: 'low', frp: 80 },
+        { lat: 19.91, lon: 99.83, name: 'Thailand (Chiang Rai)', confidence: 'low', frp: 70 },
+        { lat: 6.42, lon: 101.82, name: 'Thailand (Narathiwat)', confidence: 'low', frp: 60 }
     ] : [
         { lat: 13.7563, lon: 100.5018, name: 'Thailand (Bangkok)', confidence: 'low', frp: 80 },
         { lat: 1.3521, lon: 103.8198, name: 'Singapore', confidence: 'low', frp: 60 },

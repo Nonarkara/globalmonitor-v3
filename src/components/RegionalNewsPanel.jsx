@@ -7,7 +7,7 @@ const safeDateString = (date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
-const RegionalNewsPanel = ({ regionName, title, activeSourceIds }) => {
+const RegionalNewsPanel = ({ regionName, title, activeSourceIds, viewMode = 'middleeast' }) => {
     const [news, setNews] = useState([]);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const mountedRef = useRef(true);
@@ -111,13 +111,13 @@ const RegionalNewsPanel = ({ regionName, title, activeSourceIds }) => {
             if (!mountedRef.current) return;
             if (!Array.isArray(data)) { setNews([]); return; }
             let sliceStart = 0;
-            if (regionName === 'Global') sliceStart = 5;
-            if (regionName === 'Thailand') sliceStart = 10;
+            if (regionName === 'Global' || viewMode === 'indopacific') sliceStart = 5;
+            if (regionName === 'Thailand' || viewMode === 'thailand') sliceStart = 10;
 
             setNews(data.slice(sliceStart, sliceStart + 5));
         }).catch(() => { if (mountedRef.current) setNews([]); })
           .finally(() => { if (mountedRef.current) setIsRefreshing(false); });
-    }, [regionName, activeSourceIds]);
+    }, [regionName, activeSourceIds, viewMode]);
 
     useEffect(() => {
         const kickoff = setTimeout(fetchNews, 0);

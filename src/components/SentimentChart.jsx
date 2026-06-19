@@ -9,12 +9,12 @@ const CHART_WIDTH = 200;
 const CHART_HEIGHT = 60;
 const CHART_PAD = 2;
 
-const SentimentChart = () => {
+const SentimentChart = ({ viewMode = 'middleeast' }) => {
     const fetcher = useCallback(() =>
-        fetch(`${API_BASE}/api/sentiment`).then(r => r.json()), []);
+        fetch(`${API_BASE}/api/sentiment?theater=${encodeURIComponent(viewMode)}`).then(r => r.json()), [viewMode]);
 
     const { data, isLoading, isRefreshing, isStale, error, retryCount, refresh } = useLiveResource(fetcher, {
-        cacheKey: 'gdelt-sentiment',
+        cacheKey: `gdelt-sentiment:${viewMode}`,
         intervalMs: 30 * 60 * 1000,
         isUsable: (d) => d?.timeline?.length >= 3
     });

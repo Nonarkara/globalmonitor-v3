@@ -75,10 +75,10 @@ const QuakeItem = ({ quake }) => {
     );
 };
 
-const SeismicPanel = () => {
-    const fetcher = useCallback(() => fetchUsgsQuakes(), []);
+const SeismicPanel = ({ viewMode = 'middleeast' }) => {
+    const fetcher = useCallback(() => fetchUsgsQuakes(viewMode), [viewMode]);
     const { data, isLoading, isRefreshing, isStale, error, retryCount, refresh } = useLiveResource(fetcher, {
-        cacheKey: 'usgs-quakes',
+        cacheKey: `usgs-quakes:${viewMode}`,
         intervalMs: 10 * 60 * 1000,
         isUsable: (d) => d?.summary != null
     });

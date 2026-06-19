@@ -11,9 +11,10 @@ const STATUS_COLORS = {
     restricted: '#f97316'
 };
 
-const ArmsDefensePanel = () => {
+const ArmsDefensePanel = ({ viewMode = 'middleeast' }) => {
     const [showFlows, setShowFlows] = useState(false);
     const { arsenalUsage } = armsData;
+    const isMiddleEast = viewMode === 'middleeast';
 
     return (
         <div className="bottom-card" style={{ padding: '10px 12px' }}>
@@ -30,9 +31,21 @@ const ArmsDefensePanel = () => {
                     </span>
                 </div>
                 <span style={{ fontSize: '0.42rem', color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--font-mono)' }}>
-                    SIPRI + OSINT
+                    SIPRI + OSINT · {isMiddleEast ? 'MIDDLE EAST' : 'THEATER SNAPSHOT'}
                 </span>
             </div>
+
+            {!isMiddleEast && (
+                <div style={{
+                    padding: '8px', marginBottom: '6px',
+                    background: 'rgba(255,255,255,0.03)', borderRadius: '4px',
+                    border: '1px solid rgba(255,255,255,0.05)', fontSize: '0.42rem',
+                    color: 'rgba(255,255,255,0.45)', textAlign: 'center', lineHeight: 1.5
+                }}>
+                    Detailed arsenal tracking is focused on the Middle East theater.<br />
+                    Switch to <strong style={{ color: '#6366f1' }}>Middle East</strong> view for live SIPRI + OSINT data.
+                </div>
+            )}
 
             {/* Arsenal usage KPIs */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px', marginBottom: '6px' }}>

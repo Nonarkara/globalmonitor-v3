@@ -57,6 +57,19 @@ Global Monitor now has three theaters: Middle East, Indo-Pacific, Thailand.
 
 Single source of truth: [src/data/regions.js](src/data/regions.js) — viewStates, dot data, news queries, TV channels all live here. Add/edit a theater there and it propagates.
 
+## Region-aware data plumbing (Phase 3)
+- Backend endpoints now accept `?theater=` for ACLED, humanitarian, FIRMS, USGS quakes, and GDELT sentiment.
+  - `server/lib/acled.mjs` — theater-specific country lists + curated fallback events.
+  - `server/lib/humanitarian.mjs` — theater-specific UNHCR / ReliefWeb country sets + fallback data.
+  - `server/lib/firms.mjs` — Thailand bbox + sample hotspots.
+  - `server/lib/usgsQuakes.mjs` — Thailand bbox.
+  - `server/lib/gdelt.mjs` — Thailand query branch.
+- Frontend panels receive `viewMode` and pass it to fetchers:
+  - `HumanitarianPanel`, `AcledAnalytics`, `SentimentChart`, `SeismicPanel` fetch per-theater endpoints.
+  - `RefugeePanel` and `ArmsDefensePanel` show region-appropriate fallback / snapshot outside Middle East.
+  - `RegionalNewsPanel` and `MaritimeWarningsPanel` use `viewMode` to tune slices and empty-state copy.
+- `MapContainer.jsx` passes `viewMode` to FIRMS and ACLED live resources (in addition to flights/vessels).
+
 ## Map Stack — what changed in this audit
 - **Satellite basemap fixed**: previously pointed at MapTiler with the literal docs placeholder key (`get_your_own_OpIi9ZULNHzrESv6T2vL`) — rendered blank in production. Replaced with an inline ESRI World Imagery raster style (no key required).
 - **Tile error handler**: `map.on('error')` is now wired in [MapContainer.jsx](src/components/MapContainer.jsx). Failed sources surface as a small amber "N layers unavailable" badge bottom-right.
@@ -86,15 +99,23 @@ If either env var is missing, the Supabase client silently no-ops and the dashbo
 
 ### One-time DB setup (Supabase has no CLI for ad-hoc DDL without DB password)
 1. Open https://supabase.com/dashboard/project/qbatksnulitgrhigzbta/sql/new
-2. Paste contents of [supabase/migrations/001_globalmonitor_news.sql](supabase/migrations/001_globalmonitor_news.sql)
-3. Click Run. Migration is idempotent (`CREATE TABLE IF NOT EXISTS`).
+2. Run migrations in order:
+   - [supabase/migrations/001_globalmonitor_news.sql](supabase/migrations/001_globalmonitor_news.sql)
+   - [supabase/migrations/002_globalmonitor_loaders.sql](supabase/migrations/002_globalmonitor_loaders.sql)
+   - [supabase/migrations/003_globalmonitor_dedup.sql](supabase/migrations/003_globalmonitor_dedup.sql)
+3. Each migration is idempotent (`CREATE TABLE IF NOT EXISTS`, `ADD CONSTRAINT IF NOT EXISTS`).
 
 ### Tables created
 - `gm_news_items` — per-country/province news cache, de-duped by URL
 - `gm_ingestion_runs` — heartbeat log per loader run (for source-health surface)
 - `gm_region_visits` — region tab visit telemetry (drives render-prioritisation)
+- `gm_acled_events`, `gm_firms_hotspots`, `gm_market_quotes`, `gm_sentiment_readings` — archive tables
 
 All tables have public-read RLS policies. Writes restricted to `service_role`.
+
+### Duplicate-row fix (003 migration)
+- `gm_market_quotes` now has a unique constraint on `symbol`; `server/lib/supabase.mjs` upserts instead of inserting duplicates.
+- `gm_sentiment_readings` now has a unique constraint on `(query, reading_date)`; upsert keeps one tone reading per query + date.
 
 ### Backend ingestion
 - [server/lib/supabase.mjs](server/lib/supabase.mjs) — Supabase client singleton + helpers
@@ -107,6 +128,21 @@ All tables have public-read RLS policies. Writes restricted to `service_role`.
 
 ### Adding more loaders to Supabase
 Pattern: extend [server/lib/supabase.mjs](server/lib/supabase.mjs) with an `upsertX` function, write an ingestion lib that calls it + `recordIngestionRun()`, add the route to `server/index.mjs`. Existing loaders (FIRMS, ACLED, weather) are good next candidates — they already have `useCached` wrappers in `index.mjs`; piping the cached payload through `upsert` is a one-liner per loader.
+
+## Bundle & dependencies (Phase 4)
+- `npm audit` is clean (esbuild pinned to `0.27.2` via `package.json` `overrides` to avoid the Windows-only dev-server advisory; all other moderate+ advisories resolved by `npm audit fix`).
+- `App.jsx` and the heavy panel set are code-split with `React.lazy` + `Suspense` via `src/components/LazyPanels.jsx`.
+  - Main bundle dropped from ~12.9 MB gzipped to ~350 KB gzipped.
+  - `MapContainer` lazy-loads as its own chunk (~12.5 MB gzipped, dominated by map data/layers).
+- Build command: `npm run build` (Vite 7 + React Compiler ESLint).
+
+## CI
+- `.github/workflows/ci.yml` runs on every push/PR:
+  - `npm ci`
+  - `npm audit --audit-level=moderate`
+  - `npm run lint`
+  - `npm run build`
+- Existing `.github/workflows/cloudflare-pages.yml` remains unchanged (Cloudflare Pages deploy on `main`).
 
 ## Ship tracking (AIS)
 - Layer wired: toggle **Ship Tracking** in sidebar → `/api/vessels` → merged feed
