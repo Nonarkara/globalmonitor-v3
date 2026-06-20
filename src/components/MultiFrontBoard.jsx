@@ -34,16 +34,15 @@ const FrontCard = ({ front }) => {
             )}
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Icon size={12} style={{ color: front.color, opacity: 0.8 }} />
+                <Icon size={12} style={{ color: front.color === '#ef4444' ? 'var(--red)' : front.color === '#f59e0b' ? 'var(--ink-2)' : 'var(--green)', opacity: 0.9 }} />
                 <span style={{
-                    fontSize: '0.42rem',
+                    fontSize: '9px',
                     fontWeight: 700,
-                    letterSpacing: '1px',
-                    color: front.color,
+                    letterSpacing: '0.14em',
+                    color: front.status === 'CRITICAL' ? 'var(--red)' : front.status === 'ACTIVE' ? 'var(--ink)' : 'var(--ink-3)',
                     textTransform: 'uppercase',
-                    padding: '1px 5px',
-                    background: `${front.color}15`,
-                    borderRadius: '3px',
+                    padding: '2px 6px',
+                    border: '1px solid var(--line-2)',
                     minWidth: '5.5ch',
                     textAlign: 'center',
                     fontVariantNumeric: 'tabular-nums'
@@ -53,23 +52,23 @@ const FrontCard = ({ front }) => {
             </div>
 
             <div style={{
-                fontSize: '0.52rem',
+                fontSize: '12px',
                 fontWeight: 600,
-                color: 'rgba(255,255,255,0.85)',
-                letterSpacing: '0.3px',
+                color: 'var(--ink)',
+                letterSpacing: 'normal',
                 lineHeight: 1.2
             }}>
                 {front.name}
             </div>
 
             <div style={{
-                fontSize: '0.72rem',
-                fontWeight: 200,
+                fontSize: '15px',
+                fontWeight: 600,
                 fontFamily: 'var(--font-mono)',
                 fontVariantNumeric: 'tabular-nums',
-                color: front.dayCount != null ? front.color : 'transparent',
+                color: front.dayCount != null ? 'var(--ink)' : 'transparent',
                 lineHeight: 1,
-                minHeight: '0.72rem'
+                minHeight: '15px'
             }}>
                 {front.dayCount != null ? `DAY ${front.dayCount}` : '\u00A0'}
             </div>
@@ -103,41 +102,31 @@ const MultiFrontBoard = () => {
     const activeCount = fronts.filter(f => f.status === 'ACTIVE').length;
 
     return (
-        <div className="multi-front-board" style={{
-            background: 'rgba(10, 12, 18, 0.75)',
-            backdropFilter: 'blur(16px)',
-            borderRadius: '10px',
-            padding: '8px',
-            border: '1px solid rgba(255,255,255,0.06)'
-        }}>
+        <div className="multi-front-board grid-panel">
             <div className="multi-front-board__header">
-                <span style={{
-                    fontSize: '0.5rem',
-                    fontWeight: 600,
-                    letterSpacing: '1.5px',
-                    color: 'rgba(255,255,255,0.5)',
-                    textTransform: 'uppercase'
-                }}>
+                <span className="section-title" style={{ marginBottom: 0, borderBottom: 'none', paddingBottom: 0 }}>
                     MULTI-FRONT STATUS
                 </span>
-                <div style={{ display: 'flex', gap: '6px', minWidth: '12ch', justifyContent: 'flex-end' }}>
+                <div style={{ display: 'flex', gap: '10px', minWidth: '12ch', justifyContent: 'flex-end' }}>
                     <span style={{
-                        fontSize: '0.42rem',
-                        fontWeight: 700,
-                        color: '#ef4444',
-                        letterSpacing: '0.5px',
+                        fontSize: '9px',
+                        fontWeight: 600,
+                        color: 'var(--red)',
+                        letterSpacing: '0.14em',
                         visibility: criticalCount > 0 ? 'visible' : 'hidden',
-                        fontVariantNumeric: 'tabular-nums'
+                        fontVariantNumeric: 'tabular-nums',
+                        textTransform: 'uppercase'
                     }}>
                         {criticalCount} CRITICAL
                     </span>
                     <span style={{
-                        fontSize: '0.42rem',
-                        fontWeight: 700,
-                        color: '#f59e0b',
-                        letterSpacing: '0.5px',
+                        fontSize: '9px',
+                        fontWeight: 600,
+                        color: 'var(--ink-2)',
+                        letterSpacing: '0.14em',
                         visibility: activeCount > 0 ? 'visible' : 'hidden',
-                        fontVariantNumeric: 'tabular-nums'
+                        fontVariantNumeric: 'tabular-nums',
+                        textTransform: 'uppercase'
                     }}>
                         {activeCount} ACTIVE
                     </span>

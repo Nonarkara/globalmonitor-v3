@@ -1,67 +1,78 @@
 :root {
-  /* ── Surface System ── */
-  --bg-dark: #0c0d0e;
-  --bg-panel: rgba(13, 15, 16, 0.96);
-  --surface-color: rgba(255, 255, 255, 0.045);
-  --surface-translucent: rgba(255, 255, 255, 0.035);
-  --surface-hover: rgba(255, 255, 255, 0.065);
-  --shadow-color: rgba(0, 0, 0, 0.12);
+  /* ── RAMS Design Tokens (RAMS-STYLE.md) ── */
+  --paper: #faf9f7;
+  --panel: #ffffff;
+  --ink: #191712;
+  --ink-2: #6f6c63;
+  --ink-3: #a9a59a;
+  --line: #e7e5dd;
+  --line-2: #d2cfc5;
+  --green: #1f6e43;
+  --red: #a23a26;
+
+  /* ── Legacy aliases → RAMS ── */
+  --bg-dark: var(--paper);
+  --bg-panel: var(--panel);
+  --surface-color: var(--panel);
+  --surface-translucent: var(--panel);
+  --surface-hover: #f3f1eb;
+  --shadow-color: transparent;
   --bg-blur: none;
+  --text-main: var(--ink);
+  --text-muted: var(--ink-2);
+  --text-dim: var(--ink-3);
+  --border-color: var(--line);
+  --accent-green: var(--green);
+  --accent-red: var(--red);
+  --accent-blue: var(--ink-2);
+  --accent-yellow: var(--ink-3);
+  --accent-amber: var(--ink-2);
+  --accent-cyan: var(--green);
+  --accent-purple: var(--ink-3);
+  --accent-pink: var(--red);
 
-  /* ── Typography Scale (6 stops only) ── */
-  --type-xs: 0.625rem;   /* 10px — labels, metadata, timestamps */
-  --type-sm: 0.75rem;    /* 12px — body small, panel content */
-  --type-base: 0.875rem; /* 14px — body text */
-  --type-lg: 1rem;       /* 16px — panel headers */
-  --type-xl: 1.25rem;    /* 20px — section titles */
-  --type-2xl: 1.75rem;   /* 28px — hero numbers (clock, day count) */
-  --text-main: rgba(255, 255, 255, 0.92);
-  --text-muted: rgba(255, 255, 255, 0.55);
-  --text-dim: rgba(255, 255, 255, 0.28);
+  /* ── RAMS Typography Scale ── */
+  --type-xs: 0.5625rem;   /* 9px micro-label */
+  --type-sm: 0.6875rem;   /* 11px section header / nav */
+  --type-base: 0.8125rem; /* 13px body */
+  --type-lg: 0.875rem;    /* 14px row value */
+  --type-xl: 1.1875rem;   /* 19px section metric */
+  --type-2xl: 1.875rem;   /* 30px hero number */
+  --type-caption: 0.5625rem;
+  --type-body: 0.8125rem;
+  --type-title: 0.6875rem;
+  --type-hero: 1.875rem;
 
-  /* ── Spacing Scale (4px base grid + golden section) ── */
-  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px;  --sp-4: 16px;
-  --sp-5: 20px; --sp-6: 24px; --sp-8: 32px;  --sp-10: 40px;
+  /* ── RAMS Spacing (22px grid) ── */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 13px;  --sp-4: 16px;
+  --sp-5: 20px; --sp-6: 22px; --sp-8: 32px;  --sp-10: 40px;
   --phi: 1.618;
   --sp-phi-1: 4px;
   --sp-phi-2: 8px;
   --sp-phi-3: 13px;
-  --sp-phi-4: 21px;
+  --sp-phi-4: 22px;
   --sp-phi-5: 34px;
 
-  /* ── Golden-ratio type scale (5 stops) ── */
-  --type-caption: 0.382rem;
-  --type-body: 0.618rem;
-  --type-title: 1rem;
-  --type-hero: 1.618rem;
+  /* ── Radii — RAMS: 0px, logo pills excepted ── */
+  --radius-lg: 0;
+  --radius-md: 0;
+  --radius-sm: 0;
+  --radius-full: 0;
 
-  /* ── Semantic Color Palette ── */
-  --accent-blue: #7b9bb3;
-  --accent-yellow: #eab308;
-  --accent-green: #22c55e;
-  --accent-red: #ef4444;
-  --accent-amber: #f59e0b;
-  --accent-cyan: #38bdf8;
-  --accent-purple: #a855f7;
-  --accent-pink: #ec4899;
-  --border-color: rgba(255, 255, 255, 0.12);
-
-  /* ── Radii ── */
-  --radius-lg: 2px;
-  --radius-md: 2px;
-  --radius-sm: 2px;
-  --radius-full: 9999px;
-
-  /* ── Motion ── */
   --transition: background-color 0.14s ease, border-color 0.14s ease, color 0.14s ease, opacity 0.14s ease;
+  --font-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --font-mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
 
-  /* ── Z-Index Layers ── */
   --z-map: 0;
   --z-panels: 10;
   --z-header: 20;
   --z-modal: 100;
   --z-banner: 1000;
+}
+
+::selection {
+  background: var(--green);
+  color: #fff;
 }
 
 * {
@@ -84,9 +95,12 @@ html {
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: var(--bg-dark);
-  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  line-height: 1.42;
+  background-color: var(--paper);
+  color: var(--ink);
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -230,15 +244,16 @@ body {
   inset: 0;
   display: grid;
   grid-template-columns: 248px 1fr 304px;
-  grid-template-rows: auto auto auto 1fr auto auto;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto auto;
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  padding: 22px 6px 22px 6px;  /* 22px top/bottom for classification banners */
+  padding: 22px 6px 22px 6px;
   box-sizing: border-box;
   z-index: 10;
   pointer-events: none;
-  gap: 4px;
+  gap: 1px;
+  background: var(--line);
 }
 
 /* V4: Responsive breakpoints for tablets and small laptops */
@@ -348,11 +363,12 @@ body {
 }
 
 .multi-front-row {
-  grid-column: 2 / -1;
+  grid-column: 2 / 3;
   grid-row: 3;
   pointer-events: auto;
-  min-height: 104px;
+  min-height: 0;
   contain: layout;
+  align-self: start;
 }
 
 .multi-front-board {

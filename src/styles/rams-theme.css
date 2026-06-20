@@ -1,0 +1,702 @@
+/**
+ * RAMS Design System — GlobeWatch v8.3
+ * Reference: RAMS-STYLE.md (Dieter Rams / Braun instrument panel)
+ */
+
+/* ── Cockpit sticky masthead ── */
+.top-bar-clock {
+  background: var(--paper);
+  border-bottom: 1px solid var(--line-2);
+  color: var(--ink);
+}
+
+.header-bar {
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+.header-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--ink);
+}
+
+.header-subtitle {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+}
+
+.header-visitor-count {
+  color: var(--ink-3);
+}
+
+.header-offline-pill {
+  color: var(--red);
+  background: transparent;
+  border: 1px solid var(--line-2);
+  border-radius: 0;
+}
+
+.header-button-actors {
+  background: var(--green);
+  border: 1px solid var(--green);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 0;
+}
+
+.header-button-actors:hover {
+  opacity: 0.9;
+  background: var(--green);
+}
+
+.header-region-tabs {
+  background: var(--panel);
+  border: 1px solid var(--line-2);
+  border-radius: 0;
+}
+
+.header-region-tab {
+  border-left: 1px solid var(--line);
+  color: var(--ink-2);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+}
+
+.header-region-tab.is-active {
+  background: transparent;
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+
+.header-region-tab:hover {
+  color: var(--ink);
+  background: var(--surface-hover);
+}
+
+.header-icon-button {
+  background: transparent;
+  border: 1px solid var(--line-2);
+  color: var(--ink-2);
+  border-radius: 0;
+}
+
+.header-icon-button:hover {
+  color: var(--green);
+  border-color: var(--line-2);
+  background: transparent;
+}
+
+.header-tools-menu {
+  background: var(--panel);
+  border: 1px solid var(--line-2);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.header-tools-warning-dot {
+  background: var(--green);
+  box-shadow: none;
+  animation: rams-blink 2.4s ease-in-out infinite;
+}
+
+@keyframes rams-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+/* ── Hairline cell panels ── */
+.grid-panel,
+.bottom-card,
+.glass-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.panel-header {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--ink);
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 7px;
+  margin: 10px 14px 0;
+  padding-left: 0;
+  padding-right: 0;
+  min-height: auto;
+  max-height: none;
+}
+
+.grid-panel > .panel-header,
+.bottom-card > .panel-header {
+  margin: 10px 14px 0;
+}
+
+.panel-content {
+  color: var(--ink);
+}
+
+.panel-lead {
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--ink);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 7px;
+  margin-bottom: 14px;
+}
+
+.section-title-row span {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+}
+
+/* ── Sidebar layers ── */
+.sidebar-header {
+  border-bottom: 1px solid var(--line);
+}
+
+.layer-card {
+  border-radius: 0;
+  color: var(--ink);
+  opacity: 1;
+}
+
+.layer-card:hover {
+  background: var(--surface-hover);
+}
+
+.layer-card.active {
+  background: var(--surface-hover);
+  border-color: var(--line-2);
+  border-left: 2px solid var(--green);
+}
+
+.layer-card-check {
+  color: var(--green);
+}
+
+.basemap-option.active {
+  border-left: 2px solid var(--green);
+  background: var(--surface-hover);
+  border-color: var(--line-2);
+  color: var(--ink);
+}
+
+.layer-group-title {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+}
+
+.sidebar-mini-action {
+  border-radius: 0;
+  color: var(--ink-2);
+  background: transparent;
+  border: 1px solid var(--line-2);
+}
+
+.sidebar-mini-action:hover,
+.sidebar-mini-action.active {
+  color: var(--ink);
+  background: var(--surface-hover);
+}
+
+/* ── Live pill → RAMS live dot pattern ── */
+.live-pill,
+.glass-pill-live {
+  color: var(--green);
+  background: transparent;
+  border: 1px solid var(--line-2);
+  border-radius: 0;
+  animation: none;
+}
+
+.live-pill-muted,
+.glass-pill-muted {
+  color: var(--ink-3);
+  background: transparent;
+  border-color: var(--line-2);
+  animation: none;
+}
+
+.live-pill-public {
+  color: var(--green);
+  background: transparent;
+  border-color: var(--line-2);
+  animation: none;
+}
+
+/* ── Data rows (radar, signals) ── */
+.radar-item {
+  border-bottom: 1px solid var(--line);
+}
+
+.radar-item:hover {
+  background: var(--surface-hover);
+}
+
+.radar-group-label {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+}
+
+.radar-price .change.positive {
+  color: var(--green);
+  background: transparent;
+}
+
+.radar-price .change.negative {
+  color: var(--red);
+  background: transparent;
+}
+
+.signal-item {
+  border-bottom: 1px solid var(--line);
+}
+
+.signal-item:hover {
+  background: var(--surface-hover);
+  border-radius: 0;
+}
+
+.signal-chip-strong {
+  border-color: var(--line-2);
+  background: transparent;
+  color: var(--green);
+}
+
+.briefing-summary {
+  border-left: 2px solid var(--line-2);
+  color: var(--ink-2);
+}
+
+/* ── Multi-front hairline cell grid ── */
+.multi-front-board {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  padding: 0;
+  backdrop-filter: none;
+}
+
+.multi-front-board__header {
+  padding: 13px 16px 7px;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--ink);
+}
+
+.multi-front-board__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border-top: none;
+  min-height: 0;
+}
+
+.multi-front-card {
+  background: var(--panel);
+  border-radius: 0;
+  padding: 13px 16px;
+  min-height: 88px;
+}
+
+.multi-front-card__headline {
+  color: var(--ink-3);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+.multi-front-card__metrics {
+  color: var(--ink-3);
+  font-size: 9px;
+}
+
+/* ── News ticker ── */
+.news-ticker-wrapper {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 0;
+}
+
+.news-badge {
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.news-marquee-container {
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+.news-item {
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+.news-item:hover {
+  color: var(--ink);
+}
+
+.news-item .source {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ── Map chrome ── */
+.region-selector {
+  background: var(--panel);
+  border: 1px solid var(--line-2);
+  border-radius: 0;
+}
+
+.region-selector-label {
+  color: var(--ink-3);
+  border-right: 1px solid var(--line);
+}
+
+.region-btn {
+  color: var(--ink-2);
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+}
+
+.region-btn.active {
+  background: transparent;
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+  font-weight: 600;
+}
+
+.region-btn:hover {
+  color: var(--ink);
+  background: transparent;
+}
+
+.map-legend {
+  background: var(--panel);
+  border: 1px solid var(--line-2);
+  border-radius: 0;
+}
+
+.map-legend-title {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.map-legend-item {
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+.map-style-toggle {
+  background: var(--panel);
+  border: 1px solid var(--line-2);
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.map-style-btn.active {
+  background: var(--surface-hover);
+  box-shadow: none;
+  border-bottom: 2px solid var(--ink);
+}
+
+/* ── Clock ── */
+.clock-city-small,
+.primary-clock-content .clock-city {
+  color: var(--ink-3);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  font-weight: 600;
+}
+
+.clock-time-small {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.primary-clock-content .clock-time-large {
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 1.875rem;
+}
+
+.primary-clock-content .seconds {
+  color: var(--green);
+  font-weight: 600;
+}
+
+/* ── Bottom bar hairline grid ── */
+.bottom-bar {
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  max-height: 240px;
+}
+
+.bottom-bar > .bottom-card {
+  border: none;
+}
+
+/* ── Sidebars hairline gap ── */
+.left-sidebar,
+.right-sidebar {
+  gap: 1px;
+  background: transparent;
+}
+
+.left-sidebar > *,
+.right-sidebar > * {
+  border: 1px solid var(--line);
+}
+
+/* ── Modals ── */
+.modal-overlay {
+  background: rgba(25, 23, 18, 0.55);
+  backdrop-filter: none;
+}
+
+.glass-panel {
+  background: var(--panel);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+/* ── Remove accent border-left rainbow on panels ── */
+.intelligence-panel .panel-header,
+.right-sidebar > .bottom-card:nth-child(n) .panel-header,
+.bottom-bar > .bottom-card:nth-child(n) .panel-header,
+.eo-preview-card .panel-header {
+  border-left: none;
+  padding-left: 0;
+}
+
+/* ── EO / satellite panels ── */
+.eo-preview-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+.eo-preview-toggle.active,
+.eo-overlay-toggle.active {
+  border-color: var(--green);
+  background: transparent;
+  color: var(--ink);
+}
+
+.eo-insight-card {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 0;
+}
+
+.eo-insight-kicker {
+  color: var(--green);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+}
+
+/* ── Live media ── */
+.live-media-tab {
+  border-radius: 0;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-2);
+}
+
+.live-media-tab.active {
+  color: var(--ink);
+  border-color: var(--line-2);
+  background: transparent;
+  border-bottom: 2px solid var(--ink);
+}
+
+.live-media-preview {
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--paper);
+}
+
+.live-media-fallback {
+  background: var(--panel);
+  color: var(--ink-2);
+}
+
+.live-media-badge {
+  color: var(--green);
+  border: 1px solid var(--line-2);
+  background: transparent;
+  border-radius: 0;
+}
+
+/* ── Category pills → flat tags ── */
+.details-category,
+.cat-conflict,
+.cat-disaster,
+.cat-economy,
+.cat-weather,
+.cat-aqi {
+  border-radius: 0;
+  background: transparent;
+  border: 1px solid var(--line-2);
+}
+
+.cat-conflict { color: var(--red); }
+.cat-disaster { color: var(--ink-2); }
+.cat-economy { color: var(--ink); }
+.cat-weather { color: var(--ink-2); }
+.cat-aqi { color: var(--green); }
+
+/* ── Source stack ── */
+.source-stack-item {
+  border-radius: 0;
+}
+
+.source-stack-item:hover {
+  background: var(--surface-hover);
+}
+
+.source-stack-label {
+  color: var(--ink);
+}
+
+.source-stack-detail {
+  color: var(--ink-3);
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar-thumb {
+  background: var(--line-2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-3);
+}
+
+/* ── Focus ── */
+:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+  border-radius: 0;
+}
+
+.skip-link {
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 0;
+}
+
+/* ── Traffic tooltip ── */
+.traffic-tooltip .maplibregl-popup-content,
+.traffic-tooltip .mapboxgl-popup-content {
+  background: var(--panel);
+  border: 1px solid var(--line-2);
+  border-radius: 0;
+  backdrop-filter: none;
+  box-shadow: none;
+  color: var(--ink);
+}
+
+.traffic-tooltip-header {
+  color: var(--green);
+}
+
+.traffic-tooltip--vessel .traffic-tooltip-header {
+  color: var(--ink);
+}
+
+/* ── Skeleton ── */
+.skeleton,
+.skeleton-line,
+.skeleton-kpi > div {
+  background: var(--line);
+  border-radius: 0;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+/* ── App footer credit ── */
+.app-container::after {
+  color: var(--ink-3);
+  opacity: 0.7;
+}
+
+/* ── Logo pills — CLAUDE.md exception for border-radius ── */
+.header-brand-strip {
+  border-radius: 5px;
+}
+
+/* ── Kill gradients & blur site-wide on dashboard chrome ── */
+.grid-panel,
+.bottom-card,
+.glass-card,
+.news-ticker-wrapper,
+.map-legend,
+.region-selector,
+.map-style-toggle,
+.modal-overlay,
+.header-tools-menu,
+.multi-front-board,
+.top-bar-clock {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* ── Mobile: solid panels, no dark gradients ── */
+@media (max-width: 1024px) {
+  .top-bar-clock {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 0;
+  }
+
+  .grid-panel,
+  .bottom-card,
+  .glass-card {
+    background: var(--panel);
+  }
+
+  .region-selector {
+    background: var(--panel);
+    border-top: 1px solid var(--line-2);
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-panel,
+  .bottom-card,
+  .glass-card {
+    background: var(--panel);
+  }
+}

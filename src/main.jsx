@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles/index.css'
+import './styles/rams-theme.css'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'

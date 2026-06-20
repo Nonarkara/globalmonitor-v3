@@ -112,9 +112,9 @@ const Sidebar = ({
                     minWidth: '46px',
                     padding: '4px 6px',
                     textAlign: 'center',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    color: 'rgba(255,255,255,0.7)',
-                    borderRadius: '2px'
+                    border: '1px solid var(--line-2)',
+                    color: 'var(--ink-2)',
+                    borderRadius: '0'
                 }}>
                     {SAT_MONO_LABEL[layer.id] || layer.id.replace('eo-', '').slice(0, 5).toUpperCase()}
                 </span>
