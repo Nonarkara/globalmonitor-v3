@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { Layers, Activity, CloudRain, Flame, AlertTriangle, Wind, Zap, Building2, Plane, Ship, Moon, Satellite, Map as MapIcon } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Layers, Activity, CloudRain, Flame, AlertTriangle, Wind, Zap, Building2, Plane, Ship, Moon, Satellite, Map as MapIcon, Check, ChevronDown, ChevronRight } from 'lucide-react';
 import CopernicusPreviewPanel from './CopernicusPreviewPanel';
 import SourceStack from './SourceStack';
 import { EO_TILE_LAYERS } from '../services/eoTiles';
@@ -21,10 +21,13 @@ const Sidebar = ({
     mapStyle,
     setMapStyle,
     dashboardVersion = 'v8.3',
+    onResetCoreLayers,
 }) => {
     const flightCount = useFlightCount();
     const vesselCount = useVesselCount();
     const contentRef = useRef(null);
+    const [satelliteCatalogOpen, setSatelliteCatalogOpen] = useState(false);
+    const [sourceAgenciesOpen, setSourceAgenciesOpen] = useState(false);
 
     useEffect(() => {
         if (contentRef.current) {
@@ -42,25 +45,25 @@ const Sidebar = ({
         {
             title: 'Operational',
             layers: [
-                { id: 'firms', title: 'Fire / Strikes', desc: 'NASA VIIRS thermal anomalies', icon: <Zap size={18} /> },
-                { id: 'conflicts', title: 'Conflicts', desc: 'Hotspots & humanitarian risk', icon: <Flame size={18} /> },
-                { id: 'infrastructure', title: 'Infrastructure', desc: 'Energy, ports, chokepoints', icon: <Building2 size={18} /> },
+                { id: 'firms', title: 'Heat signatures', desc: 'Fires, strikes, and thermal hotspots', icon: <Zap size={18} /> },
+                { id: 'conflicts', title: 'Conflict events', desc: 'Reported clashes and violence', icon: <Flame size={18} /> },
+                { id: 'infrastructure', title: 'Energy & ports', desc: 'Critical sites and chokepoints', icon: <Building2 size={18} /> },
             ],
         },
         {
             title: 'Mobility',
             layers: [
-                { id: 'flights', title: 'Flights', desc: 'ADS-B + aviationstack cache', icon: <Plane size={18} /> },
-                { id: 'vessels', title: 'Ships', desc: 'AIS traffic + fleet fallback', icon: <Ship size={18} /> },
+                { id: 'flights', title: 'Aircraft', desc: 'Live aircraft positions', icon: <Plane size={18} /> },
+                { id: 'vessels', title: 'Ships', desc: 'Live ship positions', icon: <Ship size={18} /> },
             ],
         },
         {
             title: 'Environment',
             layers: [
-                { id: 'weather', title: 'Precipitation', desc: 'RainViewer radar tiles', icon: <CloudRain size={18} /> },
-                { id: 'aqi', title: 'Air Quality', desc: 'PM2.5 & AQI', icon: <Wind size={18} /> },
-                { id: 'disasters', title: 'Disasters', desc: 'Active events (NASA EONET)', icon: <AlertTriangle size={18} /> },
-                { id: 'economy', title: 'Economy', desc: 'GDP baselines (World Bank)', icon: <Activity size={18} /> },
+                { id: 'weather', title: 'Rain radar', desc: 'Precipitation forecasts', icon: <CloudRain size={18} /> },
+                { id: 'aqi', title: 'Air quality', desc: 'PM2.5 and AQI', icon: <Wind size={18} /> },
+                { id: 'disasters', title: 'Natural disasters', desc: 'Active events and alerts', icon: <AlertTriangle size={18} /> },
+                { id: 'economy', title: 'Economic baseline', desc: 'Macro indicators', icon: <Activity size={18} /> },
             ],
         },
     ];
@@ -98,6 +101,7 @@ const Sidebar = ({
                 className={`layer-card ${isActive ? 'active' : ''}`}
                 onClick={() => toggleLayer(layer.id)}
                 aria-pressed={isActive}
+                aria-label={`${isActive ? 'Hide' : 'Show'} ${layer.name} satellite layer`}
                 style={{ padding: '10px 14px', gap: '10px' }}
             >
                 <span style={{
@@ -142,11 +146,12 @@ const Sidebar = ({
                                 <button
                                     key={base.id}
                                     type="button"
-                                    className={`basemap-option ${isActive ? 'active' : ''}`}
-                                    onClick={() => setMapStyle(base.id)}
-                                    role="radio"
-                                    aria-checked={isActive}
-                                >
+                    className={`basemap-option ${isActive ? 'active' : ''}`}
+                    onClick={() => setMapStyle(base.id)}
+                    role="radio"
+                    aria-checked={isActive}
+                    aria-label={`Use ${base.title} basemap`}
+                >
                                     <span className="basemap-option-icon">{base.icon}</span>
                                     <span className="basemap-option-copy">
                                         <span className="layer-title">{base.title}</span>
@@ -159,7 +164,21 @@ const Sidebar = ({
                 </div>
 
                 <div>
-                    <h3 className="section-title">Layers</h3>
+                    <div className="section-title-row">
+                        <h3 className="section-title">Layers</h3>
+                        <span>{activeLayers.length} active</span>
+                    </div>
+                    <div className="layer-toolbar" aria-label="Layer quick actions">
+                        <button type="button" onClick={onResetCoreLayers} className="sidebar-mini-action">
+                            Reset defaults
+                        </button>
+                        <button type="button" onClick={() => toggleLayer('flights')} className={`sidebar-mini-action ${activeLayers.includes('flights') ? 'active' : ''}`} aria-pressed={activeLayers.includes('flights')}>
+                            Flights
+                        </button>
+                        <button type="button" onClick={() => toggleLayer('vessels')} className={`sidebar-mini-action ${activeLayers.includes('vessels') ? 'active' : ''}`} aria-pressed={activeLayers.includes('vessels')}>
+                            Ships
+                        </button>
+                    </div>
                     <div className="layer-group-stack">
                         {layerGroups.map((group) => (
                             <div className="layer-group" key={group.title}>
@@ -179,6 +198,7 @@ const Sidebar = ({
                                                 className={`layer-card ${isActive ? 'active' : ''}`}
                                                 onClick={() => toggleLayer(layer.id)}
                                                 aria-pressed={isActive}
+                                                aria-label={`${isActive ? 'Hide' : 'Show'} ${layer.title} layer`}
                                             >
                                                 <span className="layer-icon-wrapper">
                                                     {layer.icon}
@@ -187,6 +207,11 @@ const Sidebar = ({
                                                     <span className="layer-title">{layer.title}</span>
                                                     <span className="layer-desc">{layerDesc}</span>
                                                 </span>
+                                                {isActive && (
+                                                    <span className="layer-card-check" aria-hidden="true">
+                                                        <Check size={14} />
+                                                    </span>
+                                                )}
                                             </button>
                                         );
                                     })}
@@ -203,6 +228,7 @@ const Sidebar = ({
                         className={`layer-card ${showStrategicContext ? 'active' : ''}`}
                         onClick={() => setShowStrategicContext((value) => !value)}
                         aria-pressed={showStrategicContext}
+                        aria-label={`${showStrategicContext ? 'Hide' : 'Show'} strategic context layer`}
                     >
                         <span className="layer-icon-wrapper">
                             <Layers size={20} />
@@ -214,72 +240,69 @@ const Sidebar = ({
                     </button>
                 </div>
 
-                <div>
-                    <h3 className="section-title">Satellite Layers</h3>
+                <div className="sidebar-disclosure">
+                    <button
+                        type="button"
+                        className="sidebar-disclosure-toggle"
+                        onClick={() => setSatelliteCatalogOpen((value) => !value)}
+                        aria-expanded={satelliteCatalogOpen}
+                    >
+                        <span>Satellite Layers</span>
+                        <span className="sidebar-disclosure-chevron" aria-hidden="true">
+                            {satelliteCatalogOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                        </span>
+                    </button>
 
-                    <div style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '0.6rem',
-                        letterSpacing: '1.2px',
-                        color: 'rgba(255,255,255,0.35)',
-                        textTransform: 'uppercase',
-                        margin: '8px 0 6px'
-                    }}>
-                        Sentinel · ESA Optical
-                    </div>
-                    <CopernicusPreviewPanel
-                        viewMode={viewMode}
-                        preset={copernicusMode}
-                        onPresetChange={setCopernicusMode}
-                        runtimeSource={copernicusRuntimeSource}
-                        showOverlay={showCopernicusOverlay}
-                        onToggleOverlay={() => setShowCopernicusOverlay((value) => !value)}
-                        previewResource={copernicusResource}
-                    />
+                    {satelliteCatalogOpen && (
+                        <>
+                            <div className="layer-group-title satellite-source-title">
+                                Sentinel · ESA Optical
+                            </div>
+                            <CopernicusPreviewPanel
+                                viewMode={viewMode}
+                                preset={copernicusMode}
+                                onPresetChange={setCopernicusMode}
+                                runtimeSource={copernicusRuntimeSource}
+                                showOverlay={showCopernicusOverlay}
+                                onToggleOverlay={() => setShowCopernicusOverlay((value) => !value)}
+                                previewResource={copernicusResource}
+                            />
 
-                    <div style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '0.6rem',
-                        letterSpacing: '1.2px',
-                        color: 'rgba(255,255,255,0.35)',
-                        textTransform: 'uppercase',
-                        margin: '14px 0 6px'
-                    }}>
-                        NASA · GIBS
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        {nasaLayers.map(renderEoLayer)}
-                    </div>
+                            <div className="layer-group-title satellite-source-title">
+                                NASA · GIBS
+                            </div>
+                            <div className="satellite-layer-list">
+                                {nasaLayers.map(renderEoLayer)}
+                            </div>
 
-                    <div style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '0.6rem',
-                        letterSpacing: '1.2px',
-                        color: 'rgba(255,255,255,0.35)',
-                        textTransform: 'uppercase',
-                        margin: '14px 0 6px'
-                    }}>
-                        International
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        {internationalLayers.map(renderEoLayer)}
-                    </div>
+                            <div className="layer-group-title satellite-source-title">
+                                International
+                            </div>
+                            <div className="satellite-layer-list">
+                                {internationalLayers.map(renderEoLayer)}
+                            </div>
+                        </>
+                    )}
                 </div>
 
-                <div>
-                    <h3 className="section-title">Source Agencies</h3>
-                    <SourceStack />
+                <div className="sidebar-disclosure">
+                    <button
+                        type="button"
+                        className="sidebar-disclosure-toggle"
+                        onClick={() => setSourceAgenciesOpen((value) => !value)}
+                        aria-expanded={sourceAgenciesOpen}
+                    >
+                        <span>Source Agencies</span>
+                        <span className="sidebar-disclosure-chevron" aria-hidden="true">
+                            {sourceAgenciesOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                        </span>
+                    </button>
+                    {sourceAgenciesOpen && <SourceStack />}
                 </div>
 
-                <div style={{ marginTop: 'auto', paddingTop: '24px', borderTop: '1px solid var(--border-color)', fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>
-                    <p style={{ marginBottom: '8px', opacity: 0.8 }}>
-                        Data from NASA, ESA, JAXA, World Bank, ReliefWeb, Open-Meteo, and Binance.
-                    </p>
-                    <p style={{ opacity: 0.9 }}>
-                        <strong>Contact Dr. Non Arkara:</strong><br />
-                        Email: <a href="mailto:non.ar@depa.or.th" style={{ color: 'var(--accent-blue)', textDecoration: 'none' }}>non.ar@depa.or.th</a><br />
-                        LinkedIn: <a href="https://www.linkedin.com/in/drnon/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-blue)', textDecoration: 'none' }}>linkedin.com/in/drnon/</a>
-                    </p>
+                <div className="sidebar-provenance">
+                    Data from NASA, ESA, JAXA, World Bank, ReliefWeb, Open-Meteo, and Binance.
+                    <a href="mailto:non.ar@depa.or.th">Contact</a>
                 </div>
             </div>
         </aside>

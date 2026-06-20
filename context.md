@@ -20,8 +20,9 @@ Cursor rule: [.cursor/rules/verify-before-recommend.mdc](.cursor/rules/verify-be
 ## GlobeWatch v8.3 (Codex pass — in repo)
 - UI label: `GlobeWatch v8.3` in [src/App.jsx](src/App.jsx) / [Sidebar.jsx](src/components/Sidebar.jsx)
 - Region-aware traffic interpolation ([useInterpolatedTraffic.js](src/hooks/useInterpolatedTraffic.js)), theater bboxes ([MapContainer.jsx](src/components/MapContainer.jsx))
-- Sidebar groups: Basemap, Operational, Mobility, Environment, Satellite ([Sidebar.jsx](src/components/Sidebar.jsx))
-- Flatter panels, reduced blur ([src/styles/index.css](src/styles/index.css))
+- Sidebar groups: Basemap, Operational, Mobility, Environment, Satellite catalog, Source Agencies ([Sidebar.jsx](src/components/Sidebar.jsx))
+- Rams-style human walkthrough and design audit: [docs/human-walkthrough-2026-06-20.md](docs/human-walkthrough-2026-06-20.md)
+- Flatter panels, reduced blur, labeled Tools dropdown, disclosed specialist catalogs ([src/styles/index.css](src/styles/index.css))
 - aviationstack supplement: Middle East bounds, 8h cache, ~3 pulls/day ([server/lib/aviationStack.mjs](server/lib/aviationStack.mjs)); template in [.env.example](.env.example)
 - Ports in repo: **5180** (Vite) + **4000** (API) — not Codex 5183/4010 unless overridden by env
 
@@ -144,6 +145,15 @@ Pattern: extend [server/lib/supabase.mjs](server/lib/supabase.mjs) with an `upse
   - Main bundle dropped from ~12.9 MB gzipped to ~350 KB gzipped.
   - `MapContainer` lazy-loads as its own chunk (~12.5 MB gzipped, dominated by map data/layers).
 - Build command: `npm run build` (Vite 7 + React Compiler ESLint).
+
+## Human-centered UI polish (v4 usability pass)
+- **Operator-first header**: removed visitor count, version string, and `GlobeWatch` code name; collapsed `Sources`, `Log`, `Print`, `About`, `Refresh`, and `Settings` into a single **Tools** dropdown; theater tabs remain the dominant control.
+- **Plain-language layers**: sidebar descriptions rewritten as "Aircraft positions", "Ship positions", "Heat signatures", "Conflict events", etc.
+- **Clearer toggle states**: active layer cards show a cyan checkmark and filled background; basemap selection uses the same accent treatment.
+- **Focus area navigation**: bottom-center region dots get a "Focus area" label and stronger active underline.
+- **Map surface cleaned up**: cursor lat/lng readout removed from the default view; failed-source badge shows a human message instead of raw source IDs; `LIVE` pills gently pulse.
+- **Settings simplified**: dead `GENERAL`/`PANELS` tabs removed; modal renamed to **News Sources**.
+- **Golden-ratio spacing/typography scale** introduced in `src/styles/index.css` (`--phi`, `--sp-phi-*`, `--type-caption/body/title/hero`).
 
 ## CI
 - `.github/workflows/ci.yml` runs on every push/PR:

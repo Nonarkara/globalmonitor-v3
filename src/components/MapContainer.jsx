@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useRef, useEffect, useMemo, useReducer } from 'react';
 import Map, { Marker, Source, Layer, Popup } from 'react-map-gl/maplibre';
 import maplibregl from 'maplibre-gl';
-import { Copy, Check, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { fetchNaturalDisasters } from '../services/nasaEonet';
 import { fetchConflictsAndCrises } from '../services/reliefWeb';
@@ -489,9 +489,7 @@ const MapContainer = ({
     // Track which raster sources have failed (auth / 404 / CORS / 5xx) so the
     // user sees what is missing instead of a silently-empty map.
     const [failedSources, setFailedSources] = useState(() => new Set());
-    // Cursor position in lat/lng — updated on mousemove for the readout overlay.
-    const [cursor, setCursor] = useState(null);
-    const [copied, setCopied] = useState(false);
+
     const [mapIconsReady, setMapIconsReady] = useState(false);
     const [rainviewerTiles, setRainviewerTiles] = useState(null);
     const [hoverInfo, setHoverInfo] = useState(null);
@@ -557,32 +555,19 @@ const MapContainer = ({
     }, [mapStyle]);
 
     const handleMouseMove = useCallback((event) => {
-        const lng = event?.lngLat?.lng;
-        const lat = event?.lngLat?.lat;
-        if (typeof lat === 'number' && typeof lng === 'number') {
-            setCursor({ lat, lng });
-        }
         const feature = event.features?.find(
             (f) => f.layer?.id === 'flights-icons' || f.layer?.id === 'vessels-icons'
         );
         if (feature) {
-            setHoverInfo({ longitude: lng, latitude: lat, feature });
+            const [longitude, latitude] = feature.geometry?.coordinates || [];
+            setHoverInfo({ longitude, latitude, feature });
         } else {
             setHoverInfo(null);
         }
     }, []);
     const handleMouseLeave = useCallback(() => {
-        setCursor(null);
         setHoverInfo(null);
     }, []);
-    const copyCursor = useCallback(() => {
-        if (!cursor) return;
-        const text = `${cursor.lat.toFixed(5)}, ${cursor.lng.toFixed(5)}`;
-        navigator.clipboard?.writeText(text).then(
-            () => { setCopied(true); setTimeout(() => setCopied(false), 1200); },
-            () => {}
-        );
-    }, [cursor]);
 
     const disasterResource = useLiveResource(useCallback(() => fetchNaturalDisasters(), []), {
         cacheKey: 'map:disasters',
@@ -1475,48 +1460,6 @@ const MapContainer = ({
             <div className="map-vignette" aria-hidden="true" />
             <div className="map-grid-overlay" aria-hidden="true" />
 
-            {/* Cursor lat/lng readout — bottom-left of map. Mono, hairline border, copy button. */}
-            {cursor && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        bottom: 12,
-                        left: 12,
-                        zIndex: 5,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        padding: '4px 8px',
-                        background: 'rgba(5, 14, 32, 0.78)',
-                        border: '1px solid rgba(56, 189, 248, 0.28)',
-                        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                        fontSize: '0.7rem',
-                        color: 'rgba(219, 234, 254, 0.92)',
-                        letterSpacing: '0.4px',
-                        pointerEvents: 'auto',
-                    }}
-                    aria-live="polite"
-                >
-                    <span>{cursor.lat.toFixed(5)}, {cursor.lng.toFixed(5)}</span>
-                    <button
-                        onClick={copyCursor}
-                        title="Copy lat,lng to clipboard"
-                        aria-label="Copy lat,lng to clipboard"
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: copied ? '#4ade80' : 'rgba(56, 189, 248, 0.85)',
-                            cursor: 'pointer',
-                            padding: 0,
-                            display: 'flex',
-                            alignItems: 'center',
-                        }}
-                    >
-                        {copied ? <Check size={11} /> : <Copy size={11} />}
-                    </button>
-                </div>
-            )}
-
             {/* Tile-health badge — only renders when one or more raster sources have failed.
                 Worst-case visibility per Dr Non / §12 (Stoic transparency). */}
             {failedSources.size > 0 && (
@@ -1538,7 +1481,7 @@ const MapContainer = ({
                         letterSpacing: '0.5px',
                         textTransform: 'uppercase',
                     }}
-                    title={`Failed sources: ${[...failedSources].join(', ')}`}
+                    title={`Some map layers could not be loaded`}
                 >
                     <AlertTriangle size={11} />
                     <span>{failedSources.size} layer{failedSources.size === 1 ? '' : 's'} unavailable</span>
@@ -1587,7 +1530,7 @@ const MapContainer = ({
                     style={{ visibility: flightsLayerActive ? 'visible' : 'hidden' }}
                 >
                     <span className="map-legend-line" style={{ background: '#facc15' }} />
-                    <span>Yellow aircraft · colored hulls · 3 min vectors</span>
+                    <span>Aircraft vectors = 3 min look-ahead · Ship vectors = 2 min</span>
                 </div>
             </div>
 

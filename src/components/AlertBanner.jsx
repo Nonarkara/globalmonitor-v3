@@ -40,7 +40,7 @@ const AlertBanner = () => {
     return (
         <div style={{
             position: 'fixed',
-            top: 0,
+            top: 18,
             left: 0,
             right: 0,
             zIndex: 9999,

@@ -57,11 +57,14 @@ const RegionSelector = ({ activeRegion, onSelectRegion, viewMode }) => {
 
     return (
         <div className="region-selector">
+            <span className="region-selector-label">Focus area</span>
             {activeRegions.map((region) => (
                 <button
                     key={region.id}
                     className={`region-btn ${activeRegion === region.id ? 'active' : ''}`}
                     onClick={() => onSelectRegion(region.id, region.viewState)}
+                    title={`Focus map on ${region.name}`}
+                    aria-label={`Focus map on ${region.name}`}
                 >
                     {region.name}
                 </button>

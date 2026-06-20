@@ -42,17 +42,17 @@ const SourceHealthModal = ({ isOpen, onClose }) => {
     };
 
     return (
-        <div style={{
+        <div className="modal-overlay" style={{
             position: 'fixed', inset: 0, zIndex: 10000,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)'
+            background: 'rgba(0,0,0,0.72)', backdropFilter: 'none'
         }} onClick={onClose}>
             <div style={{
                 width: '720px', maxWidth: '95vw', maxHeight: '85vh',
                 background: 'rgba(14, 18, 28, 0.95)',
-                backdropFilter: 'blur(24px)',
-                borderRadius: '16px',
-                border: '1px solid rgba(255,255,255,0.08)',
+                backdropFilter: 'none',
+                borderRadius: '2px',
+                border: '1px solid rgba(255,255,255,0.14)',
                 overflow: 'hidden', display: 'flex', flexDirection: 'column'
             }} onClick={e => e.stopPropagation()}>
                 {/* Header */}
@@ -70,9 +70,9 @@ const SourceHealthModal = ({ isOpen, onClose }) => {
                         <span style={{ fontSize: '0.42rem', color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-mono)' }}>
                             {dataSources.length} sources · Backend: {healthData ? 'CONNECTED' : 'UNREACHABLE'}
                         </span>
-                        <button onClick={onClose} style={{
+                        <button onClick={onClose} aria-label="Close source health modal" style={{
                             background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
-                            borderRadius: '6px', padding: '6px 12px', color: 'rgba(255,255,255,0.6)',
+                            borderRadius: '2px', padding: '6px 12px', color: 'rgba(255,255,255,0.6)',
                             cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
                             fontSize: '0.6rem', fontFamily: 'inherit', minHeight: '32px'
                         }}>

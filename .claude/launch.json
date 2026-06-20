@@ -12,6 +12,12 @@
       "runtimeExecutable": "/opt/homebrew/bin/node",
       "runtimeArgs": ["node_modules/.bin/vite", "--port", "5180"],
       "port": 5180
+    },
+    {
+      "name": "gm-preview",
+      "runtimeExecutable": "/opt/homebrew/bin/node",
+      "runtimeArgs": ["node_modules/.bin/vite", "preview", "--port", "5181", "--strictPort"],
+      "port": 5181
     }
   ]
 }

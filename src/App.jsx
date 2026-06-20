@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, Suspense } from 'react';
+import React, { useState, useCallback, useEffect, useRef, Suspense } from 'react';
 import Sidebar from './components/Sidebar';
 import RegionSelector from './components/RegionSelector';
 import WorldClock from './components/WorldClock';
@@ -9,8 +9,8 @@ import { getDefaultSourceIdsForRegion } from './services/liveNews';
 import { REGIONS, getRegion } from './data/regions';
 import { fetchCopernicusPreview } from './services/copernicus';
 import { useLiveResource } from './hooks/useLiveResource';
-import { Settings, RefreshCw, Eye, Network, Database, FileText, Printer, Info } from 'lucide-react';
-import { getVisitorCount, BASE_COUNT } from './services/visitorTracker';
+import { Settings, RefreshCw, Network, Database, FileText, Printer, Info, Menu, ChevronDown } from 'lucide-react';
+
 import EscalationGauge from './components/EscalationGauge';
 import AlertBanner from './components/AlertBanner';
 import ClassificationBanner from './components/ClassificationBanner';
@@ -42,13 +42,20 @@ function App() {
   const [isActivityLogOpen, setIsActivityLogOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   useEscapeKey(isAboutOpen, () => setIsAboutOpen(false));
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const toolsRef = useRef(null);
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (toolsRef.current && !toolsRef.current.contains(e.target)) setToolsOpen(false);
+    };
+    if (toolsOpen) document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, [toolsOpen]);
   const [activeSources, setActiveSources] = useState(getDefaultSourceIdsForRegion('middleeast'));
   const [copernicusMode, setCopernicusMode] = useState('true-color');
   const [showCopernicusOverlay, setShowCopernicusOverlay] = useState(true);
   const [showStrategicContext, setShowStrategicContext] = useState(false);
 
-  const [visitorCount, setVisitorCount] = useState(BASE_COUNT);
-  useEffect(() => { getVisitorCount().then(setVisitorCount); }, []);
   const { backendUp } = useOnlineStatus();
 
   // Global refresh — broadcasts to every useLiveResource consumer in one shot.
@@ -78,6 +85,11 @@ function App() {
         : [...prev, layerId]
     );
   };
+
+  const resetCoreLayers = useCallback(() => {
+    setActiveLayers(['conflicts', 'firms', 'flights', 'vessels']);
+    logActivity(LOG_TYPES.USER_ACTION, 'Core operational map layers restored');
+  }, []);
 
   const handleRegionSelect = useCallback((regionId, targetViewState) => {
     setActiveRegion(regionId);
@@ -183,30 +195,19 @@ function App() {
             <img src={`${import.meta.env.BASE_URL}retl-logo.svg`} alt="ReTL" className="header-brand-logo header-brand-logo-retl" />
           </div>
 
-          {/* Center: Title + Escalation + Status */}
+          {/* Center: Title + Escalation */}
           <div className="header-status">
             <div className="header-title-lockup">
               <span className="header-title">
                 Global Political Dashboard
               </span>
               <span className="header-subtitle">
-                {getRegion(viewMode).label} · GlobeWatch · {DASHBOARD_VERSION}
+                {getRegion(viewMode).label}
               </span>
             </div>
             <ErrorBoundary inline label="Escalation">
               <EscalationGauge />
             </ErrorBoundary>
-            <div className="header-visitor-count" aria-label={`${visitorCount.toLocaleString()} visitors tracked`}>
-              <Eye size={9} style={{ opacity: 0.35 }} />
-              {visitorCount.toLocaleString()}
-            </div>
-            <span
-              className="header-offline-pill"
-              style={{ visibility: backendUp ? 'hidden' : 'visible' }}
-              aria-hidden={backendUp}
-            >
-              OFFLINE
-            </span>
           </div>
           {/* Right: Controls */}
           <div className="header-controls">
@@ -247,30 +248,45 @@ function App() {
                 );
               })}
             </div>
-            <button onClick={() => setIsSourceHealthOpen(true)} title="Data Sources & Health" aria-label="View data source health and provenance"
-              className="header-icon-button">
-              <Database size={11} aria-hidden="true" />
-            </button>
-            <button onClick={() => setIsActivityLogOpen(true)} title="Session Activity Log" aria-label="View session activity log"
-              className="header-icon-button">
-              <FileText size={11} aria-hidden="true" />
-            </button>
-            <button onClick={() => { logActivity(LOG_TYPES.USER_ACTION, 'Print briefing initiated'); window.print(); }} title="Print Briefing" aria-label="Print intelligence briefing"
-              className="header-icon-button">
-              <Printer size={11} aria-hidden="true" />
-            </button>
-            <button onClick={() => setIsAboutOpen(true)} title="About this project" aria-label="About this project"
-              className="header-icon-button">
-              <Info size={11} aria-hidden="true" />
-            </button>
-            <button onClick={handleRefreshAll} title="Refresh all data sources" aria-label="Refresh all data sources" disabled={isRefreshingAll}
-              className={`header-icon-button ${isRefreshingAll ? 'is-busy' : ''}`}>
-              <RefreshCw size={11} aria-hidden="true" className={isRefreshingAll ? 'spin-anim' : ''} />
-            </button>
-            <button onClick={() => setIsSettingsOpen(true)} title="Settings" aria-label="Open intelligence source settings"
-              className="header-icon-button">
-              <Settings size={11} aria-hidden="true" />
-            </button>
+
+            {/* Tools dropdown — collapses secondary operator actions to reduce header noise */}
+            <div className="header-tools-dropdown" ref={toolsRef}>
+              <button
+                type="button"
+                onClick={() => setToolsOpen((v) => !v)}
+                aria-haspopup="menu"
+                aria-expanded={toolsOpen}
+                aria-label="Tools and advanced options"
+                className={`header-icon-button header-tools-trigger ${!backendUp ? 'has-warning' : ''}`}
+              >
+                <Menu size={13} aria-hidden="true" />
+                <span className="header-icon-label">Tools</span>
+                <ChevronDown size={10} aria-hidden="true" className={`header-tools-chevron ${toolsOpen ? 'open' : ''}`} />
+              </button>
+              {toolsOpen && (
+                <div className="header-tools-menu" role="menu">
+                  <button role="menuitem" onClick={() => { setToolsOpen(false); setIsSourceHealthOpen(true); }}>
+                    <Database size={12} aria-hidden="true" /> Data health
+                  </button>
+                  <button role="menuitem" onClick={() => { setToolsOpen(false); setIsActivityLogOpen(true); }}>
+                    <FileText size={12} aria-hidden="true" /> Session log
+                  </button>
+                  <button role="menuitem" onClick={() => { setToolsOpen(false); setIsSettingsOpen(true); }}>
+                    <Settings size={12} aria-hidden="true" /> News sources
+                  </button>
+                  <button role="menuitem" onClick={() => { setToolsOpen(false); logActivity(LOG_TYPES.USER_ACTION, 'Print briefing initiated'); window.print(); }}>
+                    <Printer size={12} aria-hidden="true" /> Print briefing
+                  </button>
+                  <button role="menuitem" onClick={() => { setToolsOpen(false); setIsAboutOpen(true); }}>
+                    <Info size={12} aria-hidden="true" /> About
+                  </button>
+                  <button role="menuitem" onClick={() => { setToolsOpen(false); handleRefreshAll(); }} disabled={isRefreshingAll}>
+                    <RefreshCw size={12} aria-hidden="true" className={isRefreshingAll ? 'spin-anim' : ''} /> Refresh data
+                    {!backendUp && <span className="header-tools-warning-dot" aria-hidden="true" />}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -301,6 +317,7 @@ function App() {
               mapStyle={mapStyle}
               setMapStyle={setMapStyle}
               dashboardVersion={DASHBOARD_VERSION}
+              onResetCoreLayers={resetCoreLayers}
             />
           </ErrorBoundary>
           {viewMode === 'middleeast' && (
@@ -568,33 +585,35 @@ function App() {
           <div className="modal-overlay" style={{
             position: 'fixed', inset: 0, zIndex: 10000,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)'
+            background: 'rgba(0,0,0,0.72)', backdropFilter: 'none'
           }} onClick={() => setIsAboutOpen(false)}>
             <div role="dialog" aria-modal="true" aria-labelledby="about-dashboard-title" style={{
               width: '560px', maxWidth: '92vw', maxHeight: '85vh',
-              background: 'rgba(14,18,28,0.95)', backdropFilter: 'blur(24px)',
-              borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)',
+              background: 'rgba(14,18,28,0.98)', backdropFilter: 'none',
+              borderRadius: '2px', border: '1px solid rgba(255,255,255,0.14)',
               overflow: 'auto', padding: '28px 32px'
             }} onClick={e => e.stopPropagation()}>
               {/* Primary funder */}
               <div style={{ textAlign: 'center', marginBottom: '14px' }}>
                 <div style={{ fontSize: '0.4rem', color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font-mono)', letterSpacing: '2px', marginBottom: '8px' }}>FUNDED BY</div>
-                <img src={`${import.meta.env.BASE_URL}pmua-logo.webp`} alt="PMUA" style={{ height: '36px', objectFit: 'contain', filter: 'brightness(1.8) contrast(0.9)', opacity: 0.9 }} />
+                <img src={`${import.meta.env.BASE_URL}pmua-logo.webp`} alt="PMUA" style={{ height: '36px', objectFit: 'contain', opacity: 0.95, background: '#fff', borderRadius: '5px', padding: '3px 8px' }} />
                 <div style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.45)', marginTop: '4px' }}>Program Management Unit for Area Based Development</div>
               </div>
 
               {/* Supporting organizations */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '16px', padding: '10px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
-                <img src={`${import.meta.env.BASE_URL}Logo depa-01.png`} alt="depa" style={{ height: '20px', objectFit: 'contain', filter: 'brightness(1.8) contrast(0.9)', opacity: 0.75 }} />
-                <img src={`${import.meta.env.BASE_URL}mdes.png`} alt="Ministry of Digital Economy" style={{ height: '20px', objectFit: 'contain', filter: 'brightness(1.8) contrast(0.9)', opacity: 0.65 }} />
-                <img src={`${import.meta.env.BASE_URL}smart-city-thailand-logo.svg`} alt="Smart City Thailand" style={{ height: '18px', objectFit: 'contain', filter: 'brightness(1.5)', opacity: 0.6 }} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '16px', padding: '10px', background: '#fff', borderRadius: '5px' }}>
+                <img src={`${import.meta.env.BASE_URL}Logo depa-01.png`} alt="depa" style={{ height: '20px', objectFit: 'contain', opacity: 0.9 }} />
+                <img src={`${import.meta.env.BASE_URL}mdes.png`} alt="Ministry of Digital Economy" style={{ height: '20px', objectFit: 'contain', opacity: 0.85 }} />
+                <img src={`${import.meta.env.BASE_URL}smart-city-thailand-logo.svg`} alt="Smart City Thailand" style={{ height: '18px', objectFit: 'contain', opacity: 0.85 }} />
               </div>
 
               {/* Executed by */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '18px' }}>
                 <div style={{ fontSize: '0.4rem', color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font-mono)', letterSpacing: '2px' }}>EXECUTED BY</div>
-                <img src={`${import.meta.env.BASE_URL}axiom-logo.png`} alt="Axiom AI" style={{ height: '20px', objectFit: 'contain', filter: 'brightness(1.8) contrast(0.9)', opacity: 0.8 }} />
-                <img src={`${import.meta.env.BASE_URL}retl-logo.svg`} alt="ReTL" style={{ height: '18px', objectFit: 'contain', filter: 'brightness(1.8) invert(1)', opacity: 0.8 }} />
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', background: '#fff', borderRadius: '5px', padding: '3px 8px' }}>
+                  <img src={`${import.meta.env.BASE_URL}axiom-logo.png`} alt="Axiom AI" style={{ height: '20px', objectFit: 'contain', opacity: 0.9 }} />
+                  <img src={`${import.meta.env.BASE_URL}retl-logo.svg`} alt="ReTL" style={{ height: '18px', objectFit: 'contain', opacity: 0.9 }} />
+                </span>
               </div>
 
               <h2 id="about-dashboard-title" style={{ fontSize: '1rem', fontWeight: 600, color: 'rgba(255,255,255,0.9)', marginBottom: '4px', letterSpacing: '0.5px' }}>
@@ -634,8 +653,8 @@ function App() {
                   12 data sources · PMUA · depa · Axiom · ReTL
                 </span>
                 <button onClick={() => setIsAboutOpen(false)} aria-label="Close about panel" style={{
-                  background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '6px', padding: '6px 16px', color: 'rgba(255,255,255,0.6)',
+                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '2px', padding: '6px 16px', color: 'rgba(255,255,255,0.6)',
                   cursor: 'pointer', fontSize: '0.65rem', fontFamily: 'inherit'
                 }}>Close</button>
               </div>

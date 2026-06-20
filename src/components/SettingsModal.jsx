@@ -42,17 +42,15 @@ const SettingsModal = ({ isOpen, onClose, activeSources, toggleSource, setAllSou
 
                 {/* Header */}
                 <div style={{ padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #333' }}>
-                    <h2 id="settings-modal-title" style={{ margin: 0, fontSize: '1.2rem', letterSpacing: '2px', fontWeight: 600 }}>SETTINGS</h2>
-                    <button onClick={onClose} aria-label="Close settings" style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}>
+                    <h2 id="settings-modal-title" style={{ margin: 0, fontSize: '1.2rem', letterSpacing: '2px', fontWeight: 600 }}>NEWS SOURCES</h2>
+                    <button onClick={onClose} aria-label="Close settings modal" style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}>
                         <X size={24} />
                     </button>
                 </div>
 
-                {/* Main Tabs */}
-                <div style={{ padding: '0 24px', display: 'flex', gap: '32px', borderBottom: '1px solid #333' }}>
-                    <div style={{ padding: '16px 0', color: '#666', fontSize: '0.85rem', letterSpacing: '1px', cursor: 'pointer' }}>GENERAL</div>
-                    <div style={{ padding: '16px 0', color: '#666', fontSize: '0.85rem', letterSpacing: '1px', cursor: 'pointer' }}>PANELS</div>
-                    <div style={{ padding: '16px 0', color: '#fff', fontSize: '0.85rem', letterSpacing: '1px', borderBottom: '2px solid #fff', fontWeight: 'bold' }}>SOURCES</div>
+                {/* Filter hint */}
+                <div style={{ padding: '12px 24px 0', color: '#888', fontSize: '0.8rem' }}>
+                    Choose which news sources feed the live ticker and briefing panels.
                 </div>
 
                 {/* Sub-Filters & Search */}
@@ -64,14 +62,14 @@ const SettingsModal = ({ isOpen, onClose, activeSources, toggleSource, setAllSou
                                 onClick={() => setActiveTab(tab.id)}
                                 style={{
                                     padding: '6px 16px',
-                                    borderRadius: '20px',
+                                    borderRadius: '2px',
                                     border: `1px solid ${activeTab === tab.id ? '#10b981' : '#333'}`,
                                     color: activeTab === tab.id ? '#10b981' : '#888',
                                     background: 'transparent',
                                     fontSize: '0.75rem',
                                     cursor: 'pointer',
                                     whiteSpace: 'nowrap',
-                                    transition: 'all 0.2s',
+                                    transition: 'var(--transition)',
                                     letterSpacing: '1px'
                                 }}
                             >
@@ -91,7 +89,7 @@ const SettingsModal = ({ isOpen, onClose, activeSources, toggleSource, setAllSou
                                 background: 'transparent',
                                 border: '1px solid #333',
                                 color: '#fff',
-                                borderRadius: '4px',
+                                borderRadius: '2px',
                                 fontFamily: 'inherit',
                                 fontSize: '0.85rem'
                             }}
@@ -113,7 +111,7 @@ const SettingsModal = ({ isOpen, onClose, activeSources, toggleSource, setAllSou
                                     gap: '12px',
                                     padding: '12px 16px',
                                     border: `1px solid ${isActive ? '#10b981' : '#333'}`,
-                                    borderRadius: '4px',
+                                    borderRadius: '2px',
                                     cursor: 'pointer',
                                     transition: 'all 0.2s'
                                 }}
@@ -123,7 +121,7 @@ const SettingsModal = ({ isOpen, onClose, activeSources, toggleSource, setAllSou
                                     backgroundColor: isActive ? '#10b981' : 'transparent',
                                     border: `1px solid ${isActive ? '#10b981' : '#555'}`,
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    borderRadius: '2px'
+                                    borderRadius: '1px'
                                 }}>
                                     {isActive && <Check size={12} color="#000" strokeWidth={3} />}
                                 </div>
@@ -143,12 +141,12 @@ const SettingsModal = ({ isOpen, onClose, activeSources, toggleSource, setAllSou
                     <div style={{ display: 'flex', gap: '12px' }}>
                         <button
                             onClick={() => setAllSources(true)}
-                            style={{ padding: '10px 24px', background: 'transparent', border: '1px solid #444', color: '#fff', borderRadius: '4px', fontSize: '0.8rem', cursor: 'pointer', letterSpacing: '1px', transition: 'all 0.2s' }}>
+                            style={{ padding: '10px 24px', background: 'transparent', border: '1px solid #444', color: '#fff', borderRadius: '2px', fontSize: '0.8rem', cursor: 'pointer', letterSpacing: '1px', transition: 'var(--transition)' }}>
                             SELECT ALL
                         </button>
                         <button
                             onClick={() => setAllSources(false)}
-                            style={{ padding: '10px 24px', background: 'transparent', border: '1px solid #444', color: '#fff', borderRadius: '4px', fontSize: '0.8rem', cursor: 'pointer', letterSpacing: '1px', transition: 'all 0.2s' }}>
+                            style={{ padding: '10px 24px', background: 'transparent', border: '1px solid #444', color: '#fff', borderRadius: '2px', fontSize: '0.8rem', cursor: 'pointer', letterSpacing: '1px', transition: 'var(--transition)' }}>
                             SELECT NONE
                         </button>
                     </div>

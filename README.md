@@ -13,6 +13,18 @@ It combines live map layers, flight and vessel tracking, market context, humanit
 
 As of 2026-06-20, the Cloudflare Pages frontend is current, but the Fly backend is still an older deployment because Fly blocks new releases until billing/payment information is added. Local development is the authoritative full-stack verification path until Fly is unblocked.
 
+## Design / Human Walkthrough
+
+The 2026-06-20 Rams-style usability pass is documented in [`docs/human-walkthrough-2026-06-20.md`](docs/human-walkthrough-2026-06-20.md).
+
+Key outcomes:
+
+- Header utility controls now live behind a labeled Tools menu instead of icon-only discovery or a crowded header.
+- Basemaps, operational layers, mobility layers, environmental layers, satellite catalogs, and source agencies are separated into clearer control groups.
+- Satellite and source-agency catalogs are behind deliberate disclosure controls to reduce first-load command overload.
+- Panels and modals use flatter surfaces, sharper geometry, and natural-color sponsor logos on white pills.
+- Source Health and Settings modals now expose modal-specific close labels for keyboard, screen-reader, and QA automation paths.
+
 ## What It Tracks
 
 - Conflict and humanitarian hotspots via ACLED, curated fallbacks, UNHCR, and ReliefWeb
