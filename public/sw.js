@@ -4,7 +4,7 @@
  * Government offices may have restricted or intermittent connectivity.
  */
 
-const CACHE_NAME = 'gpd-v8';
+const CACHE_NAME = 'gpd-v8-20260620-shellfix-2';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
@@ -32,26 +32,40 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Network-first for API, cache-first for static assets
+const cacheResponse = async (request, response) => {
+    if (!response || !response.ok) return response;
+    const cache = await caches.open(CACHE_NAME);
+    await cache.put(request, response.clone());
+    return response;
+};
+
+// Network-first for API and navigations; cache fallback only when offline.
 self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
-    // Skip non-GET and cross-origin
+    // Skip non-GET and all cross-origin requests. The static Cloudflare
+    // frontend talks to the Fly API cross-origin; the browser/CORS layer should
+    // own those requests, not this app-shell service worker.
     if (request.method !== 'GET') return;
-    if (url.origin !== self.location.origin && !url.pathname.startsWith('/api')) return;
+    if (url.origin !== self.location.origin) return;
+
+    // Always fetch the HTML shell from the network first. A cache-first shell can
+    // trap users on a bad deployment even after Cloudflare has been corrected.
+    if (request.mode === 'navigate' || url.pathname === '/' || url.pathname === '/index.html') {
+        event.respondWith(
+            fetch(request)
+                .then(response => cacheResponse(request, response))
+                .catch(() => caches.match(request).then(cached => cached || caches.match('/index.html')))
+        );
+        return;
+    }
 
     // API requests: network-first with cache fallback
     if (url.pathname.startsWith('/api')) {
         event.respondWith(
             fetch(request)
-                .then(response => {
-                    if (response.ok) {
-                        const clone = response.clone();
-                        caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
-                    }
-                    return response;
-                })
+                .then(response => cacheResponse(request, response))
                 .catch(() => caches.match(request))
         );
         return;
@@ -60,18 +74,6 @@ self.addEventListener('fetch', (event) => {
     // Static assets: cache-first with network fallback
     event.respondWith(
         caches.match(request)
-            .then(cached => cached || fetch(request).then(response => {
-                if (response.ok) {
-                    const clone = response.clone();
-                    caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
-                }
-                return response;
-            }))
-            .catch(() => {
-                // Fallback to index.html for navigation requests
-                if (request.mode === 'navigate') {
-                    return caches.match('/index.html');
-                }
-            })
+            .then(cached => cached || fetch(request).then(response => cacheResponse(request, response)))
     );
 });

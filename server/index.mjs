@@ -172,7 +172,7 @@ const server = http.createServer(async (request, response) => {
 
     if (request.method === 'POST' && request.url?.startsWith('/api/refresh-all')) {
         // Bust the server-side in-memory cache for all live data keys.
-        const BUST_PREFIXES = ['ticker:', 'briefing:', 'firms:', 'acled:', 'markets', 'gdelt:', 'flights:', 'quakes:', 'nga-warnings', 'oil-prices', 'humanitarian:', 'regional-news:'];
+        const BUST_PREFIXES = ['ticker:', 'briefing:', 'firms:', 'acled:', 'markets', 'gdelt:', 'flights:', 'vessels:', 'quakes:', 'nga-warnings', 'oil-prices', 'humanitarian:', 'regional-news:'];
         let cleared = 0;
         for (const key of cache.keys()) {
             if (BUST_PREFIXES.some((p) => key.startsWith(p))) {
