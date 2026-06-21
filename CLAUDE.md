@@ -20,7 +20,7 @@ A suite of **4 real-time geopolitical intelligence dashboards** monitoring the M
 
 | Name | Repo | Live URL | Stack | Purpose |
 |------|------|----------|-------|---------|
-| **GPD** (Global Political Dashboard) | `Nonarkara/globalmonitor` | `globalmonitor.fly.dev` | React 19 + Vite + MapLibre + D3 + Node API | Flagship — 43 components, 12 live data sources, full intelligence platform |
+| **GPD** (Global Political Dashboard) | `Nonarkara/globalmonitor` | `globalmonitor.pages.dev` | React 19 + Vite + MapLibre + D3 + Pages Functions API | Flagship — 43 components, 12 live data sources, full intelligence platform |
 | **MEM by NON** | `Nonarkara/mem-by-non` | `nonarkara.github.io/mem-by-non` | Vanilla HTML/JS/CSS + Leaflet | Cinematic HUD war room — full-screen map with floating glass overlays |
 | **War Monitor** | `Nonarkara/middleeast-monitor` | `middleeast-monitor.pages.dev` | Vanilla HTML (8800-line monolith) + Leaflet + Chart.js + TradingView | Dense public-facing conflict tracker — Dr Non called it "gold" |
 | **Static Backup (GPD)** | same repo, `gh-pages` branch | `nonarkara.github.io/globalmonitor` | Static build of GPD | Backup when dynamic hosts are down |
@@ -41,7 +41,8 @@ Dr Non uses free tiers exclusively while testing. Vercel and Netlify have both b
 
 | Platform | Used For | Status |
 |----------|----------|--------|
-| **Fly.io** | GPD full stack (frontend + API) | Active, free tier (3 shared VMs) |
+| **Fly.io** | GPD (retired) | Was full stack — replaced by Cloudflare Pages |
+| **Cloudflare Pages** | GPD full stack (frontend + API) | Active, free |
 | **Cloudflare Pages** | War Monitor static | Active, free, no limits |
 | **GitHub Pages** | MEM, GPD static backup | Active, free |
 | **Render** | GPD (original host) | Suspended — one-click resume available |
@@ -161,7 +162,7 @@ Component renders
 - Apps Script webhook at: `https://script.google.com/macros/s/AKfycbyfdZwRQY6HNBUAyAQQjRW8H9EGCKqMbSEg0IIbPW2y1HLMXV5C19zPaLbj-nEkUAVGrw/exec`
 - Sheet ID: `15wcRoWX-qMsusROgPAablSxV0CgT_Yql5EbQNXsJR90` (original)
 - Sheet ID: `11bLVCnRk1tnUH1h1c122gP6JYzeJi3rTFS3FYeIGgS8` (new, for demo)
-- GPD also has `server/lib/sheetsRecorder.mjs` — direct Sheets API recording (needs `GOOGLE_SHEETS_ID` + `GOOGLE_SERVICE_ACCOUNT_KEY` env vars on Fly.io)
+- GPD also has `server/lib/sheetsRecorder.mjs` — direct Sheets API recording (needs `GOOGLE_SHEETS_ID` + `GOOGLE_SERVICE_ACCOUNT_KEY` env vars on Cloudflare Pages)
 - Visitor tracking on all 3 dashboards sends: dashboard name, page URL, referrer, country, city, IP, user agent, language, screen size, timezone
 
 ### Government Best Practices (Applied to GPD)
@@ -189,8 +190,8 @@ When deploying any dashboard:
 
 ### Deploy Commands
 ```bash
-# GPD → Fly.io
-npm run build && fly deploy --remote-only -a globalmonitor
+# GPD → Cloudflare Pages (frontend + API)
+npm run deploy:pages
 
 # GPD → GitHub Pages (static backup, needs --base flag)
 npm run build -- --base=/globalmonitor/ && cp dist/index.html dist/404.html && npx gh-pages -d dist
@@ -237,8 +238,10 @@ dashboards/
     public/                     # Static assets (logos, favicon, manifest)
     netlify/                    # Netlify functions (backup)
     google-apps-script/         # Visitor tracking Apps Script
-    fly.toml                    # Fly.io config
-    Dockerfile                  # Docker build (Fly.io + Render)
+    wrangler.toml              # Cloudflare Pages config
+    functions/                 # Pages Functions API layer
+    fly.toml                   # Fly.io config (retired — reference only)
+    Dockerfile                 # Docker build (legacy Fly.io + Render)
     CLAUDE.md                   # THIS FILE
   mem-by-non/                   # MEM by NON (vanilla)
     index.html, app.js, style.css

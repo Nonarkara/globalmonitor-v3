@@ -44,9 +44,9 @@ self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
-    // Skip non-GET and all cross-origin requests. The static Cloudflare
-    // frontend talks to the Fly API cross-origin; the browser/CORS layer should
-    // own those requests, not this app-shell service worker.
+    // Skip non-GET and all cross-origin requests. API routes are same-origin
+    // on globalmonitor.pages.dev via Pages Functions; only third-party fetches
+    // should bypass this service worker.
     if (request.method !== 'GET') return;
     if (url.origin !== self.location.origin) return;
 

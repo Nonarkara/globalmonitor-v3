@@ -1,3 +1,5 @@
+# RETIRED — primary host is Cloudflare Pages (globalmonitor.pages.dev).
+# Kept for reference / emergency Docker deploy only.
 app = 'globalmonitor'
 primary_region = 'sin'
 

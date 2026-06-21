@@ -81,7 +81,7 @@ Dieter Rams for this dashboard means:
 
 The next pass should reduce the right sidebar by adding a priority model: "Critical", "Context", and "Archive" or a compact disclosure pattern. This would preserve density without making every panel compete.
 
-The backend deployment should be brought to parity with the frontend. The UI now communicates status more honestly, but real mobility and vessel confidence still depends on the Fly/API layer being current.
+The backend deployment should be brought to parity with the frontend. The UI now communicates status more honestly; production API runs on Cloudflare Pages Functions at the same origin.
 
 The activity log and settings modal should eventually move away from large inline styles into shared modal primitives. The immediate accessibility bug is fixed, but a shared primitive would prevent future drift.
 

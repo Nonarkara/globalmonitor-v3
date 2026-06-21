@@ -1,6 +1,6 @@
 # Globalmonitor (v3-global) — Live Context
 
-Last updated: 2026-06-20 (GlobeWatch v8.3 / v3 mirror sync).
+Last updated: 2026-06-21 (Cloudflare Pages primary — Fly.io retired).
 
 ## VERIFY BEFORE RECOMMEND (mandatory for all agents)
 
@@ -12,10 +12,10 @@ Cursor rule: [.cursor/rules/verify-before-recommend.mdc](.cursor/rules/verify-be
 
 ## Live URL
 
-- **Current frontend URL**: https://globalmonitor.pages.dev/ — Cloudflare Pages, static frontend, latest split bundle.
+- **Production URL**: https://globalmonitor.pages.dev/ — Cloudflare Pages (static frontend + API via Pages Functions, same origin).
 - **Current source repo**: https://github.com/Nonarkara/globalmonitor
 - **Clean v3 mirror repo**: https://github.com/Nonarkara/globalmonitor-v3
-- **Backend URL**: https://globalmonitor.fly.dev/ — currently stale until Fly billing is unblocked and a new release succeeds.
+- **Legacy static backup**: https://nonarkara.github.io/globalmonitor/
 
 ## GlobeWatch v8.3 (Codex pass — in repo)
 - UI label: `GlobeWatch v8.3` in [src/App.jsx](src/App.jsx) / [Sidebar.jsx](src/components/Sidebar.jsx)
@@ -26,11 +26,11 @@ Cursor rule: [.cursor/rules/verify-before-recommend.mdc](.cursor/rules/verify-be
 - aviationstack supplement: Middle East bounds, 8h cache, ~3 pulls/day ([server/lib/aviationStack.mjs](server/lib/aviationStack.mjs)); template in [.env.example](.env.example)
 - Ports in repo: **5180** (Vite) + **4000** (API) — not Codex 5183/4010 unless overridden by env
 
-- **Primary eval (laptop, no Fly billing)**: http://localhost:5180 — `npm run dev:stack` (Vite + API proxy). API direct: http://127.0.0.1:4000
-- **Live static frontend**: https://globalmonitor.pages.dev/ (Cloudflare Pages project `globalmonitor`)
-- **Production backend (blocked)**: https://globalmonitor.fly.dev/ (Fly.io — stale until a paid release succeeds)
+- **Primary eval (laptop)**: http://localhost:5180 — `npm run dev:stack` (Vite + API proxy). API direct: http://127.0.0.1:4000
+- **Production**: https://globalmonitor.pages.dev/ (Cloudflare Pages project `globalmonitor` — frontend + API)
 - **Legacy static backup**: https://nonarkara.github.io/globalmonitor/ (GitHub Pages)
 - Fallback config: `render.yaml` (vercel.json removed from repo)
+- **Fly.io**: retired as primary host (`fly.toml` kept for reference only)
 
 ## Local dev (one command)
 ```bash
@@ -41,17 +41,18 @@ Starts `node server/index.mjs` on **4000** and Vite on **5180** (`/api` proxied 
 ## Commit reporting
 When reporting whether work is shipped, agents MUST state one of:
 - **Committed on localhost** — `git commit` exists locally; not necessarily pushed or running on laptop.
-- **Running on localhost: http://localhost:5180** — change is visible in local dev (`npm run dev:stack`); not on fly.dev.
-- **Committed on URL: https://globalmonitor.fly.dev/** — change is live at that URL (repeat the full URL every time).
+- **Running on localhost: http://localhost:5180** — change is visible in local dev (`npm run dev:stack`); not on production.
+- **Committed on URL: https://globalmonitor.pages.dev/** — change is live at that URL (repeat the full URL every time).
 
-GitHub Pages backup deploys separately from Fly.io; if only gh-pages has the change, use `Committed on URL: https://nonarkara.github.io/globalmonitor/`. Never imply fly.dev live until push + deploy are verified (`git status` vs `origin/main`, deploy logs).
+GitHub Pages backup deploys separately; if only gh-pages has the change, use `Committed on URL: https://nonarkara.github.io/globalmonitor/`. Never imply production live until push + deploy are verified (`git status` vs `origin/main`, deploy logs).
 
-## Deploy status (2026-06-20)
-- **Git**: `main` is pushed to `Nonarkara/globalmonitor` and mirrored to `Nonarkara/globalmonitor-v3` at `fad9406`.
-- **Local eval**: another agent verified `npm run dev:stack` with frontend `http://127.0.0.1:5180/` HTTP 200 and API `http://127.0.0.1:4000` regional endpoints HTTP 200.
-- **Cloudflare Pages**: `https://globalmonitor.pages.dev/` serves the latest static frontend. Build with `VITE_API_BASE_URL=https://globalmonitor.fly.dev`.
-- **Fly**: blocked by billing. `fly deploy --remote-only -a globalmonitor` fails with: `We need your payment information to continue`.
-- **Live backend caveat**: `globalmonitor.fly.dev` still serves older API behavior. It ignores theater for ACLED, lacks aviationstack metadata, and `/api/vessels` may fall through to HTML until Fly is redeployed.
+## Deploy status (2026-06-21)
+- **Primary host**: Cloudflare Pages at `https://globalmonitor.pages.dev/` — static `dist/` + API via `functions/`.
+- **Deploy command**: `npm run deploy:pages` (or `npx wrangler pages deploy dist --project-name globalmonitor --branch=main --commit-dirty=true`).
+- **Build**: same-origin API — `VITE_API_BASE_URL` empty at build time; `/api/*` served by Pages Functions.
+- **Local eval**: `npm run dev:stack` — full Node API with AIS WebSocket on port 4000.
+- **Pages API caveat**: global AIS WebSocket (aisstream.io) needs long-running Node; Pages serves VesselFinder fleet overlay when `VESSELFINDER_FLEET_KEY` is bound in Cloudflare env.
+- **RainViewer on Pages**: `api.rainviewer.com` may timeout from Cloudflare Workers edge (blocked or slow); weather radar layer may show stale/empty until a client-side fallback is added. `/api/flights`, `/api/health`, `/api/vessels` verified live on same origin.
 - **GitHub Pages**: legacy only; manual command remains `npm run build -- --base=/globalmonitor/ && cp dist/index.html dist/404.html && npx gh-pages -d dist`.
 
 ## Three-Region Theater Nav
@@ -161,7 +162,7 @@ Pattern: extend [server/lib/supabase.mjs](server/lib/supabase.mjs) with an `upse
   - `npm audit --audit-level=moderate`
   - `npm run lint`
   - `npm run build`
-- `.github/workflows/cloudflare-pages.yml` deploys `dist` to the Cloudflare Pages project `globalmonitor` with `VITE_API_BASE_URL=https://globalmonitor.fly.dev`.
+- `.github/workflows/cloudflare-pages.yml` deploys `dist` + `functions/` to Cloudflare Pages project `globalmonitor` (same-origin API, empty `VITE_API_BASE_URL`).
 - GitHub Actions may be disabled on the account; if so, deploy Cloudflare manually with Wrangler.
 
 ## Ship tracking (AIS)

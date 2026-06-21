@@ -8,10 +8,8 @@ It combines live map layers, flight and vessel tracking, market context, humanit
 
 - Current source repo: `Nonarkara/globalmonitor`
 - Clean v3 mirror: `Nonarkara/globalmonitor-v3`
-- Live static frontend: `https://globalmonitor.pages.dev`
-- API backend: `https://globalmonitor.fly.dev`
-
-As of 2026-06-20, the Cloudflare Pages frontend is current, but the Fly backend is still an older deployment because Fly blocks new releases until billing/payment information is added. Local development is the authoritative full-stack verification path until Fly is unblocked.
+- **Production URL**: `https://globalmonitor.pages.dev` — static frontend + API via Cloudflare Pages Functions (same origin)
+- Legacy static backup: `https://nonarkara.github.io/globalmonitor/`
 
 ## Design / Human Walkthrough
 
@@ -29,7 +27,7 @@ Key outcomes:
 
 - Conflict and humanitarian hotspots via ACLED, curated fallbacks, UNHCR, and ReliefWeb
 - Flight positions via airplanes.live, OpenSky, and optional aviationstack supplement
-- Ship positions via AIS/VesselFinder feeds, with map heading vectors
+- Ship positions via VesselFinder fleet overlay (Pages) or AIS WebSocket (local Node API)
 - NASA FIRMS thermal anomalies and NASA GIBS environmental/satellite overlays
 - Weather and air quality via Open-Meteo
 - Seismic activity via USGS
@@ -51,7 +49,7 @@ This starts:
 - frontend on `http://127.0.0.1:5180`
 - API cache layer on `http://127.0.0.1:4000`
 
-Primary evaluation: `npm run dev:stack` (frontend **5180**, API **4000**). Do not treat `globalmonitor.fly.dev` as current until a Fly release succeeds.
+Primary evaluation: `npm run dev:stack` (frontend **5180**, API **4000**).
 
 If you want to run them separately:
 
@@ -66,18 +64,20 @@ Build for production:
 npm run build
 ```
 
-Deploy the current static frontend to Cloudflare Pages:
+Deploy to Cloudflare Pages (frontend + API):
 
 ```bash
-VITE_API_BASE_URL=https://globalmonitor.fly.dev npm run build
+npm run deploy:pages
+```
+
+Or manually:
+
+```bash
+npm run build
 npx wrangler pages deploy dist --project-name=globalmonitor --branch=main --commit-dirty=true
 ```
 
-Deploy the full backend/frontend image to Fly after billing is unblocked:
-
-```bash
-fly deploy --remote-only -a globalmonitor
-```
+The build uses same-origin `/api/*` (empty `VITE_API_BASE_URL`). Pages Functions in `functions/` serve the API layer.
 
 ## Copernicus Sentinel Starter
 
@@ -116,7 +116,15 @@ Notes:
 
 ## Current Architecture Notes
 
-- Key live panels now prefer the backend API at `/api/*`, which adds caching and returns live or stale payloads explicitly.
+- Key live panels prefer the backend API at `/api/*`, which adds caching and returns live or stale payloads explicitly.
+- Production: Cloudflare Pages serves static assets from `dist/` and API routes from `functions/` (same origin at `globalmonitor.pages.dev`).
+- Local dev: Node server on port 4000 with full AIS WebSocket support; Vite proxies `/api` on port 5180.
 - The frontend still has browser-side fallbacks, so the dashboard keeps working while the backend is unavailable.
 - Flight traffic uses a conservative cache-first strategy to protect free API quotas. aviationstack is Middle-East bounded and cached server-side.
 - Heavy panels and the map are code-split with `React.lazy` so the initial app bundle stays small while the map chunk loads separately.
+
+## Cloudflare Pages API caveats
+
+- **Flights, markets, ACLED, FIRMS, rainviewer, etc.**: served by Pages Functions (`functions/_lib/router.mjs`).
+- **Global AIS WebSocket** (aisstream.io): requires long-running Node process — available in `npm run dev:stack` only. On Pages, configure `VESSELFINDER_FLEET_KEY` for fleet ship overlay.
+- **Secrets**: bind env vars in Cloudflare Pages project settings (OpenSky, Supabase, Copernicus, VesselFinder, etc.).

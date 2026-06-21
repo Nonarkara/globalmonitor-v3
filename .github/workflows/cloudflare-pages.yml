@@ -20,7 +20,7 @@ jobs:
       - run: npm ci || npm install
       - run: npx vite build
         env:
-          VITE_API_BASE_URL: https://globalmonitor.fly.dev
+          VITE_API_BASE_URL: ""
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
