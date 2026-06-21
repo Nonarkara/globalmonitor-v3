@@ -1,0 +1,29 @@
+---
+description: Never recommend URLs or commands without verifying them in the same session
+alwaysApply: true
+---
+
+# Verify Before Recommend
+
+**Never tell Dr Non to open a URL or run a command unless the agent verified it in the same session** (curl, browser MCP, or equivalent).
+
+## Required behavior
+
+1. Before saying "open http://localhost:5180" (or any URL): run `curl -sf -o /dev/null -w "%{http_code}"` or use browser MCP and confirm HTTP 200 (or expected response).
+2. Before saying "run `npm run dev:stack`": either run it yourself and verify, or say **"I have not verified this yet"** and do not imply it works.
+3. For this project, local dev requires `npm run dev:stack` (API on 4000 + Vite on 5180). Opening 5180 without the stack running returns connection refused — that is not a code bug.
+
+## Forbidden phrasing (unverified)
+
+- "Open http://localhost:5180"
+- "It should work now"
+- "Try refreshing the page"
+
+## Allowed phrasing (after verification)
+
+- "Verified in this session: http://127.0.0.1:5180/ returns HTTP 200; `/api/flights?theater=middleeast` returns FeatureCollection."
+- Include the exact curl command used.
+
+## If verification fails
+
+Say **"still broken"** with error output. Do not ask the user to try opening anything.
