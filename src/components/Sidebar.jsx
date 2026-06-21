@@ -1,10 +1,110 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Layers, Activity, CloudRain, Flame, AlertTriangle, Wind, Zap, Building2, Plane, Ship, Moon, Satellite, Map as MapIcon, Check, ChevronDown, ChevronRight } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
+    Layers, Activity, CloudRain, Flame, AlertTriangle, Wind, Zap, Building2,
+    Plane, Ship, Moon, Satellite, Map as MapIcon, Check, ChevronDown, ChevronRight,
+} from 'lucide-react';
 import CopernicusPreviewPanel from './CopernicusPreviewPanel';
 import SourceStack from './SourceStack';
 import { EO_TILE_LAYERS } from '../services/eoTiles';
 import { useFlightCount } from '../hooks/useFlightCount';
 import { useVesselCount } from '../hooks/useVesselCount';
+
+const BASEMAP_CONFIGS = [
+    { id: 'dark', title: 'Dark', desc: 'Low-glare operations map', icon: <Moon size={16} /> },
+    { id: 'satellite', title: 'Satellite', desc: 'Esri imagery with place labels', icon: <Satellite size={16} /> },
+    { id: 'voyager', title: 'Political', desc: 'Borders and place context', icon: <MapIcon size={16} /> },
+];
+
+const CORE_LAYERS = {
+    firms: {
+        title: 'Heat signatures (FIRMS)',
+        desc: 'Thermal hotspots — fires, strikes, explosions',
+        icon: <Zap size={18} />,
+        group: 'operational',
+    },
+    conflicts: {
+        title: 'Conflict events (ACLED)',
+        desc: 'Reported clashes, violence, strategic developments',
+        icon: <Flame size={18} />,
+        group: 'operational',
+    },
+    infrastructure: {
+        title: 'Energy & ports',
+        desc: 'Critical sites, chokepoints, infrastructure status',
+        icon: <Building2 size={18} />,
+        group: 'operational',
+    },
+    flights: {
+        title: 'Aircraft (ADS-B)',
+        desc: 'Live aircraft positions and heading vectors',
+        icon: <Plane size={18} />,
+        group: 'mobility',
+    },
+    vessels: {
+        title: 'Ships (AIS)',
+        desc: 'Live vessel positions and maritime traffic',
+        icon: <Ship size={18} />,
+        group: 'mobility',
+    },
+    weather: {
+        title: 'Precipitation / rain radar',
+        desc: 'Live RainViewer radar and precipitation overlay',
+        icon: <CloudRain size={18} />,
+        group: 'environment',
+    },
+    aqi: {
+        title: 'Air quality',
+        desc: 'PM2.5 and AQI surface readings',
+        icon: <Wind size={18} />,
+        group: 'environment',
+    },
+    disasters: {
+        title: 'Natural disasters',
+        desc: 'Active NASA EONET events and alerts',
+        icon: <AlertTriangle size={18} />,
+        group: 'environment',
+    },
+    economy: {
+        title: 'Economic baseline',
+        desc: 'World Bank macro indicators by country',
+        icon: <Activity size={18} />,
+        group: 'environment',
+    },
+};
+
+const EO_LAYER_META = {
+    'eo-aerosol': { group: 'environment', regions: ['middleeast', 'indopacific', 'thailand'] },
+    'eo-precipitation': { group: 'environment', regions: ['middleeast', 'indopacific', 'thailand'] },
+    'eo-jaxa-soil-moisture': { group: 'environment', regions: ['middleeast', 'indopacific', 'thailand'] },
+    'eo-weather-radar': { group: 'environment', regions: ['middleeast', 'indopacific', 'thailand'] },
+    'eo-fires': { group: 'satellite', regions: ['middleeast', 'indopacific', 'thailand'] },
+    'eo-nightlights': { group: 'satellite', regions: ['middleeast', 'indopacific', 'thailand'] },
+    'eo-sea-surface-temp': { group: 'satellite', regions: ['middleeast', 'indopacific'] },
+    'eo-snow-cover': { group: 'satellite', regions: ['middleeast'] },
+    'eo-sentinel2-cloudless': { group: 'satellite', regions: ['indopacific', 'thailand'] },
+    'eo-surface-water': { group: 'satellite', regions: ['indopacific', 'thailand'] },
+    'eo-bathymetry': { group: 'satellite', regions: ['indopacific'] },
+    'eo-wind': { group: 'satellite', regions: ['middleeast', 'indopacific', 'thailand'] },
+};
+
+const REGION_CORE_IDS = {
+    middleeast: ['firms', 'conflicts', 'infrastructure', 'flights', 'vessels', 'weather', 'aqi', 'disasters', 'economy'],
+    indopacific: ['firms', 'conflicts', 'flights', 'vessels', 'weather', 'aqi', 'disasters'],
+    thailand: ['firms', 'conflicts', 'flights', 'vessels', 'weather', 'aqi', 'disasters'],
+};
+
+const GROUP_ORDER = [
+    { key: 'operational', label: 'Operational' },
+    { key: 'mobility', label: 'Mobility' },
+    { key: 'environment', label: 'Environment' },
+    { key: 'satellite', label: 'Satellite' },
+];
+
+const REGION_LABEL = {
+    middleeast: 'Middle East',
+    indopacific: 'Indo-Pacific',
+    thailand: 'Thailand',
+};
 
 const Sidebar = ({
     activeLayers,
@@ -26,132 +126,101 @@ const Sidebar = ({
     const flightCount = useFlightCount();
     const vesselCount = useVesselCount();
     const contentRef = useRef(null);
-    const [satelliteCatalogOpen, setSatelliteCatalogOpen] = useState(false);
     const [sourceAgenciesOpen, setSourceAgenciesOpen] = useState(false);
 
     useEffect(() => {
-        if (contentRef.current) {
-            contentRef.current.scrollTop = 0;
-        }
+        if (contentRef.current) contentRef.current.scrollTop = 0;
     }, [viewMode]);
 
-    const basemapConfigs = [
-        { id: 'dark', title: 'Dark', desc: 'Low-glare operations map', icon: <Moon size={16} /> },
-        { id: 'satellite', title: 'Satellite', desc: 'Esri imagery + labels', icon: <Satellite size={16} /> },
-        { id: 'voyager', title: 'Political', desc: 'Borders and place context', icon: <MapIcon size={16} /> },
-    ];
+    const groupedLayers = useMemo(() => {
+        const groups = Object.fromEntries(GROUP_ORDER.map((g) => [g.key, []]));
+        const region = viewMode || 'middleeast';
+        const coreIds = REGION_CORE_IDS[region] || REGION_CORE_IDS.middleeast;
 
-    const layerGroups = [
-        {
-            title: 'Operational',
-            layers: [
-                { id: 'firms', title: 'Heat signatures', desc: 'Fires, strikes, and thermal hotspots', icon: <Zap size={18} /> },
-                { id: 'conflicts', title: 'Conflict events', desc: 'Reported clashes and violence', icon: <Flame size={18} /> },
-                { id: 'infrastructure', title: 'Energy & ports', desc: 'Critical sites and chokepoints', icon: <Building2 size={18} /> },
-            ],
-        },
-        {
-            title: 'Mobility',
-            layers: [
-                { id: 'flights', title: 'Aircraft', desc: 'Live aircraft positions', icon: <Plane size={18} /> },
-                { id: 'vessels', title: 'Ships', desc: 'Live ship positions', icon: <Ship size={18} /> },
-            ],
-        },
-        {
-            title: 'Environment',
-            layers: [
-                { id: 'weather', title: 'Rain radar', desc: 'Precipitation forecasts', icon: <CloudRain size={18} /> },
-                { id: 'aqi', title: 'Air quality', desc: 'PM2.5 and AQI', icon: <Wind size={18} /> },
-                { id: 'disasters', title: 'Natural disasters', desc: 'Active events and alerts', icon: <AlertTriangle size={18} /> },
-                { id: 'economy', title: 'Economic baseline', desc: 'Macro indicators', icon: <Activity size={18} /> },
-            ],
-        },
-    ];
-    // Compact mono labels replace emoji on satellite layer chips — fits the tactical aesthetic
-    // and avoids the duplicate-emoji confusion (🌊 for SST + Bathymetry, 🌧️ for Precip + Radar).
-    const SAT_MONO_LABEL = {
-        'eo-nightlights': 'NIGHT',
-        'eo-sea-surface-temp': 'SST',
-        'eo-fires': 'FIRES',
-        'eo-precipitation': 'RAIN',
-        'eo-snow-cover': 'SNOW',
-        'eo-aerosol': 'AOD',
-        'eo-sentinel2-cloudless': 'S2',
-        'eo-surface-water': 'WATER',
-        'eo-bathymetry': 'DEPTH',
-        'eo-weather-radar': 'RADAR',
-        'eo-wind': 'WIND'
+        coreIds.forEach((id) => {
+            const layer = CORE_LAYERS[id];
+            if (layer) groups[layer.group].push({ id, ...layer, kind: 'core' });
+        });
+
+        EO_TILE_LAYERS.forEach((eo) => {
+            const meta = EO_LAYER_META[eo.id];
+            if (!meta || !meta.regions.includes(region)) return;
+            if (['eo-true-color', 'eo-vegetation'].includes(eo.id)) return;
+            groups[meta.group].push({
+                id: eo.id,
+                title: eo.id === 'eo-jaxa-soil-moisture' ? 'Drought / soil moisture' : eo.name,
+                desc: eo.description,
+                icon: <Satellite size={18} />,
+                kind: 'eo',
+            });
+        });
+
+        return groups;
+    }, [viewMode]);
+
+    const renderLayerDesc = (layer) => {
+        if (layer.id === 'flights' && activeLayers.includes('flights')) {
+            return `${flightCount > 0 ? flightCount.toLocaleString() : '…'} aircraft tracked · ADS-B`;
+        }
+        if (layer.id === 'vessels' && activeLayers.includes('vessels')) {
+            return `${vesselCount > 0 ? vesselCount.toLocaleString() : '…'} vessels tracked · AIS`;
+        }
+        return layer.desc;
     };
-    const NASA_LAYER_IDS = new Set([
-        'eo-nightlights', 'eo-sea-surface-temp', 'eo-fires',
-        'eo-precipitation', 'eo-snow-cover', 'eo-aerosol'
-    ]);
-    const visibleEoLayers = EO_TILE_LAYERS.filter(
-        (layer) => !['eo-true-color', 'eo-vegetation'].includes(layer.id)
-    );
-    const nasaLayers = visibleEoLayers.filter((l) => NASA_LAYER_IDS.has(l.id));
-    const internationalLayers = visibleEoLayers.filter((l) => !NASA_LAYER_IDS.has(l.id));
 
-    const renderEoLayer = (layer) => {
+    const renderLayerButton = (layer) => {
         const isActive = activeLayers.includes(layer.id);
         return (
             <button
-                type="button"
                 key={layer.id}
+                type="button"
                 className={`layer-card ${isActive ? 'active' : ''}`}
                 onClick={() => toggleLayer(layer.id)}
                 aria-pressed={isActive}
-                aria-label={`${isActive ? 'Hide' : 'Show'} ${layer.name} satellite layer`}
-                style={{ padding: '10px 14px', gap: '10px' }}
+                aria-label={`${isActive ? 'Hide' : 'Show'} ${layer.title}`}
             >
-                <span style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.62rem',
-                    fontWeight: 700,
-                    letterSpacing: '0.5px',
-                    minWidth: '46px',
-                    padding: '4px 6px',
-                    textAlign: 'center',
-                    border: '1px solid var(--line-2)',
-                    color: 'var(--ink-2)',
-                    borderRadius: '0'
-                }}>
-                    {SAT_MONO_LABEL[layer.id] || layer.id.replace('eo-', '').slice(0, 5).toUpperCase()}
-                </span>
+                <span className="layer-icon-wrapper">{layer.icon}</span>
                 <span className="layer-info">
-                    <span className="layer-title" style={{ fontSize: '0.85rem' }}>{layer.name}</span>
-                    <span className="layer-desc" style={{ fontSize: '0.72rem' }}>{layer.description}</span>
+                    <span className="layer-title">{layer.title}</span>
+                    <span className="layer-desc">{renderLayerDesc(layer)}</span>
                 </span>
+                {isActive && (
+                    <span className="layer-card-check" aria-hidden="true">
+                        <Check size={14} />
+                    </span>
+                )}
             </button>
         );
     };
 
     return (
-        <aside className="grid-panel" style={{ flex: 1 }}>
+        <aside className="grid-panel sidebar-panel" style={{ flex: 1 }}>
             <div className="sidebar-header">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 300, letterSpacing: '0.3px', color: 'var(--text-main)' }}>Global Political Dashboard</span>
-                    <span style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.4)', fontWeight: 500, letterSpacing: '1.2px', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
-                        {viewMode === 'thailand' ? 'Thailand' : viewMode === 'indopacific' ? 'Southeast Asia' : 'Middle East'} · GlobeWatch {dashboardVersion}
+                <div className="sidebar-brand-lockup">
+                    <span className="sidebar-brand-title">Global Political Dashboard</span>
+                    <span className="sidebar-brand-subtitle">
+                        {REGION_LABEL[viewMode] || 'Middle East'} · GlobeWatch {dashboardVersion}
                     </span>
                 </div>
             </div>
+
             <div ref={contentRef} className="sidebar-content">
-                <div>
+                {/* BASEMAP */}
+                <section className="sidebar-section">
                     <h3 className="section-title">Basemap</h3>
                     <div className="basemap-grid" role="radiogroup" aria-label="Map basemap">
-                        {basemapConfigs.map((base) => {
+                        {BASEMAP_CONFIGS.map((base) => {
                             const isActive = mapStyle === base.id;
                             return (
                                 <button
                                     key={base.id}
                                     type="button"
-                    className={`basemap-option ${isActive ? 'active' : ''}`}
-                    onClick={() => setMapStyle(base.id)}
-                    role="radio"
-                    aria-checked={isActive}
-                    aria-label={`Use ${base.title} basemap`}
-                >
+                                    className={`basemap-option ${isActive ? 'active' : ''}`}
+                                    onClick={() => setMapStyle(base.id)}
+                                    role="radio"
+                                    aria-checked={isActive}
+                                    aria-label={`Use ${base.title} basemap`}
+                                >
                                     <span className="basemap-option-icon">{base.icon}</span>
                                     <span className="basemap-option-copy">
                                         <span className="layer-title">{base.title}</span>
@@ -161,9 +230,10 @@ const Sidebar = ({
                             );
                         })}
                     </div>
-                </div>
+                </section>
 
-                <div>
+                {/* LAYER GROUPS */}
+                <section className="sidebar-section">
                     <div className="section-title-row">
                         <h3 className="section-title">Layers</h3>
                         <span>{activeLayers.length} active</span>
@@ -172,124 +242,78 @@ const Sidebar = ({
                         <button type="button" onClick={onResetCoreLayers} className="sidebar-mini-action">
                             Reset defaults
                         </button>
-                        <button type="button" onClick={() => toggleLayer('flights')} className={`sidebar-mini-action ${activeLayers.includes('flights') ? 'active' : ''}`} aria-pressed={activeLayers.includes('flights')}>
+                        <button
+                            type="button"
+                            onClick={() => toggleLayer('flights')}
+                            className={`sidebar-mini-action ${activeLayers.includes('flights') ? 'active' : ''}`}
+                            aria-pressed={activeLayers.includes('flights')}
+                        >
                             Flights
                         </button>
-                        <button type="button" onClick={() => toggleLayer('vessels')} className={`sidebar-mini-action ${activeLayers.includes('vessels') ? 'active' : ''}`} aria-pressed={activeLayers.includes('vessels')}>
+                        <button
+                            type="button"
+                            onClick={() => toggleLayer('vessels')}
+                            className={`sidebar-mini-action ${activeLayers.includes('vessels') ? 'active' : ''}`}
+                            aria-pressed={activeLayers.includes('vessels')}
+                        >
                             Ships
                         </button>
                     </div>
-                    <div className="layer-group-stack">
-                        {layerGroups.map((group) => (
-                            <div className="layer-group" key={group.title}>
-                                <div className="layer-group-title">{group.title}</div>
-                                <div className="layer-list">
-                                    {group.layers.map((layer) => {
-                                        const isActive = activeLayers.includes(layer.id);
-                                        const layerDesc = layer.id === 'flights' && isActive
-                                            ? `${flightCount > 0 ? flightCount.toLocaleString() : '...'} aircraft · ADS-B`
-                                            : layer.id === 'vessels' && isActive
-                                                ? `${vesselCount > 0 ? vesselCount.toLocaleString() : '...'} vessels · AIS`
-                                                : layer.desc;
-                                        return (
-                                            <button
-                                                key={layer.id}
-                                                type="button"
-                                                className={`layer-card ${isActive ? 'active' : ''}`}
-                                                onClick={() => toggleLayer(layer.id)}
-                                                aria-pressed={isActive}
-                                                aria-label={`${isActive ? 'Hide' : 'Show'} ${layer.title} layer`}
-                                            >
-                                                <span className="layer-icon-wrapper">
-                                                    {layer.icon}
-                                                </span>
-                                                <span className="layer-info">
-                                                    <span className="layer-title">{layer.title}</span>
-                                                    <span className="layer-desc">{layerDesc}</span>
-                                                </span>
-                                                {isActive && (
-                                                    <span className="layer-card-check" aria-hidden="true">
-                                                        <Check size={14} />
-                                                    </span>
-                                                )}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
 
-                <div>
+                    <div className="layer-group-stack">
+                        {GROUP_ORDER.map(({ key, label }) => {
+                            const layers = groupedLayers[key];
+                            if (!layers?.length) return null;
+                            return (
+                                <div className="layer-group" key={key}>
+                                    <div className="layer-group-title">{label}</div>
+                                    <div className="layer-list">
+                                        {layers.map(renderLayerButton)}
+                                    </div>
+                                    {key === 'satellite' && (
+                                        <div className="satellite-copernicus-block">
+                                            <div className="layer-group-title satellite-source-title">Sentinel · ESA</div>
+                                            <CopernicusPreviewPanel
+                                                viewMode={viewMode}
+                                                preset={copernicusMode}
+                                                onPresetChange={setCopernicusMode}
+                                                runtimeSource={copernicusRuntimeSource}
+                                                showOverlay={showCopernicusOverlay}
+                                                onToggleOverlay={() => setShowCopernicusOverlay((v) => !v)}
+                                                previewResource={copernicusResource}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </section>
+
+                {/* MAP FRAMING */}
+                <section className="sidebar-section">
                     <h3 className="section-title">Map Framing</h3>
                     <button
                         type="button"
                         className={`layer-card ${showStrategicContext ? 'active' : ''}`}
-                        onClick={() => setShowStrategicContext((value) => !value)}
+                        onClick={() => setShowStrategicContext((v) => !v)}
                         aria-pressed={showStrategicContext}
                         aria-label={`${showStrategicContext ? 'Hide' : 'Show'} strategic context layer`}
                     >
-                        <span className="layer-icon-wrapper">
-                            <Layers size={20} />
-                        </span>
+                        <span className="layer-icon-wrapper"><Layers size={20} /></span>
                         <span className="layer-info">
                             <span className="layer-title">Strategic Context</span>
-                            <span className="layer-desc">Optional reference corridors, zones, and city anchors</span>
+                            <span className="layer-desc">Reference corridors, zones, and city anchors</span>
                         </span>
                     </button>
-                </div>
+                </section>
 
+                {/* SOURCE AGENCIES */}
                 <div className="sidebar-disclosure">
                     <button
                         type="button"
                         className="sidebar-disclosure-toggle"
-                        onClick={() => setSatelliteCatalogOpen((value) => !value)}
-                        aria-expanded={satelliteCatalogOpen}
-                    >
-                        <span>Satellite Layers</span>
-                        <span className="sidebar-disclosure-chevron" aria-hidden="true">
-                            {satelliteCatalogOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                        </span>
-                    </button>
-
-                    {satelliteCatalogOpen && (
-                        <>
-                            <div className="layer-group-title satellite-source-title">
-                                Sentinel · ESA Optical
-                            </div>
-                            <CopernicusPreviewPanel
-                                viewMode={viewMode}
-                                preset={copernicusMode}
-                                onPresetChange={setCopernicusMode}
-                                runtimeSource={copernicusRuntimeSource}
-                                showOverlay={showCopernicusOverlay}
-                                onToggleOverlay={() => setShowCopernicusOverlay((value) => !value)}
-                                previewResource={copernicusResource}
-                            />
-
-                            <div className="layer-group-title satellite-source-title">
-                                NASA · GIBS
-                            </div>
-                            <div className="satellite-layer-list">
-                                {nasaLayers.map(renderEoLayer)}
-                            </div>
-
-                            <div className="layer-group-title satellite-source-title">
-                                International
-                            </div>
-                            <div className="satellite-layer-list">
-                                {internationalLayers.map(renderEoLayer)}
-                            </div>
-                        </>
-                    )}
-                </div>
-
-                <div className="sidebar-disclosure">
-                    <button
-                        type="button"
-                        className="sidebar-disclosure-toggle"
-                        onClick={() => setSourceAgenciesOpen((value) => !value)}
+                        onClick={() => setSourceAgenciesOpen((v) => !v)}
                         aria-expanded={sourceAgenciesOpen}
                     >
                         <span>Source Agencies</span>

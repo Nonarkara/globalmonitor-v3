@@ -108,7 +108,13 @@ const buildVesselPaths = (vessels) => {
     return { type: 'FeatureCollection', features };
 };
 
-const MAP_MIN_ZOOM = 2.5;
+const HOVER_LAYERS = ['flights-icons', 'vessels-icons', 'acled-circles', 'firms-circles'];
+
+const formatCoord = (value, axis) => {
+    const abs = Math.abs(value);
+    const dir = axis === 'lat' ? (value >= 0 ? 'N' : 'S') : (value >= 0 ? 'E' : 'W');
+    return `${abs.toFixed(4)}°${dir}`;
+};
 const MAP_MAX_ZOOM = 18;
 
 const buildTargetViewState = (viewTarget, fallbackTransitionDuration = 1500) => ({
@@ -493,6 +499,7 @@ const MapContainer = ({
     const [mapIconsReady, setMapIconsReady] = useState(false);
     const [rainviewerTiles, setRainviewerTiles] = useState(null);
     const [hoverInfo, setHoverInfo] = useState(null);
+    const [cursorCoords, setCursorCoords] = useState(null);
 
     const handleMove = useCallback((event) => {
         dispatchViewState({ type: 'move', viewState: event.viewState });
@@ -555,8 +562,9 @@ const MapContainer = ({
     }, [mapStyle]);
 
     const handleMouseMove = useCallback((event) => {
+        setCursorCoords({ lng: event.lngLat.lng, lat: event.lngLat.lat });
         const feature = event.features?.find(
-            (f) => f.layer?.id === 'flights-icons' || f.layer?.id === 'vessels-icons'
+            (f) => HOVER_LAYERS.includes(f.layer?.id)
         );
         if (feature) {
             const [longitude, latitude] = feature.geometry?.coordinates || [];
@@ -567,6 +575,7 @@ const MapContainer = ({
     }, []);
     const handleMouseLeave = useCallback(() => {
         setHoverInfo(null);
+        setCursorCoords(null);
     }, []);
 
     const disasterResource = useLiveResource(useCallback(() => fetchNaturalDisasters(), []), {
@@ -726,7 +735,7 @@ const MapContainer = ({
                 onMove={handleMove}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
-                interactiveLayerIds={['flights-icons', 'vessels-icons']}
+                interactiveLayerIds={HOVER_LAYERS}
                 style={{ width: '100%', height: '100%' }}
                 mapStyle={MAP_STYLES[mapStyle] || MAP_STYLES.dark}
             >
@@ -1348,11 +1357,69 @@ const MapContainer = ({
                         closeButton={false}
                         closeOnClick={false}
                         offset={[0, -8]}
-                        className={`traffic-tooltip ${hoverInfo.feature.layer?.id === 'vessels-icons' ? 'traffic-tooltip--vessel' : ''}`}
+                        className={`traffic-tooltip ${
+                            hoverInfo.feature.layer?.id === 'vessels-icons' ? 'traffic-tooltip--vessel'
+                            : hoverInfo.feature.layer?.id === 'acled-circles' ? 'traffic-tooltip--conflict'
+                            : hoverInfo.feature.layer?.id === 'firms-circles' ? 'traffic-tooltip--heat'
+                            : ''
+                        }`}
                     >
                         {(() => {
                             const p = hoverInfo.feature.properties || {};
-                            const isFlight = hoverInfo.feature.layer?.id === 'flights-icons' || p.hex;
+                            const layerId = hoverInfo.feature.layer?.id;
+                            if (layerId === 'acled-circles') {
+                                return (
+                                    <div className="traffic-tooltip-content">
+                                        <div className="traffic-tooltip-header">{p.eventType || 'Conflict event'}</div>
+                                        <div className="traffic-tooltip-row">
+                                            <span>Location</span>
+                                            <span>{[p.region, p.country].filter(Boolean).join(', ') || '—'}</span>
+                                        </div>
+                                        <div className="traffic-tooltip-row">
+                                            <span>Fatalities</span>
+                                            <span>{p.fatalities ?? 0}</span>
+                                        </div>
+                                        <div className="traffic-tooltip-row">
+                                            <span>Actor</span>
+                                            <span>{p.actor1 || '—'}</span>
+                                        </div>
+                                        {p.date && (
+                                            <div className="traffic-tooltip-row">
+                                                <span>Date</span>
+                                                <span>{p.date}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }
+                            if (layerId === 'firms-circles') {
+                                return (
+                                    <div className="traffic-tooltip-content">
+                                        <div className="traffic-tooltip-header">Thermal signature</div>
+                                        <div className="traffic-tooltip-row">
+                                            <span>Confidence</span>
+                                            <span>{p.confidence || '—'}</span>
+                                        </div>
+                                        <div className="traffic-tooltip-row">
+                                            <span>FRP</span>
+                                            <span>{p.frp != null ? `${Math.round(p.frp)} MW` : '—'}</span>
+                                        </div>
+                                        {p.name && (
+                                            <div className="traffic-tooltip-row">
+                                                <span>Area</span>
+                                                <span>{p.name}</span>
+                                            </div>
+                                        )}
+                                        {p.satellite && (
+                                            <div className="traffic-tooltip-row">
+                                                <span>Satellite</span>
+                                                <span>{p.satellite}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }
+                            const isFlight = layerId === 'flights-icons' || p.hex;
                             if (isFlight) {
                                 const header = p.callsign ? p.callsign.toUpperCase() : p.hex;
                                 return (
@@ -1376,7 +1443,7 @@ const MapContainer = ({
                                         </div>
                                         {p.origin && (
                                             <div className="traffic-tooltip-row">
-                                                <span>Origin</span>
+                                                <span>Route</span>
                                                 <span>
                                                     {p.origin}
                                                     {p.destination ? ` → ${p.destination}` : ''}
@@ -1460,28 +1527,19 @@ const MapContainer = ({
             <div className="map-vignette" aria-hidden="true" />
             <div className="map-grid-overlay" aria-hidden="true" />
 
+            <div className="map-coord-readout" aria-live="polite">
+                <span className="map-coord-readout__label">Cursor position</span>
+                {cursorCoords
+                    ? `${formatCoord(cursorCoords.lat, 'lat')}  ${formatCoord(cursorCoords.lng, 'lng')}`
+                    : 'Move cursor over map'}
+            </div>
+
             {/* Tile-health badge — only renders when one or more raster sources have failed.
                 Worst-case visibility per Dr Non / §12 (Stoic transparency). */}
             {failedSources.size > 0 && (
                 <div
-                    style={{
-                        position: 'absolute',
-                        bottom: 12,
-                        right: 12,
-                        zIndex: 5,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        padding: '4px 8px',
-                        background: 'rgba(5, 14, 32, 0.78)',
-                        border: '1px solid rgba(212, 168, 67, 0.45)',
-                        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                        fontSize: '0.65rem',
-                        color: 'rgba(252, 211, 77, 0.92)',
-                        letterSpacing: '0.5px',
-                        textTransform: 'uppercase',
-                    }}
-                    title={`Some map layers could not be loaded`}
+                    className="map-layer-warning"
+                    title="Some map layers could not be loaded"
                 >
                     <AlertTriangle size={11} />
                     <span>{failedSources.size} layer{failedSources.size === 1 ? '' : 's'} unavailable</span>
@@ -1575,43 +1633,11 @@ const MapContainer = ({
                 const activeEoLayers = EO_TILE_LAYERS.filter(l => activeLayers.includes(l.id));
                 if (activeEoLayers.length === 0) return null;
                 return (
-                    <div style={{
-                        position: 'absolute',
-                        bottom: '12px',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        display: 'flex',
-                        gap: '6px',
-                        zIndex: 10,
-                        pointerEvents: 'none'
-                    }}>
-                        {activeEoLayers.map(layer => (
-                            <div key={layer.id} style={{
-                                background: 'rgba(10, 12, 18, 0.8)',
-                                backdropFilter: 'blur(12px)',
-                                borderRadius: '6px',
-                                padding: '4px 10px',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px'
-                            }}>
-                                <span style={{ fontSize: '0.7rem' }}>{layer.icon}</span>
-                                <span style={{
-                                    fontSize: '0.46rem',
-                                    fontWeight: 600,
-                                    color: 'rgba(255,255,255,0.7)',
-                                    letterSpacing: '0.5px'
-                                }}>
-                                    {layer.name}
-                                </span>
-                                <span style={{
-                                    fontSize: '0.38rem',
-                                    color: 'rgba(255,255,255,0.35)',
-                                    letterSpacing: '0.3px'
-                                }}>
-                                    {layer.attribution}
-                                </span>
+                    <div className="map-eo-labels">
+                        {activeEoLayers.map((layer) => (
+                            <div key={layer.id} className="map-eo-label">
+                                <span className="map-eo-label__name">{layer.name}</span>
+                                <span className="map-eo-label__source">{layer.attribution}</span>
                             </div>
                         ))}
                     </div>

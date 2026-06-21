@@ -48,8 +48,8 @@ function App() {
     const onDocClick = (e) => {
       if (toolsRef.current && !toolsRef.current.contains(e.target)) setToolsOpen(false);
     };
-    if (toolsOpen) document.addEventListener('mousedown', onDocClick);
-    return () => document.removeEventListener('mousedown', onDocClick);
+    if (toolsOpen) document.addEventListener('pointerdown', onDocClick);
+    return () => document.removeEventListener('pointerdown', onDocClick);
   }, [toolsOpen]);
   const [activeSources, setActiveSources] = useState(getDefaultSourceIdsForRegion('middleeast'));
   const [copernicusMode, setCopernicusMode] = useState('true-color');
