@@ -1,23 +1,23 @@
 :root {
-  /* ── RAMS Design Tokens (RAMS-STYLE.md) ── */
-  --paper: #faf9f7;
-  --panel: #ffffff;
-  --ink: #191712;
-  --ink-2: #6f6c63;
-  --ink-3: #a9a59a;
-  --line: #e7e5dd;
-  --line-2: #d2cfc5;
-  --green: #1f6e43;
-  --red: #a23a26;
+  /* ── RAMS Design Tokens (Dark Theme & Glass Morphism) ── */
+  --paper: #0a0e14;
+  --panel: rgba(14, 18, 28, 0.75); /* Translucent dark panel */
+  --ink: #ffffff;
+  --ink-2: rgba(255, 255, 255, 0.7);
+  --ink-3: rgba(255, 255, 255, 0.45);
+  --line: rgba(255, 255, 255, 0.1);
+  --line-2: rgba(255, 255, 255, 0.15);
+  --green: #22c55e;
+  --red: #ef4444;
 
   /* ── Legacy aliases → RAMS ── */
   --bg-dark: var(--paper);
   --bg-panel: var(--panel);
   --surface-color: var(--panel);
   --surface-translucent: var(--panel);
-  --surface-hover: #f3f1eb;
-  --shadow-color: transparent;
-  --bg-blur: none;
+  --surface-hover: rgba(255, 255, 255, 0.05);
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --bg-blur: blur(20px);
   --text-main: var(--ink);
   --text-muted: var(--ink-2);
   --text-dim: var(--ink-3);
@@ -60,8 +60,8 @@
   --radius-full: 0;
 
   --transition: background-color 0.14s ease, border-color 0.14s ease, color 0.14s ease, opacity 0.14s ease;
-  --font-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
+  --font-sans: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
 
   --z-map: 0;
   --z-panels: 10;

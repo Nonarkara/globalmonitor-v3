@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef, Suspense } from 'react';
 import Sidebar from './components/Sidebar';
-import RegionSelector from './components/RegionSelector';
 import WorldClock from './components/WorldClock';
 import LiveIntelligenceFeed from './components/LiveIntelligenceFeed';
 import SettingsModal from './components/SettingsModal';
@@ -15,9 +14,9 @@ import EscalationGauge from './components/EscalationGauge';
 import AlertBanner from './components/AlertBanner';
 import ClassificationBanner from './components/ClassificationBanner';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
-import ActorNetworkModal from './components/ActorNetworkModal';
 import SourceHealthModal from './components/SourceHealthModal';
 import ActivityLogModal from './components/ActivityLogModal';
+import BraunManualModal from './components/BraunManualModal';
 import { LazyMapContainer, LazyPanel } from './components/LazyPanels';
 import { logActivity, LOG_TYPES } from './services/activityLog';
 import { useEscapeKey } from './hooks/useEscapeKey';
@@ -37,7 +36,7 @@ function App() {
   const [selectedCountryCode, setSelectedCountryCode] = useState(null);
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isNetworkOpen, setIsNetworkOpen] = useState(false);
+  const [isManualOpen, setIsManualOpen] = useState(false);
   const [isSourceHealthOpen, setIsSourceHealthOpen] = useState(false);
   const [isActivityLogOpen, setIsActivityLogOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
@@ -211,15 +210,13 @@ function App() {
           </div>
           {/* Right: Controls */}
           <div className="header-controls">
-            {viewMode === 'middleeast' && (
-              <button
-                onClick={() => setIsNetworkOpen(true)}
-                aria-label="Open actor and faction network analysis"
-                className="header-button header-button-actors"
-              >
-                <Network size={11} aria-hidden="true" /> Actors
-              </button>
-            )}
+            <button
+              onClick={() => setIsManualOpen(true)}
+              aria-label="Open System Manual"
+              className="header-button header-button-manual"
+            >
+              <Info size={11} aria-hidden="true" /> Manual
+            </button>
             <div
               className="header-region-tabs"
               role="tablist"
@@ -585,13 +582,6 @@ function App() {
           </ErrorBoundary>
         )}
 
-        {/* Floating: Region selector */}
-        <RegionSelector
-          activeRegion={activeRegion}
-          onSelectRegion={handleRegionSelect}
-          viewMode={viewMode}
-        />
-
         {/* Modal: Settings */}
         <SettingsModal
           isOpen={isSettingsOpen}
@@ -601,10 +591,10 @@ function App() {
           setAllSources={setAllSources}
         />
 
-        {/* Modal: Actor Network */}
-        <ActorNetworkModal
-          isOpen={isNetworkOpen}
-          onClose={() => setIsNetworkOpen(false)}
+        {/* Modal: Manual */}
+        <BraunManualModal
+          isOpen={isManualOpen}
+          onClose={() => setIsManualOpen(false)}
         />
 
         {/* Modal: Source Health */}
