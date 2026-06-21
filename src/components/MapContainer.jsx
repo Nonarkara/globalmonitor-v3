@@ -552,7 +552,6 @@ const MapContainer = ({
     const loadMapIcons = useCallback(() => {
         const map = mapRef.current?.getMap?.();
         if (!map) return;
-        setMapIconsReady(false);
         loadTrafficIcons(map, () => setMapIconsReady(true));
     }, []);
 
@@ -640,8 +639,8 @@ const MapContainer = ({
         cacheKey: `map:flights:${viewMode}`,
         enabled: activeLayers.includes('flights'),
         intervalMs: 10 * 60 * 1000,
-        isUsable: (payload) => payload?.type === 'FeatureCollection',
-        maxRetries: 0
+        isUsable: hasFeatureData,
+        maxRetries: 2
     });
     const acledResource = useLiveResource(useCallback(() => fetchAcledEvents(viewMode), [viewMode]), {
         cacheKey: `map:acled:${viewMode}`,
@@ -653,8 +652,8 @@ const MapContainer = ({
         cacheKey: `map:vessels:${viewMode}`,
         enabled: activeLayers.includes('vessels'),
         intervalMs: 5 * 60 * 1000,
-        isUsable: (payload) => payload?.type === 'FeatureCollection',
-        maxRetries: 0
+        isUsable: (payload) => hasFeatureData(payload) || payload?.meta?.requiresKey,
+        maxRetries: 2
     });
 
     const disastersData = disasterResource.data;
@@ -673,8 +672,10 @@ const MapContainer = ({
     const vesselPaths = useMemo(() => buildVesselPaths(interpolatedVessels), [interpolatedVessels]);
     const flightsGeoJson = interpolatedFlights?.features?.length ? interpolatedFlights : flightsData;
     const vesselsGeoJson = interpolatedVessels?.features?.length ? interpolatedVessels : vesselsData;
-    const flightCount = flightsData?.features?.length ?? 0;
-    const vesselCount = vesselsData?.features?.length ?? 0;
+    const visibleFlightCount = flightsGeoJson?.features?.length ?? 0;
+    const visibleVesselCount = vesselsGeoJson?.features?.length ?? 0;
+    const flightCount = flightsData?.features?.length ?? visibleFlightCount;
+    const vesselCount = vesselsData?.features?.length ?? visibleVesselCount;
     const vesselsNeedKey = vesselsData?.meta?.requiresKey;
     const vesselSourceLabel = vesselsData?.meta?.source?.replace('aisstream.io', 'AIS')?.replace('vesselfinder-fleet', 'fleet') || 'AIS';
 
@@ -1162,7 +1163,7 @@ const MapContainer = ({
                 )}
 
                 {/* Flights Layer — density heatmap at world zoom + glow dots + plane icons */}
-                {flightsLayerActive && flightCount > 0 && (
+                {flightsLayerActive && visibleFlightCount > 0 && (
                     <Source id="flights-data" type="geojson" data={flightsGeoJson}>
                         <Layer
                             id="flights-density"
@@ -1291,7 +1292,7 @@ const MapContainer = ({
                 )}
 
                 {/* Vessels Layer — density heatmap at world zoom + glow + triangles by category */}
-                {vesselsLayerActive && vesselsData?.features?.length > 0 && (
+                {vesselsLayerActive && visibleVesselCount > 0 && (
                     <Source id="vessels-data" type="geojson" data={vesselsGeoJson}>
                         <Layer
                             id="vessels-density"

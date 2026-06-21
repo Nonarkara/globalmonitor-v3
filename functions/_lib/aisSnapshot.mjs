@@ -6,10 +6,13 @@ const MAX_VESSELS = 6000;
 
 const VESSEL_BOXES = [
     [[-180, -90], [180, 90]],
-    [[55.0, 25.5], [57.5, 27.5]],
-    [[42.5, 11.5], [44.0, 13.5]],
-    [[100.0, 0.5], [104.5, 6.5]],
-    [[118.5, 21.5], [122.5, 26.5]],
+    [[55.0, 25.5], [57.5, 27.5]],   // Strait of Hormuz
+    [[42.5, 11.5], [44.0, 13.5]],   // Bab-el-Mandeb
+    [[100.0, 0.5], [104.5, 6.5]],   // Strait of Malacca
+    [[118.5, 21.5], [122.5, 26.5]], // Taiwan Strait
+    [[97.0, 5.0], [106.0, 21.0]],   // Thailand + Gulf of Thailand
+    [[105.0, -8.0], [125.0, 8.0]],  // Indonesia / Java / Borneo
+    [[108.0, 8.0], [120.0, 22.0]],  // Vietnam / Philippines / South China Sea
 ];
 
 const toFeature = (mmsi, v) => ({

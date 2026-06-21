@@ -43,11 +43,21 @@ const THEATER_QUERY_POINTS = {
         { lat: 22.0, lon: 38.0 },  // Red Sea
     ],
     indopacific: [
-        { lat: 5.0, lon: 110.0 },
-        { lat: 14.0, lon: 100.0 },
-        { lat: -2.0, lon: 118.0 }
+        { lat: 14.0, lon: 100.0 },  // Bangkok / Gulf of Thailand
+        { lat: 5.0, lon: 110.0 },   // South China Sea central
+        { lat: 1.35, lon: 103.82 }, // Singapore
+        { lat: -6.2, lon: 106.85 }, // Jakarta
+        { lat: 14.6, lon: 121.0 },  // Manila
+        { lat: -2.0, lon: 118.0 },  // Sulawesi / eastern Indonesia
+        { lat: 10.8, lon: 106.7 },  // Ho Chi Minh / Mekong delta
+        { lat: 22.3, lon: 114.2 },  // Hong Kong / Pearl River
     ],
-    thailand: [{ lat: 14.5, lon: 100.9925 }]
+    thailand: [
+        { lat: 14.5, lon: 100.9925 }, // Bangkok
+        { lat: 18.79, lon: 98.98 },   // Chiang Mai
+        { lat: 7.88, lon: 98.39 },    // Phuket
+        { lat: 16.44, lon: 102.83 },  // Khon Kaen
+    ]
 };
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

@@ -61,9 +61,11 @@ export const useInterpolatedTraffic = (geojson, {
         }
 
         if (!geojson?.features?.length) {
-            prevRef.current = new Map();
-            const raf = requestAnimationFrame(() => setDisplay(geojson));
-            return () => cancelAnimationFrame(raf);
+            if (frameRef.current) cancelAnimationFrame(frameRef.current);
+            // Hold last frame — empty polls must not blank traffic on the map.
+            return () => {
+                if (frameRef.current) cancelAnimationFrame(frameRef.current);
+            };
         } else if (displayRef.current?.features?.length) {
             // Resume from what the map is already showing so early refreshes do
             // not snap traffic back to an older poll before lerping forward.
@@ -79,8 +81,6 @@ export const useInterpolatedTraffic = (geojson, {
             const now = performance.now();
             const target = targetRef.current;
             if (!target?.features?.length) {
-                prevRef.current = new Map();
-                setDisplay(target);
                 return;
             }
 
