@@ -27,7 +27,6 @@ const DASHBOARD_VERSION = 'v8.3';
 function App() {
   // ponytail: aerosol drowns the live traffic at 0.55 opacity — keep it a toggle, not a default. Re-add 'eo-aerosol' to restore aerosol-on-load.
   const [activeLayers, setActiveLayers] = useState(['conflicts', 'firms', 'flights', 'vessels']);
-  const [activeRegion, setActiveRegion] = useState('middleeast');
   const [mapStyle, setMapStyle] = useState('dark');
   const [selectedEvent, setSelectedEvent] = useState(null);
   // Three-way region nav: 'middleeast' | 'indopacific' | 'thailand'
@@ -91,21 +90,6 @@ function App() {
     setActiveLayers(['conflicts', 'firms', 'flights', 'vessels']);
     logActivity(LOG_TYPES.USER_ACTION, 'Core operational map layers restored');
   }, []);
-
-  const handleRegionSelect = useCallback((regionId, targetViewState) => {
-    setActiveRegion(regionId);
-    if (viewMode === 'indopacific' && regionId !== 'asean') {
-      setSelectedCountryCode(regionId);
-    }
-    if (viewMode === 'thailand' && regionId !== 'thailand') {
-      setSelectedCountryCode(regionId);
-    }
-    setViewTarget(prev => ({
-      ...prev,
-      ...targetViewState,
-      transitionDuration: 1500,
-    }));
-  }, [viewMode]);
 
   const handleMapFlyTo = useCallback((target) => {
     setViewTarget(prev => ({
@@ -235,12 +219,6 @@ function App() {
                     tabIndex={isActive ? 0 : -1}
                     onClick={() => {
                       setViewMode(r.id);
-                      setActiveRegion(
-                        r.id === 'middleeast' ? 'middleeast'
-                          : r.id === 'indopacific' ? 'asean'
-                            : r.id === 'thailand' ? 'thailand'
-                              : 'global'
-                      );
                       setViewTarget({ ...r.viewState, transitionDuration: 1200 });
                       setActiveSources(getDefaultSourceIdsForRegion(r.id));
                       setSelectedCountryCode(null);

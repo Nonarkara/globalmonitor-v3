@@ -676,6 +676,9 @@ const MapContainer = ({
     const visibleVesselCount = vesselsGeoJson?.features?.length ?? 0;
     const flightCount = flightsData?.features?.length ?? visibleFlightCount;
     const vesselCount = vesselsData?.features?.length ?? visibleVesselCount;
+    const flightSourceLabel = flightsResource.isStale || flightsData?.__meta?.status === 'stale'
+        ? 'ADS-B stale'
+        : 'ADS-B';
     const vesselsNeedKey = vesselsData?.meta?.requiresKey;
     const vesselSourceLabel = vesselsData?.meta?.source?.replace('aisstream.io', 'AIS')?.replace('vesselfinder-fleet', 'fleet') || 'AIS';
 
@@ -1580,7 +1583,7 @@ const MapContainer = ({
                 >
                     <span className="map-legend-line" style={{ background: '#facc15' }} />
                     <span style={{ fontVariantNumeric: 'tabular-nums', minWidth: '14ch', display: 'inline-block' }}>
-                        {flightCount > 0 ? `${flightCount.toLocaleString()} aircraft · ADS-B` : '… aircraft · ADS-B'}
+                        {flightCount > 0 ? `${flightCount.toLocaleString()} aircraft · ${flightSourceLabel}` : '… aircraft · ADS-B'}
                     </span>
                 </div>
                 <div
