@@ -129,6 +129,7 @@ const Sidebar = ({
     const vesselCount = useVesselCount();
     const contentRef = useRef(null);
     const [sourceAgenciesOpen, setSourceAgenciesOpen] = useState(false);
+    const [satelliteLayersOpen, setSatelliteLayersOpen] = useState(false);
 
     useEffect(() => {
         if (contentRef.current) contentRef.current.scrollTop = 0;
@@ -223,10 +224,9 @@ const Sidebar = ({
                                     aria-checked={isActive}
                                     aria-label={`Use ${base.title} basemap`}
                                 >
-                                    <span className="basemap-option-icon">{base.icon}</span>
+                                    <span className={`basemap-option-swatch basemap-option-swatch--${base.id}`} aria-hidden="true" />
                                     <span className="basemap-option-copy">
                                         <span className="layer-title">{base.title}</span>
-                                        <span className="layer-desc">{base.desc}</span>
                                     </span>
                                 </button>
                             );
@@ -266,26 +266,51 @@ const Sidebar = ({
                         {GROUP_ORDER.map(({ key, label }) => {
                             const layers = groupedLayers[key];
                             if (!layers?.length) return null;
+
+                            if (key === 'satellite') {
+                                const activeSatCount = layers.filter(l => activeLayers.includes(l.id)).length;
+                                return (
+                                    <div className="sidebar-disclosure" key={key}>
+                                        <button
+                                            type="button"
+                                            className="sidebar-disclosure-toggle"
+                                            onClick={() => setSatelliteLayersOpen((v) => !v)}
+                                            aria-expanded={satelliteLayersOpen}
+                                        >
+                                            <span>Satellite layers{activeSatCount > 0 ? ` · ${activeSatCount} active` : ''}</span>
+                                            <span className="sidebar-disclosure-chevron" aria-hidden="true">
+                                                {satelliteLayersOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                                            </span>
+                                        </button>
+                                        {satelliteLayersOpen && (
+                                            <div className="layer-group">
+                                                <div className="layer-list">
+                                                    {layers.map(renderLayerButton)}
+                                                </div>
+                                                <div className="satellite-copernicus-block">
+                                                    <div className="layer-group-title satellite-source-title">Sentinel · ESA</div>
+                                                    <CopernicusPreviewPanel
+                                                        viewMode={viewMode}
+                                                        preset={copernicusMode}
+                                                        onPresetChange={setCopernicusMode}
+                                                        runtimeSource={copernicusRuntimeSource}
+                                                        showOverlay={showCopernicusOverlay}
+                                                        onToggleOverlay={() => setShowCopernicusOverlay((v) => !v)}
+                                                        previewResource={copernicusResource}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }
+
                             return (
                                 <div className="layer-group" key={key}>
                                     <div className="layer-group-title">{label}</div>
                                     <div className="layer-list">
                                         {layers.map(renderLayerButton)}
                                     </div>
-                                    {key === 'satellite' && (
-                                        <div className="satellite-copernicus-block">
-                                            <div className="layer-group-title satellite-source-title">Sentinel · ESA</div>
-                                            <CopernicusPreviewPanel
-                                                viewMode={viewMode}
-                                                preset={copernicusMode}
-                                                onPresetChange={setCopernicusMode}
-                                                runtimeSource={copernicusRuntimeSource}
-                                                showOverlay={showCopernicusOverlay}
-                                                onToggleOverlay={() => setShowCopernicusOverlay((v) => !v)}
-                                                previewResource={copernicusResource}
-                                            />
-                                        </div>
-                                    )}
                                 </div>
                             );
                         })}

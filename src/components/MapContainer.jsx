@@ -115,6 +115,7 @@ const formatCoord = (value, axis) => {
     const dir = axis === 'lat' ? (value >= 0 ? 'N' : 'S') : (value >= 0 ? 'E' : 'W');
     return `${abs.toFixed(4)}°${dir}`;
 };
+const MAP_MIN_ZOOM = 3; // §11.9 — regional dashboard floor, prevents world-copy repetition
 const MAP_MAX_ZOOM = 18;
 
 const buildTargetViewState = (viewTarget, fallbackTransitionDuration = 1500) => ({
