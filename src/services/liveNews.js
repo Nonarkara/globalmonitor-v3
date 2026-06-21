@@ -54,6 +54,9 @@ export const SOURCE_IDS_BY_REGION = {
     thailand: INTELLIGENCE_SOURCES
         .filter((source) => ['worldwide', 'asia', 'thailand'].includes(source.group))
         .map((source) => source.id),
+    global: INTELLIGENCE_SOURCES
+        .filter((source) => source.group === 'worldwide')
+        .map((source) => source.id),
 };
 
 export const APAC_SOURCES = INTELLIGENCE_SOURCES.filter((source) => ['worldwide', 'asia', 'thailand'].includes(source.group));

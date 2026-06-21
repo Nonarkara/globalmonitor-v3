@@ -17,7 +17,8 @@ import { buildGoogleNewsSearchUrl } from '../services/liveNews.js';
 export const REGION_VIEW_STATES = {
     middleeast: { longitude: 53, latitude: 30, zoom: 4.5, pitch: 25, bearing: -8 },
     indopacific: { longitude: 110, latitude: 5, zoom: 3.6, pitch: 0, bearing: 0 },
-    thailand: { longitude: 100.9925, latitude: 14.5, zoom: 5.6, pitch: 20, bearing: 0 }
+    thailand: { longitude: 100.9925, latitude: 14.5, zoom: 5.6, pitch: 20, bearing: 0 },
+    global: { longitude: 0, latitude: 20, zoom: 1.7, pitch: 20, bearing: -10 }
 };
 
 // ---------------------------------------------------------------------------
@@ -215,7 +216,7 @@ export const REGIONS = {
     },
     indopacific: {
         id: 'indopacific',
-        label: 'Southeast Asia',
+        label: 'Indo-Pacific',
         viewState: REGION_VIEW_STATES.indopacific,
         dots: ASEAN_DOTS_GEOJSON,
         channels: TV_CHANNELS_INDOPACIFIC
@@ -226,6 +227,13 @@ export const REGIONS = {
         viewState: REGION_VIEW_STATES.thailand,
         dots: THAILAND_DOTS_GEOJSON,
         channels: TV_CHANNELS_THAILAND
+    },
+    global: {
+        id: 'global',
+        label: 'Global',
+        viewState: REGION_VIEW_STATES.global,
+        dots: null,
+        channels: TV_CHANNELS_MIDDLEEAST
     }
 };
 

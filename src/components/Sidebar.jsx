@@ -91,6 +91,7 @@ const REGION_CORE_IDS = {
     middleeast: ['firms', 'conflicts', 'infrastructure', 'flights', 'vessels', 'weather', 'aqi', 'disasters', 'economy'],
     indopacific: ['firms', 'conflicts', 'flights', 'vessels', 'weather', 'aqi', 'disasters'],
     thailand: ['firms', 'conflicts', 'flights', 'vessels', 'weather', 'aqi', 'disasters'],
+    global: ['firms', 'conflicts', 'flights', 'vessels', 'weather', 'aqi', 'disasters', 'economy'],
 };
 
 const GROUP_ORDER = [
@@ -104,6 +105,7 @@ const REGION_LABEL = {
     middleeast: 'Middle East',
     indopacific: 'Indo-Pacific',
     thailand: 'Thailand',
+    global: 'Global',
 };
 
 const Sidebar = ({

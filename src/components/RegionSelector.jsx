@@ -35,7 +35,11 @@ const regions = [
 ];
 
 const RegionSelector = ({ activeRegion, onSelectRegion, viewMode }) => {
-    const activeRegions = viewMode === 'indopacific'
+    const activeRegions = viewMode === 'global'
+        ? [
+            { id: 'global', name: 'Global', viewState: { longitude: 0, latitude: 20, zoom: 1.7, pitch: 20, bearing: -10 } }
+        ]
+        : viewMode === 'indopacific'
         ? [
             { id: 'asean', name: 'ASEAN', viewState: { longitude: 105, latitude: 10, zoom: 4, pitch: 0, bearing: 0 } },
             ...ASEAN_COUNTRIES.map((country) => ({

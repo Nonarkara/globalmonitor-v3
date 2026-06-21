@@ -236,7 +236,12 @@ function App() {
                     tabIndex={isActive ? 0 : -1}
                     onClick={() => {
                       setViewMode(r.id);
-                      setActiveRegion(r.id === 'middleeast' ? 'middleeast' : r.id === 'indopacific' ? 'asean' : 'thailand');
+                      setActiveRegion(
+                        r.id === 'middleeast' ? 'middleeast'
+                          : r.id === 'indopacific' ? 'asean'
+                            : r.id === 'thailand' ? 'thailand'
+                              : 'global'
+                      );
                       setViewTarget({ ...r.viewState, transitionDuration: 1200 });
                       setActiveSources(getDefaultSourceIdsForRegion(r.id));
                       setSelectedCountryCode(null);
@@ -439,9 +444,29 @@ function App() {
               </ErrorBoundary>
             </>
           )}
+          {viewMode === 'global' && (
+            <>
+              <ErrorBoundary inline label="Global Macro">
+                <LazyPanel name="RegionalNewsPanel" regionName="Global" title="Global Macro & Policy" activeSourceIds={activeSources} viewMode={viewMode} />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="Humanitarian Impact">
+                <LazyPanel name="HumanitarianPanel" viewMode={viewMode} />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="Conflict Analytics">
+                <LazyPanel name="AcledAnalytics" viewMode={viewMode} />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="Displacement Tracker">
+                <LazyPanel name="RefugeePanel" viewMode={viewMode} />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="Maritime Warnings">
+                <LazyPanel name="MaritimeWarningsPanel" viewMode={viewMode} />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="Arms & Defense">
+                <LazyPanel name="ArmsDefensePanel" viewMode={viewMode} />
+              </ErrorBoundary>
+            </>
+          )}
         </div>
-
-        {/* Row 4: Bottom bar — 5-column grid, 2 rows */}
         <div className="bottom-bar">
           <ErrorBoundary inline label="Market Radar">
             <LazyPanel name="MarketRadarPanel" viewMode={viewMode} />
@@ -532,9 +557,23 @@ function App() {
               </ErrorBoundary>
             </>
           )}
+          {viewMode === 'global' && (
+            <>
+              <ErrorBoundary inline label="Global Macro">
+                <LazyPanel name="RegionalNewsPanel" regionName="Global" title="Global Macro & Policy" activeSourceIds={activeSources} viewMode={viewMode} />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="Maritime Warnings">
+                <LazyPanel name="MaritimeWarningsPanel" viewMode={viewMode} />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="Media Sentiment">
+                <LazyPanel name="SentimentChart" viewMode={viewMode} />
+              </ErrorBoundary>
+              <ErrorBoundary inline label="Seismic Activity">
+                <LazyPanel name="SeismicPanel" viewMode={viewMode} />
+              </ErrorBoundary>
+            </>
+          )}
         </div>
-
-        {/* Row 6: Live news ticker */}
         <ErrorBoundary inline label="Live Feed">
           <LiveIntelligenceFeed key={`ticker:${viewMode}:${sourceSetKey}`} activeSourceIds={activeSources} viewMode={viewMode} />
         </ErrorBoundary>
@@ -585,7 +624,8 @@ function App() {
           <div className="modal-overlay" style={{
             position: 'fixed', inset: 0, zIndex: 10000,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(25, 23, 18, 0.55)', backdropFilter: 'none'
+            background: 'rgba(25, 23, 18, 0.55)', backdropFilter: 'none',
+            pointerEvents: 'auto'
           }} onClick={() => setIsAboutOpen(false)}>
             <div role="dialog" aria-modal="true" aria-labelledby="about-dashboard-title" style={{
               width: '560px', maxWidth: '92vw', maxHeight: '85vh',

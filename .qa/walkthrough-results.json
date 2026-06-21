@@ -1,0 +1,77 @@
+[
+  {
+    "control": "Region tab: Middle East",
+    "pass": true,
+    "detail": "subtitle=\"Middle East\" aria-selected=true"
+  },
+  {
+    "control": "Region tab: Indo-Pacific",
+    "pass": true,
+    "detail": "subtitle=\"Indo-Pacific\" aria-selected=true"
+  },
+  {
+    "control": "Region tab: Thailand",
+    "pass": true,
+    "detail": "subtitle=\"Thailand\" aria-selected=true"
+  },
+  {
+    "control": "Region tab: Global",
+    "pass": true,
+    "detail": "subtitle=\"Global\" aria-selected=true"
+  },
+  {
+    "control": "Basemap: Dark",
+    "pass": true,
+    "detail": "aria-checked=true active=true"
+  },
+  {
+    "control": "Basemap: Satellite",
+    "pass": true,
+    "detail": "aria-checked=true active=true"
+  },
+  {
+    "control": "Basemap: Political",
+    "pass": true,
+    "detail": "aria-checked=true active=true"
+  },
+  {
+    "control": "Layer toggle (Operational)",
+    "pass": true,
+    "detail": "aria-pressed true → false"
+  },
+  {
+    "control": "Layer toggle (Mobility)",
+    "pass": true,
+    "detail": "aria-pressed true → false"
+  },
+  {
+    "control": "Layer toggle (Environment)",
+    "pass": true,
+    "detail": "aria-pressed false → true"
+  },
+  {
+    "control": "About modal",
+    "pass": true,
+    "detail": "FUNDED BY visible"
+  },
+  {
+    "control": "About modal Close button",
+    "pass": true,
+    "detail": "Closed via button"
+  },
+  {
+    "control": "Settings (News sources)",
+    "pass": true,
+    "detail": "Modal opened"
+  },
+  {
+    "control": "Map coordinate readout",
+    "pass": false,
+    "detail": "Map area not found (WebGL may be unavailable in headless)"
+  },
+  {
+    "control": "Active tab contrast (WCAG AA ≥4.5)",
+    "pass": true,
+    "detail": "ratio=15.86 fg=rgb(25, 23, 18) bg=rgb(243, 241, 235)"
+  }
+]
