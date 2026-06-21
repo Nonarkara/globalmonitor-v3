@@ -198,11 +198,12 @@ export async function handleApiRequest(request, env) {
 
         if (url.pathname === '/api/flights') {
             const theater = url.searchParams.get('theater') || 'global';
+            const minCount = theater === 'global' ? 50 : 3;
             const result = await useCached(
-                `flights:${theater}`,
+                `flights:v2:${theater}`,
                 10 * 60 * 1000,
                 () => fetchFlightsPayload(theater),
-                (p) => p?.type === 'FeatureCollection'
+                (p) => p?.type === 'FeatureCollection' && (p.features?.length ?? 0) >= minCount
             );
             return jsonResponse(result.payload, 200, result.meta);
         }
@@ -210,10 +211,12 @@ export async function handleApiRequest(request, env) {
         if (url.pathname === '/api/vessels') {
             const theater = url.searchParams.get('theater') || 'global';
             const result = await useCached(
-                `vessels:${theater}`,
-                15000,
+                `vessels:v2:${theater}`,
+                60 * 1000,
                 () => fetchVesselsPayload(theater),
-                (p) => p?.type === 'FeatureCollection'
+                (p) => p?.type === 'FeatureCollection' && (
+                    (p.features?.length ?? 0) > 0 || p.meta?.requiresKey
+                )
             );
             const payload = result.payload;
             return jsonResponse(payload, 200, {

@@ -77,13 +77,15 @@ function App() {
 
   const [timeMachineDate, setTimeMachineDate] = useState(null);
 
-  const toggleLayer = (layerId) => {
-    setActiveLayers(prev =>
-      prev.includes(layerId)
-        ? prev.filter(id => id !== layerId)
-        : [...prev, layerId]
-    );
-  };
+  const toggleLayer = useCallback((layerId) => {
+    setActiveLayers((prev) => {
+      const next = prev.includes(layerId)
+        ? prev.filter((id) => id !== layerId)
+        : [...prev, layerId];
+      logActivity(LOG_TYPES.USER_ACTION, `Layer ${layerId}: ${next.includes(layerId) ? 'on' : 'off'}`);
+      return next;
+    });
+  }, []);
 
   const resetCoreLayers = useCallback(() => {
     setActiveLayers(['conflicts', 'firms', 'flights', 'vessels']);

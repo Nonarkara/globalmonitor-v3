@@ -177,8 +177,10 @@ const Sidebar = ({
             <button
                 key={layer.id}
                 type="button"
+                role="switch"
                 className={`layer-card ${isActive ? 'active' : ''}`}
                 onClick={() => toggleLayer(layer.id)}
+                aria-checked={isActive}
                 aria-pressed={isActive}
                 aria-label={`${isActive ? 'Hide' : 'Show'} ${layer.title}`}
             >
@@ -246,16 +248,20 @@ const Sidebar = ({
                         </button>
                         <button
                             type="button"
+                            role="switch"
                             onClick={() => toggleLayer('flights')}
                             className={`sidebar-mini-action ${activeLayers.includes('flights') ? 'active' : ''}`}
+                            aria-checked={activeLayers.includes('flights')}
                             aria-pressed={activeLayers.includes('flights')}
                         >
                             Flights
                         </button>
                         <button
                             type="button"
+                            role="switch"
                             onClick={() => toggleLayer('vessels')}
                             className={`sidebar-mini-action ${activeLayers.includes('vessels') ? 'active' : ''}`}
+                            aria-checked={activeLayers.includes('vessels')}
                             aria-pressed={activeLayers.includes('vessels')}
                         >
                             Ships

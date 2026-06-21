@@ -498,6 +498,7 @@ const MapContainer = ({
     const [failedSources, setFailedSources] = useState(() => new Set());
 
     const [mapIconsReady, setMapIconsReady] = useState(false);
+    const [mapReady, setMapReady] = useState(false);
     const [rainviewerTiles, setRainviewerTiles] = useState(null);
     const [hoverInfo, setHoverInfo] = useState(null);
     const [cursorCoords, setCursorCoords] = useState(null);
@@ -548,19 +549,27 @@ const MapContainer = ({
 
     // Load custom SVG icons into the MapLibre sprite; re-run on style change
     // because setStyle() wipes all user-added images.
-    useEffect(() => {
+    const loadMapIcons = useCallback(() => {
         const map = mapRef.current?.getMap?.();
         if (!map) return;
+        setMapIconsReady(false);
+        loadTrafficIcons(map, () => setMapIconsReady(true));
+    }, []);
 
-        const loadIcons = () => {
-            setMapIconsReady(false);
-            loadTrafficIcons(map, () => setMapIconsReady(true));
-        };
+    const handleMapLoad = useCallback(() => {
+        setMapReady(true);
+        loadMapIcons();
+    }, [loadMapIcons]);
 
-        if (map.isStyleLoaded()) loadIcons();
-        map.on('style.load', loadIcons);
-        return () => { map.off('style.load', loadIcons); };
-    }, [mapStyle]);
+    useEffect(() => {
+        if (!mapReady) return undefined;
+        const map = mapRef.current?.getMap?.();
+        if (!map) return undefined;
+
+        loadMapIcons();
+        map.on('style.load', loadMapIcons);
+        return () => { map.off('style.load', loadMapIcons); };
+    }, [mapReady, mapStyle, loadMapIcons]);
 
     const handleMouseMove = useCallback((event) => {
         setCursorCoords({ lng: event.lngLat.lng, lat: event.lngLat.lat });
@@ -662,6 +671,8 @@ const MapContainer = ({
     const interpolatedVessels = useInterpolatedTraffic(vesselsData, { idKey: 'mmsi', durationMs: 60_000, frameMs: 2000, enabled: vesselsLayerActive });
     const flightPaths = useMemo(() => buildFlightPaths(interpolatedFlights), [interpolatedFlights]);
     const vesselPaths = useMemo(() => buildVesselPaths(interpolatedVessels), [interpolatedVessels]);
+    const flightsGeoJson = interpolatedFlights?.features?.length ? interpolatedFlights : flightsData;
+    const vesselsGeoJson = interpolatedVessels?.features?.length ? interpolatedVessels : vesselsData;
     const flightCount = flightsData?.features?.length ?? 0;
     const vesselCount = vesselsData?.features?.length ?? 0;
     const vesselsNeedKey = vesselsData?.meta?.requiresKey;
@@ -736,6 +747,7 @@ const MapContainer = ({
                 onMove={handleMove}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
+                onLoad={handleMapLoad}
                 interactiveLayerIds={HOVER_LAYERS}
                 style={{ width: '100%', height: '100%' }}
                 mapStyle={MAP_STYLES[mapStyle] || MAP_STYLES.dark}
@@ -1151,7 +1163,7 @@ const MapContainer = ({
 
                 {/* Flights Layer — density heatmap at world zoom + glow dots + plane icons */}
                 {flightsLayerActive && flightCount > 0 && (
-                    <Source id="flights-data" type="geojson" data={interpolatedFlights}>
+                    <Source id="flights-data" type="geojson" data={flightsGeoJson}>
                         <Layer
                             id="flights-density"
                             type="heatmap"
@@ -1280,7 +1292,7 @@ const MapContainer = ({
 
                 {/* Vessels Layer — density heatmap at world zoom + glow + triangles by category */}
                 {vesselsLayerActive && vesselsData?.features?.length > 0 && (
-                    <Source id="vessels-data" type="geojson" data={interpolatedVessels}>
+                    <Source id="vessels-data" type="geojson" data={vesselsGeoJson}>
                         <Layer
                             id="vessels-density"
                             type="heatmap"

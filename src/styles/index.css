@@ -69,6 +69,7 @@
   --z-header: 20;
   --z-modal: 100;
   --z-banner: 1000;
+  --classification-band: 18px;
 }
 
 ::selection {
@@ -112,6 +113,9 @@ body {
   height: 100vh;
   overflow: hidden;
   position: relative;
+  box-sizing: border-box;
+  padding-top: var(--classification-band);
+  padding-bottom: var(--classification-band);
 }
 
 /* ═══════════════════════════════════════════
@@ -250,14 +254,17 @@ body {
 
 .app-container {
   position: absolute;
-  inset: 0;
+  top: var(--classification-band);
+  left: 0;
+  right: 0;
+  bottom: var(--classification-band);
   display: grid;
   grid-template-columns: 280px 1fr 304px;
   grid-template-rows: auto auto auto minmax(0, 1fr) auto auto;
-  height: 100vh;
+  height: auto;
   width: 100vw;
   overflow: hidden;
-  padding: 22px 6px 22px 6px;
+  padding: 14px 6px 14px 6px;
   box-sizing: border-box;
   z-index: 10;
   pointer-events: none;
@@ -364,11 +371,10 @@ body {
   color: var(--text-main);
   z-index: 20;
   pointer-events: auto;
-  height: 40px;
   min-height: 40px;
-  max-height: 40px;
-  overflow: hidden;
-  contain: layout size style;
+  height: auto;
+  overflow: visible;
+  contain: layout style;
 }
 
 .multi-front-row {
@@ -446,18 +452,17 @@ body {
   grid-column: 1 / -1;
   grid-row: 2;
   display: grid;
-  grid-template-columns: 260px minmax(300px, 1fr) auto;
+  grid-template-columns: minmax(0, 260px) minmax(220px, 1fr) minmax(0, auto);
   align-items: center;
   justify-content: stretch;
   gap: 10px;
   flex-wrap: nowrap;
-  padding: 5px 14px;
+  padding: 6px 14px;
   border-radius: var(--radius-sm);
-  height: 60px;
-  min-height: 60px;
-  max-height: 60px;
-  overflow: hidden;
-  contain: layout size style;
+  min-height: 56px;
+  height: auto;
+  overflow: visible;
+  contain: layout style;
   position: relative;
 }
 
@@ -3478,7 +3483,7 @@ body {
   transition: top 0.2s;
 }
 .skip-link:focus {
-  top: 20px;
+  top: calc(var(--classification-band) + 4px);
 }
 
 /* ═══════════════════════════════════════════

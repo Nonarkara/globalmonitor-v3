@@ -5,7 +5,7 @@
  */
 
 const MAX_RADIUS_NM = 250;
-const REQUEST_GAP_MS = 1500;
+const REQUEST_STAGGER_MS = 350;
 
 const THEATER_BOUNDS = {
     global: { lamin: -90, lomin: -180, lamax: 90, lomax: 180 },
@@ -36,10 +36,11 @@ const THEATER_QUERY_POINTS = {
     worldwide: null, // alias → global
     middleeast: [
         { lat: 26.0, lon: 50.0 },  // Gulf
-        { lat: 32.0, lon: 53.0 },  // Iran
         { lat: 33.5, lon: 36.0 },  // Levant
+        { lat: 30.0, lon: 32.0 },  // Egypt / Sinai
+        { lat: 24.0, lon: 54.0 },  // UAE / Oman
+        { lat: 29.0, lon: 48.0 },  // Kuwait / S Iraq
         { lat: 22.0, lon: 38.0 },  // Red Sea
-        { lat: 34.0, lon: 61.0 }   // Eastern theater
     ],
     indopacific: [
         { lat: 5.0, lon: 110.0 },
@@ -104,18 +105,24 @@ export const fetchAirplanesLivePayload = async (theater = 'global') => {
     const pointErrors = [];
 
     try {
-        for (let i = 0; i < points.length; i++) {
-            if (i > 0) await sleep(REQUEST_GAP_MS);
-            try {
-                const aircraft = await fetchPoint(points[i].lat, points[i].lon);
-                for (const ac of aircraft) {
-                    if (ac.lat == null || ac.lon == null) continue;
-                    if (!inBounds(ac.lat, ac.lon, bounds)) continue;
-                    const key = ac.hex || `${ac.lat},${ac.lon},${ac.flight || ''}`;
-                    if (!byHex.has(key)) byHex.set(key, toFeature(ac));
-                }
-            } catch (pointErr) {
-                pointErrors.push(pointErr.message);
+        // Staggered parallel fetches — sequential 1.5s gaps exceeded Workers wall-clock
+        // budgets and cached sparse theater payloads (e.g. 1 aircraft for all of ME).
+        const results = await Promise.allSettled(
+            points.map((point, index) =>
+                sleep(index * REQUEST_STAGGER_MS).then(() => fetchPoint(point.lat, point.lon))
+            )
+        );
+
+        for (const result of results) {
+            if (result.status === 'rejected') {
+                pointErrors.push(result.reason?.message || 'point fetch failed');
+                continue;
+            }
+            for (const ac of result.value) {
+                if (ac.lat == null || ac.lon == null) continue;
+                if (!inBounds(ac.lat, ac.lon, bounds)) continue;
+                const key = ac.hex || `${ac.lat},${ac.lon},${ac.flight || ''}`;
+                if (!byHex.has(key)) byHex.set(key, toFeature(ac));
             }
         }
 
