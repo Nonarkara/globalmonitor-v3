@@ -64,6 +64,18 @@ const OracleSandboxModal = ({ isOpen, onClose, theater = 'middleeast' }) => {
 
     const hasInjection = Boolean(scenario || escDelta || Object.values(deltas).some((v) => v !== 0));
 
+    const sessionKey = isOpen ? `open:${theater}` : 'closed';
+    const [seenKey, setSeenKey] = useState(sessionKey);
+    if (sessionKey !== seenKey) {
+        setSeenKey(sessionKey);
+        if (isOpen) {
+            setScenario(null);
+            setDeltas({});
+            setEscDelta(0);
+            setLoading(true);
+        }
+    }
+
     const run = useCallback(async (inj) => {
         setLoading(true);
         try {
@@ -80,40 +92,39 @@ const OracleSandboxModal = ({ isOpen, onClose, theater = 'middleeast' }) => {
 
     // On open (or theater change): load baseline + initial result.
     useEffect(() => {
-        if (!isOpen) return;
-        setScenario(null); setDeltas({}); setEscDelta(0);
+        if (!isOpen) return undefined;
         let alive = true;
         (async () => {
-            setLoading(true);
             try {
                 const base = await fetchOracle(theater);
                 if (!alive) return;
-                setBaseline(base); setResult(base);
+                setBaseline(base);
+                setResult(base);
             } catch { /* noop */ }
-            setLoading(false);
+            if (alive) setLoading(false);
         })();
         return () => { alive = false; };
     }, [isOpen, theater]);
 
-    // Debounced re-run whenever controls change.
+    // Debounced re-run whenever controls change. When sliders are at rest,
+    // the visible payload is the baseline (derived below) — do not setState.
     useEffect(() => {
-        if (!isOpen || !baseline) return;
-        if (!hasInjection) { setResult(baseline); return; }
+        if (!isOpen || !baseline || !hasInjection) return undefined;
         if (debounceRef.current) clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(() => run({ scenario, deltas, escDelta }), 320);
         return () => debounceRef.current && clearTimeout(debounceRef.current);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [scenario, deltas, escDelta, isOpen, baseline]);
+    }, [scenario, deltas, escDelta, isOpen, baseline, hasInjection, run]);
 
     if (!isOpen) return null;
 
-    const fc = result?.forecast;
+    const view = hasInjection ? result : baseline;
+    const fc = view?.forecast;
     const head = fc?.headline;
     const baseOutcomes = baseline?.forecast?.outcomes || [];
     const baseByKey = Object.fromEntries(baseOutcomes.map((o) => [o.key, o.prob]));
     const maxProb = fc ? Math.max(...fc.outcomes.map((o) => o.prob), ...baseOutcomes.map((o) => o.prob)) : 100;
-    const actors = result?.actors || [];
-    const scenarios = result?.scenarios || baseline?.scenarios || [];
+    const actors = view?.actors || [];
+    const scenarios = view?.scenarios || baseline?.scenarios || [];
 
     const reset = () => { setScenario(null); setDeltas({}); setEscDelta(0); };
     const setDelta = (id, v) => setDeltas((d) => ({ ...d, [id]: v }));
@@ -135,7 +146,7 @@ const OracleSandboxModal = ({ isOpen, onClose, theater = 'middleeast' }) => {
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <span style={{ fontSize: '0.82rem', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--ink)' }}>GPD Oracle — War-Game Sandbox</span>
                             <span style={{ fontSize: '0.5rem', color: 'var(--ink-3)', letterSpacing: '0.5px' }}>
-                                {THEATER_TITLE[theater] || theater} · agent-based Monte-Carlo · {result?.meta?.aiPowered ? 'LLM narrative' : 'deterministic'}
+                                {THEATER_TITLE[theater] || theater} · agent-based Monte-Carlo · {view?.meta?.aiPowered ? 'LLM narrative' : 'deterministic'}
                             </span>
                         </div>
                     </div>
@@ -198,14 +209,14 @@ const OracleSandboxModal = ({ isOpen, onClose, theater = 'middleeast' }) => {
                                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '10px' }}>
                                     <div>
                                         <div style={{ fontSize: '0.5rem', color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                                            Most probable outcome {result?.applied ? '· under injection' : '· baseline'}
+                                            Most probable outcome {hasInjection ? '· under injection' : '· baseline'}
                                         </div>
                                         <div style={{ fontSize: '1.15rem', fontWeight: 700, color: head.color, marginTop: '2px' }}>{head.outcome}</div>
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
                                         <div style={{ fontSize: '1.7rem', fontWeight: 200, fontFamily: 'var(--font-mono)', color: head.color, lineHeight: 1 }}>{head.confidence}%</div>
                                         <div style={{ fontSize: '0.5rem', color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>
-                                            ESC {result.live.escalation} → {fc.expectedFinal} · P<sub>crit</sub> {fc.probCritical}%
+                                            ESC {view.live.escalation} → {fc.expectedFinal} · P<sub>crit</sub> {fc.probCritical}%
                                         </div>
                                     </div>
                                 </div>
@@ -222,10 +233,10 @@ const OracleSandboxModal = ({ isOpen, onClose, theater = 'middleeast' }) => {
                                 <div style={{ marginBottom: '14px' }}>
                                     <div style={{ fontSize: '0.5rem', color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '5px', display: 'flex', justifyContent: 'space-between' }}>
                                         <span>Outcome distribution</span>
-                                        {result?.applied && <span style={{ color: 'var(--ink-3)' }}>dashed = baseline · Δ = shift</span>}
+                                        {hasInjection && <span style={{ color: 'var(--ink-3)' }}>dashed = baseline · Δ = shift</span>}
                                     </div>
                                     {fc.outcomes.map((o) => (
-                                        <OutcomeRow key={o.key} outcome={o} baselineProb={result?.applied || hasInjection ? baseByKey[o.key] : null} max={maxProb} />
+                                        <OutcomeRow key={o.key} outcome={o} baselineProb={hasInjection ? baseByKey[o.key] : null} max={maxProb} />
                                     ))}
                                 </div>
 
@@ -245,9 +256,9 @@ const OracleSandboxModal = ({ isOpen, onClose, theater = 'middleeast' }) => {
                                 {/* Report */}
                                 <div style={{ background: '#f2f0ea', border: '1px solid var(--line-2)', borderRadius: 0, padding: '10px 12px' }}>
                                     <div style={{ fontSize: '0.46rem', color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '5px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                        <Cpu size={10} /> Analyst brief {result?.meta?.aiPowered ? `· ${result.report.model || 'LLM'}` : '· model-generated'}
+                                        <Cpu size={10} /> Analyst brief {view?.meta?.aiPowered ? `· ${view.report.model || 'LLM'}` : '· model-generated'}
                                     </div>
-                                    <div style={{ fontSize: '0.62rem', color: 'var(--ink-2)', lineHeight: 1.6 }}>{result.report.text}</div>
+                                    <div style={{ fontSize: '0.62rem', color: 'var(--ink-2)', lineHeight: 1.6 }}>{view.report.text}</div>
                                 </div>
 
                                 <div style={{ fontSize: '0.44rem', color: 'var(--ink-3)', marginTop: '10px', lineHeight: 1.5 }}>

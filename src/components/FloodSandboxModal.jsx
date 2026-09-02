@@ -254,12 +254,20 @@ const FloodSandboxModal = ({ isOpen, onClose, city = 'ayutthaya' }) => {
     const [directive, setDirective] = useState(null);
     const [directiveBusy, setDirectiveBusy] = useState(false);
 
+    const sessionKey = isOpen ? `open:${city}` : 'closed';
+    const [seenKey, setSeenKey] = useState(sessionKey);
+    if (sessionKey !== seenKey) {
+        setSeenKey(sessionKey);
+        if (isOpen) {
+            setStatus('loading');
+            setDirective(null);
+        }
+    }
+
     // Load live ops + terrain when opened.
     useEffect(() => {
         if (!isOpen) return undefined;
         let cancelled = false;
-        setStatus('loading');
-        setDirective(null);
         (async () => {
             try {
                 const opsData = await fetchFloodOps(city);

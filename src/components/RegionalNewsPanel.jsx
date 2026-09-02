@@ -19,26 +19,6 @@ const RegionalNewsPanel = ({ regionName, title, activeSourceIds, viewMode = 'mid
         return () => { mountedRef.current = false; };
     }, []);
 
-    const parseDepaXml = (xml) => {
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xml, "text/xml");
-        if (xmlDoc.querySelector("parsererror")) return [];
-        const items = xmlDoc.querySelectorAll("item");
-        const depaQueryStr = '"Digital Economy Promotion Agency" OR "สำนักงานส่งเสริมเศรษฐกิจดิจิทัล"';
-        const newsItems = [];
-        Array.from(items).forEach(item => {
-            const itemTitle = item.querySelector("title")?.textContent;
-            const link = item.querySelector("link")?.textContent;
-            const pubDateStr = item.querySelector("pubDate")?.textContent;
-            const source = item.querySelector("source")?.textContent || 'Google News';
-            if (itemTitle && link) {
-                if (itemTitle.includes(depaQueryStr) || itemTitle === 'Google News') return;
-                newsItems.push({ title: itemTitle, link, pubDate: pubDateStr ? new Date(pubDateStr) : new Date(), source });
-            }
-        });
-        return newsItems.slice(0, 5);
-    };
-
     const fetchNews = useCallback(() => {
         setIsRefreshing(true);
 
@@ -54,19 +34,6 @@ const RegionalNewsPanel = ({ regionName, title, activeSourceIds, viewMode = 'mid
             WorldConflict:'armed conflict OR war OR ceasefire OR offensive OR insurgency OR coup -sport -football',
         };
         if (RSS_REGIONS[regionName]) {
-            const q = encodeURIComponent(RSS_REGIONS[regionName]);
-            const rssUrl = `https://news.google.com/rss/search?q=${q}&hl=en-US&gl=US&ceid=US:en&cb=${Date.now()}`;
-            const encoded = encodeURIComponent(rssUrl);
-            const parseXml = (xml) => {
-                const doc = new DOMParser().parseFromString(xml, 'text/xml');
-                if (doc.querySelector('parsererror')) return [];
-                return Array.from(doc.querySelectorAll('item')).slice(0, 5).map(item => ({
-                    title: item.querySelector('title')?.textContent,
-                    link: item.querySelector('link')?.textContent,
-                    pubDate: new Date(item.querySelector('pubDate')?.textContent || Date.now()),
-                    source: item.querySelector('source')?.textContent || 'Google News',
-                })).filter(it => it.title && it.link && it.title !== 'Google News');
-            };
             fetchBackendJson('/api/news-rss', { q: RSS_REGIONS[regionName] })
                 .then((items) => { if (mountedRef.current) setNews(Array.isArray(items) ? items : []); })
                 .catch(() => { if (mountedRef.current) setNews([]); })
@@ -75,29 +42,6 @@ const RegionalNewsPanel = ({ regionName, title, activeSourceIds, viewMode = 'mid
         }
 
         if (regionName === 'DEPA') {
-            const depaSearchUrl = 'https://news.google.com/rss/search?q="Digital+Economy+Promotion+Agency"+OR+"สำนักงานส่งเสริมเศรษฐกิจดิจิทัล"&hl=th&gl=TH&ceid=TH:th';
-            const freshUrl = depaSearchUrl + '&cb=' + Date.now();
-            const encoded = encodeURIComponent(freshUrl);
-
-            const tryProxy = async (url, extract) => {
-                const res = await fetch(url);
-                const data = await res.json();
-                const xml = extract(data);
-                if (!xml) throw new Error('No XML');
-                const items = parseDepaXml(xml);
-                if (items.length === 0) throw new Error('No items');
-                return items;
-            };
-
-            const tryRawProxy = async (url) => {
-                const res = await fetch(url);
-                const text = await res.text();
-                if (!text.includes('<')) throw new Error('Not XML');
-                const items = parseDepaXml(text);
-                if (items.length === 0) throw new Error('No items');
-                return items;
-            };
-
             fetchBackendJson('/api/news-rss', { q: '"Digital Economy Promotion Agency" OR "สำนักงานส่งเสริมเศรษฐกิจดิจิทัล"', hl: 'th-TH' })
                 .then((items) => { if (mountedRef.current) setNews(Array.isArray(items) ? items : []); })
                 .catch(() => { if (mountedRef.current) setNews([]); })
