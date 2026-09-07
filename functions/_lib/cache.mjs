@@ -1,9 +1,32 @@
 const cache = new Map();
 const loaderHealth = new Map();
 
-export const recordHealth = (key, ok, message = null) => {
+/**
+ * Any payload whose own `source` says it is not a live observation — a curated
+ * demo set, a sample, a fallback literal, a "no key configured" shell — must
+ * never leave the API stamped `X-Tech-Status: live`. Every route passes through
+ * useCached, so this is the one place the rule is enforced; the frontend hook
+ * reads the header and DataStatus renders the badge. A number that is honest in
+ * the payload but stamped live in the header is still a lie to the viewer.
+ */
+const NON_LIVE_SOURCE = /sample|fallback|curated|mock|demo|unconfigured|no_[a-z_]*key/i;
+
+export const describeSource = (payload) =>
+    payload?.meta?.source ?? payload?.source ?? null;
+
+export const statusForPayload = (payload, fallback = 'live') => {
+    const source = describeSource(payload);
+    return source && NON_LIVE_SOURCE.test(String(source)) ? 'sample' : fallback;
+};
+
+export const recordHealth = (key, ok, message = null, source = null) => {
     loaderHealth.set(key, {
         ok,
+        // A loader that served demo/fallback content did not observe anything.
+        // Report that distinctly so the source-health modal never shows green
+        // for a feed that made no network call.
+        status: !ok ? 'error' : source && NON_LIVE_SOURCE.test(String(source)) ? 'demo' : 'live',
+        source,
         checkedAt: new Date().toISOString(),
         message
     });
@@ -22,11 +45,12 @@ export const useCached = async (key, ttlMs, loader, isUsable) => {
     const current = cache.get(key);
 
     if (current && current.expiresAt > now) {
-        recordHealth(key, true, null);
+        recordHealth(key, true, null, describeSource(current.payload));
         return {
             payload: current.payload,
             meta: {
-                status: 'live',
+                status: statusForPayload(current.payload),
+                source: describeSource(current.payload),
                 updatedAt: current.updatedAt,
                 cache: 'hit'
             }
@@ -46,12 +70,13 @@ export const useCached = async (key, ttlMs, loader, isUsable) => {
             updatedAt,
             expiresAt: now + ttlMs
         });
-        recordHealth(key, true, null);
+        recordHealth(key, true, null, describeSource(payload));
 
         return {
             payload,
             meta: {
-                status: 'live',
+                status: statusForPayload(payload),
+                source: describeSource(payload),
                 updatedAt,
                 cache: current ? 'refresh' : 'miss'
             }
@@ -64,6 +89,7 @@ export const useCached = async (key, ttlMs, loader, isUsable) => {
                 payload: current.payload,
                 meta: {
                     status: 'stale',
+                    source: describeSource(current.payload),
                     updatedAt: current.updatedAt,
                     cache: 'stale'
                 }

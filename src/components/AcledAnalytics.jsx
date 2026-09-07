@@ -128,6 +128,10 @@ const AcledAnalytics = ({ viewMode = 'middleeast' }) => {
         };
     }, [data]);
 
+    // Demo unless the payload itself says ACLED produced it. Curated events
+    // must never wear the same badge as a live feed.
+    const isDemo = Boolean(data) && data.source !== 'acled';
+
     return (
         <div className="bottom-card" style={{ padding: '10px 12px' }}>
             <div className="panel-header" style={{
@@ -142,8 +146,8 @@ const AcledAnalytics = ({ viewMode = 'middleeast' }) => {
                         Conflict Analytics
                     </span>
                 </div>
-                <span style={{ fontSize: '0.45rem', color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>
-                    ACLED · {analysis?.source === 'acled' ? 'LIVE' : 'DEMO'} · {viewMode.toUpperCase()}
+                <span style={{ fontSize: '0.45rem', color: isDemo ? 'var(--red)' : 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>
+                    {isDemo ? 'DEMO — NOT ACLED' : 'ACLED · LIVE'} · {viewMode.toUpperCase()}
                 </span>
             </div>
 
@@ -157,19 +161,22 @@ const AcledAnalytics = ({ viewMode = 'middleeast' }) => {
                 isEmpty={data && !data.features?.length}
                 emptyMessage="No conflict data"
                 refresh={refresh}
-                isDemo={Boolean(data) && data.source !== 'acled'}
+                isDemo={isDemo}
                 demoLabel="DEMO — NO ACLED KEY"
             >
                 {analysis && (
                     <>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px', marginBottom: '8px' }}>
-                            <KPI icon={Zap} label="Events" value={analysis.totalEvents} color="var(--ink)" sub="since war start" />
-                            <KPI icon={Skull} label="Fatalities" value={analysis.totalFatalities} color="var(--red)" sub="confirmed" />
+                            {/* The window is whatever the API actually queried — never a
+                                caption the code does not enforce. `since` comes back on
+                                every payload; demo payloads carry the curated set's date. */}
+                            <KPI icon={Zap} label="Events" value={analysis.totalEvents} color="var(--ink)" sub={data?.since ? `since ${data.since}` : '—'} />
+                            <KPI icon={Skull} label="Fatalities" value={analysis.totalFatalities} color="var(--red)" sub="reported" />
                             <KPI icon={Users} label="Actors" value={analysis.actors.size} color="var(--ink-2)" sub="unique" />
                         </div>
 
-                        {/* Cumulative trend charts */}
-                        {showTrend && analysis.cumulativeFatalities.length > 1 && (
+                        {/* Cumulative trend charts — never draw a trajectory from a demo set */}
+                        {showTrend && !isDemo && analysis.cumulativeFatalities.length > 1 && (
                             <div style={{
                                 marginBottom: '8px', padding: '6px 8px',
                                 background: '#f2f0ea', borderRadius: 0

@@ -16,6 +16,7 @@ const ICONS = {
 
 const FrontCard = ({ front }) => {
     const Icon = ICONS[front.icon] || Crosshair;
+    const thermal = front.thermalCount ?? front.fireCount ?? 0;
 
     return (
         <div
@@ -71,29 +72,34 @@ const FrontCard = ({ front }) => {
                 lineHeight: 1,
                 minHeight: '15px'
             }}>
-                {front.dayCount != null ? `DAY ${front.dayCount}` : '\u00A0'}
+                {front.dayCount != null ? `DAY ${front.dayCount}` : ' '}
             </div>
 
+            {/* "thermal", not "fires": these are VIIRS anomalies inside a rectangle —
+                gas flares and crop burning included. "intel · 24h" states the window. */}
             <div className="multi-front-card__metrics">
-                <span style={{ visibility: front.fireCount > 0 ? 'visible' : 'hidden' }}>
-                    {front.fireCount || 0} fires
+                <span
+                    style={{ visibility: thermal > 0 ? 'visible' : 'hidden' }}
+                    title="VIIRS thermal anomalies inside this front's bounding box, last 48h — includes flares and agricultural burning"
+                >
+                    {thermal} thermal
                 </span>
-                <span style={{ visibility: front.newsHits > 0 ? 'visible' : 'hidden' }}>
-                    {front.newsHits || 0} intel
+                <span style={{ visibility: front.newsHits > 0 ? 'visible' : 'hidden' }} title="Keyword matches in the last 24h of headlines">
+                    {front.newsHits || 0} intel · 24h
                 </span>
             </div>
 
             <div className="multi-front-card__headline">
-                {front.latestHeadline || '\u00A0'}
+                {front.latestHeadline || ' '}
             </div>
         </div>
     );
 };
 
-const MultiFrontBoard = () => {
-    const fetcher = useCallback(() => fetchFrontStatus(), []);
+const MultiFrontBoard = ({ viewMode = 'middleeast' }) => {
+    const fetcher = useCallback(() => fetchFrontStatus(viewMode), [viewMode]);
     const { data, isLoading, isRefreshing, isStale, error, retryCount, refresh } = useLiveResource(fetcher, {
-        cacheKey: 'front-status',
+        cacheKey: `front-status:${viewMode}`,
         intervalMs: 5 * 60 * 1000,
         isUsable: (d) => Array.isArray(d?.fronts)
     });
@@ -101,6 +107,9 @@ const MultiFrontBoard = () => {
     const fronts = data?.fronts || [];
     const criticalCount = fronts.filter(f => f.status === 'CRITICAL').length;
     const activeCount = fronts.filter(f => f.status === 'ACTIVE').length;
+    // The backend returns no fronts when every input feed was silent. That is
+    // "no signal", not "all fronts stable", and the empty state must say so.
+    const silent = data?.reason === 'no-signal';
 
     return (
         <div className="multi-front-board" style={{
@@ -152,7 +161,7 @@ const MultiFrontBoard = () => {
                 retryCount={retryCount}
                 data={data}
                 isEmpty={data && fronts.length === 0}
-                emptyMessage="No active front data"
+                emptyMessage={silent ? 'NO SIGNAL — input feeds silent, no front status computed' : 'No active front data'}
                 refresh={refresh}
             >
                 <div className="multi-front-board__cards">

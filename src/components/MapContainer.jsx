@@ -725,7 +725,47 @@ const MapContainer = ({
         ? 'ADS-B stale'
         : 'ADS-B';
     const vesselsNeedKey = vesselsData?.meta?.requiresKey;
-    const vesselSourceLabel = vesselsData?.meta?.source?.replace('aisstream.io', 'AIS')?.replace('vesselfinder-fleet', 'fleet') || 'AIS';
+    const vesselSourceLabel = vesselsData?.meta?.staticSnapshot
+        ? 'AIS snapshot'
+        : (vesselsData?.meta?.source?.replace('ais-snapshot', 'AIS snapshot')?.replace('aisstream.io', 'AIS')?.replace('vesselfinder-fleet', 'fleet') || 'AIS');
+    // FIRMS and ACLED sit on the same map as traffic with no provenance line of
+    // their own. Same format as the traffic rows: count · source · age.
+    // A clock that ticks in an effect, so age labels are pure during render.
+    const [nowMs, setNowMs] = useState(() => Date.now());
+    useEffect(() => {
+        const t = setInterval(() => setNowMs(Date.now()), 60_000);
+        return () => clearInterval(t);
+    }, []);
+    const ageLabel = (iso) => {
+        if (!iso) return null;
+        const mins = Math.floor((nowMs - new Date(iso).getTime()) / 60000);
+        if (!Number.isFinite(mins) || mins < 0) return null;
+        if (mins < 2) return 'just now';
+        if (mins < 60) return mins + 'm old';
+        const hrs = Math.floor(mins / 60);
+        if (hrs < 24) return hrs + 'h old';
+        return Math.floor(hrs / 24) + 'd old';
+    };
+    const firmsMeta = firmsData?.meta;
+    const firmsLive = firmsMeta?.source === 'nasa-firms-live';
+    const firmsCount = firmsData?.features?.length ?? 0;
+    const firmsCoverage = firmsMeta?.coverage === 'partial'
+        ? ' · partial ' + firmsMeta.requestsAnswered + '/' + firmsMeta.requestsAttempted + ' regions'
+        : '';
+    const firmsSourceLabel = firmsLive
+        ? firmsCount + ' thermal · VIIRS · ' + (ageLabel(firmsMeta?.fetchedAt) || 'age unknown') + firmsCoverage
+        : firmsMeta?.source === 'no_firms_key' ? 'Thermal: no FIRMS key — nothing shown'
+            : firmsResource.isLoading ? 'Loading thermal…'
+                : firmsMeta?.source ? 'Thermal: ' + String(firmsMeta.source).replace(/_/g, ' ') : 'Thermal: no data';
+    const acledRaw = acledResource.data;
+    const acledLive = acledRaw?.source === 'acled';
+    const acledCount = acledRaw?.features?.length ?? 0;
+    const acledSourceLabel = acledLive
+        ? acledCount + (acledRaw?.truncated ? '+' : '') + ' events · ACLED · since ' + (acledRaw?.since || '—')
+        : acledCount > 0 ? acledCount + ' events · DEMO — not ACLED'
+            : acledResource.isLoading ? 'Loading events…' : 'Events: no data';
+    const legendVisible = flightsLayerActive || vesselsLayerActive
+        || activeLayers.includes('firms') || activeLayers.includes('conflicts');
 
     useEffect(() => {
         setFlightCount(flightCount);
@@ -1673,13 +1713,14 @@ const MapContainer = ({
                     bottom: 'auto',
                     right: 10,
                     left: 'auto',
-                    visibility: (flightsLayerActive || vesselsLayerActive) ? 'visible' : 'hidden',
-                    pointerEvents: (flightsLayerActive || vesselsLayerActive) ? 'auto' : 'none'
+                    visibility: legendVisible ? 'visible' : 'hidden',
+                    pointerEvents: legendVisible ? 'auto' : 'none'
                 }}
                 aria-live="polite"
-                aria-hidden={!(flightsLayerActive || vesselsLayerActive)}
+                aria-hidden={!legendVisible}
             >
-                <div className="map-legend-title">LIVE TRAFFIC</div>
+                {/* "SOURCES", not "LIVE TRAFFIC" — an item below may read "3d old". */}
+                <div className="map-legend-title">SOURCES</div>
                 <div
                     className="map-legend-item"
                     style={{ visibility: flightsLayerActive ? 'visible' : 'hidden' }}
@@ -1710,6 +1751,18 @@ const MapContainer = ({
                     <span className="map-legend-line" style={{ background: '#8f8b80' }} />
                     <span>Aircraft vectors = 3 min look-ahead · Ship vectors = 2 min</span>
                 </div>
+                {activeLayers.includes('firms') && (
+                    <div className="map-legend-item">
+                        <span className="map-legend-line" style={{ background: firmsLive ? 'var(--red)' : '#d2cfc5' }} />
+                        <span style={{ fontVariantNumeric: 'tabular-nums' }}>{firmsSourceLabel}</span>
+                    </div>
+                )}
+                {activeLayers.includes('conflicts') && (
+                    <div className="map-legend-item">
+                        <span className="map-legend-line" style={{ background: acledLive ? '#191712' : 'var(--red)' }} />
+                        <span style={{ fontVariantNumeric: 'tabular-nums', color: acledLive ? undefined : 'var(--red)' }}>{acledSourceLabel}</span>
+                    </div>
+                )}
             </div>
 
             <div

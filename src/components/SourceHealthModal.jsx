@@ -31,8 +31,12 @@ const SourceHealthModal = ({ isOpen, onClose }) => {
         const key = Object.keys(health).find(k => k.toLowerCase().includes(sourceId));
         if (!key) return { status: 'no-data', color: 'var(--ink-3)' };
         const entry = health[key];
-        if (entry.ok) return { status: 'healthy', color: 'var(--green)', lastCheck: entry.updatedAt };
-        return { status: 'error', color: 'var(--red)', message: entry.message, lastCheck: entry.updatedAt };
+        // A loader that served demo/fallback content made no observation: it is
+        // not healthy and must never render green. cache.mjs records status
+        // 'demo' plus the payload source for exactly this case.
+        if (entry.status === 'demo') return { status: 'demo', color: 'var(--ink-2)', message: entry.source, lastCheck: entry.checkedAt };
+        if (entry.ok) return { status: 'healthy', color: 'var(--green)', lastCheck: entry.checkedAt };
+        return { status: 'error', color: 'var(--red)', message: entry.message, lastCheck: entry.checkedAt };
     };
 
     const reliabilityColor = (score) => {
@@ -141,6 +145,8 @@ const SourceHealthModal = ({ isOpen, onClose }) => {
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                 {health.status === 'healthy' ? (
                                                     <CheckCircle size={10} style={{ color: 'var(--green)' }} />
+                                                ) : health.status === 'demo' ? (
+                                                    <AlertCircle size={10} style={{ color: 'var(--ink-2)' }} />
                                                 ) : health.status === 'error' ? (
                                                     <AlertCircle size={10} style={{ color: 'var(--red)' }} />
                                                 ) : (

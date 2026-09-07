@@ -24,3 +24,12 @@ dist-ssr
 *.sw?
 .vercel
 /data/
+.wrangler/
+.firecrawl/
+# env files
+.env
+.env.*
+!.env.example
+# local secrets / platform state — never commit
+.dev.vars
+.netlify/

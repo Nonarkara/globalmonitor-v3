@@ -8,7 +8,10 @@ export const jsonResponse = (payload, status = 200, meta = {}) =>
             'Content-Type': 'application/json; charset=utf-8',
             'X-Tech-Status': meta.status || 'live',
             'X-Tech-Updated-At': meta.updatedAt || '',
-            'X-Tech-Cache': meta.cache || 'miss'
+            'X-Tech-Cache': meta.cache || 'miss',
+            // Provenance travels with the response so the client can badge
+            // demo/sample/fallback content without re-deriving it per panel.
+            'X-Tech-Source': meta.source || ''
         }
     });
 

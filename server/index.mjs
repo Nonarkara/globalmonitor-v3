@@ -30,7 +30,7 @@ import { fetchOilPriceTimeline } from './lib/eia.mjs';
 import { searchStacScenes } from './lib/stacCatalog.mjs';
 import { searchPlanetaryComputer } from './lib/planetaryComputer.mjs';
 import { listPresets as listEvalscriptPresets } from './lib/evalscripts.mjs';
-import { probeCog } from './lib/cogReader.mjs';
+import { probeCog, isAllowedCogUrl } from './lib/cogReader.mjs';
 import { recordToSheets, recordEscalation, getRecordingHealth } from './lib/sheetsRecorder.mjs';
 import { ingestRegionalNews } from './lib/regionalNewsIngest.mjs';
 import { startAisStream, startVesselFinderRefresh, getVesselsGeoJson, getVesselsGeoJsonForTheater } from './lib/aisVessels.mjs';
@@ -90,14 +90,27 @@ const json = (response, statusCode, payload, meta = {}) => {
         'Content-Type': 'application/json; charset=utf-8',
         'X-Tech-Status': meta.status || 'live',
         'X-Tech-Updated-At': meta.updatedAt || '',
-        'X-Tech-Cache': meta.cache || 'miss'
+        'X-Tech-Cache': meta.cache || 'miss',
+        'X-Tech-Source': meta.source || ''
     });
     response.end(JSON.stringify(payload));
 };
 
-const recordHealth = (key, ok, message = null) => {
+// Any payload whose own `source` says it is not a live observation — a curated
+// demo set, a sample, a fallback literal, a "no key configured" shell — must
+// never leave the API stamped X-Tech-Status: live. Mirrors functions/_lib/cache.mjs.
+const NON_LIVE_SOURCE = /sample|fallback|curated|mock|demo|unconfigured|no_[a-z_]*key/i;
+const describeSource = (payload) => payload?.meta?.source ?? payload?.source ?? null;
+const statusForPayload = (payload, fallback = 'live') => {
+    const source = describeSource(payload);
+    return source && NON_LIVE_SOURCE.test(String(source)) ? 'sample' : fallback;
+};
+
+const recordHealth = (key, ok, message = null, source = null) => {
     loaderHealth.set(key, {
         ok,
+        status: !ok ? 'error' : source && NON_LIVE_SOURCE.test(String(source)) ? 'demo' : 'live',
+        source,
         checkedAt: new Date().toISOString(),
         message
     });
@@ -108,11 +121,12 @@ const useCached = async (key, ttlMs, loader, isUsable) => {
     const current = cache.get(key);
 
     if (current && current.expiresAt > now) {
-        recordHealth(key, true, null);
+        recordHealth(key, true, null, describeSource(current.payload));
         return {
             payload: current.payload,
             meta: {
-                status: 'live',
+                status: statusForPayload(current.payload),
+                source: describeSource(current.payload),
                 updatedAt: current.updatedAt,
                 cache: 'hit'
             }
@@ -141,7 +155,7 @@ const useCached = async (key, ttlMs, loader, isUsable) => {
                 updatedAt,
                 expiresAt: now + ttlMs
             });
-            recordHealth(key, true, null);
+            recordHealth(key, true, null, describeSource(payload));
             // Persist snapshot to local SQLite so cache survives server restart
             saveSnapshot(key, payload, updatedAt);
             // Fire-and-forget: record to Google Sheets
@@ -150,7 +164,8 @@ const useCached = async (key, ttlMs, loader, isUsable) => {
             return {
                 payload,
                 meta: {
-                    status: 'live',
+                    status: statusForPayload(payload),
+                    source: describeSource(payload),
                     updatedAt,
                     cache: current ? 'refresh' : 'miss'
                 }
@@ -319,7 +334,7 @@ const server = http.createServer(async (request, response) => {
                 () => fetchFirmsPayload(theater),
                 (payload) => payload?.type === 'FeatureCollection'
             );
-            if (result.meta.cache !== 'hit') {
+            if (result.meta.cache !== 'hit' && result.payload?.meta?.source === 'nasa-firms-live') {
                 upsertFirmsHotspots(result.payload, theater).catch(() => {});
                 dbUpsertFirms(result.payload, theater);
             }
@@ -328,15 +343,27 @@ const server = http.createServer(async (request, response) => {
         }
 
         if (url.pathname === '/api/escalation') {
-            const payload = computeEscalation(cache);
+            const theater = url.searchParams.get('theater') || 'middleeast';
+            const payload = computeEscalation(cache, theater);
             recordEscalation(payload).catch(() => {});
-            json(response, 200, payload, { status: 'live', updatedAt: payload.updatedAt, cache: 'miss' });
+            // A null score means every upstream was silent — don't stamp that 'live'.
+            json(response, 200, payload, {
+                status: payload.score === null ? 'stale' : 'live',
+                source: 'composite_index',
+                updatedAt: payload.updatedAt,
+                cache: 'miss'
+            });
             return;
         }
 
         if (url.pathname === '/api/strike-stats') {
             const payload = computeStrikeStats(cache);
-            json(response, 200, payload, { status: 'live', updatedAt: new Date().toISOString(), cache: 'miss' });
+            json(response, 200, payload, {
+                status: payload.headlineCount > 0 ? 'live' : 'stale',
+                source: payload.source,
+                updatedAt: new Date().toISOString(),
+                cache: 'miss'
+            });
             return;
         }
 
@@ -359,8 +386,14 @@ const server = http.createServer(async (request, response) => {
         }
 
         if (url.pathname === '/api/fronts') {
-            const payload = computeFrontStatus(cache);
-            json(response, 200, payload, { status: 'live', updatedAt: payload.updatedAt, cache: 'miss' });
+            const theater = url.searchParams.get('theater') || 'middleeast';
+            const payload = computeFrontStatus(cache, theater);
+            json(response, 200, payload, {
+                status: payload.fronts?.length ? 'live' : 'stale',
+                source: payload.reason || 'composite_index',
+                updatedAt: payload.updatedAt,
+                cache: 'miss'
+            });
             return;
         }
 
@@ -524,15 +557,13 @@ const server = http.createServer(async (request, response) => {
                 () => fetchAcledEvents(since ? { since, theater } : { theater }),
                 (p) => p?.type === 'FeatureCollection'
             );
-            if (result.meta.cache !== 'hit') {
+            // Demo data has no place in the longitudinal archive; the envelope
+            // already stamps it X-Tech-Status: sample.
+            if (result.meta.cache !== 'hit' && result.payload?.source === 'acled') {
                 upsertAcledEvents(result.payload).catch(() => {});
                 dbUpsertAcled(result.payload, theater);
             }
-            // Conservation law: never label the fallback/demo payload as live —
-            // mirrors the same guard in functions/_lib/router.mjs (keep both in sync).
-            const isDemo = result.payload?.source === 'demo_offline_no_acled_key';
-            const meta = isDemo ? { ...result.meta, status: 'unconfigured' } : result.meta;
-            json(response, 200, result.payload, meta);
+            json(response, 200, result.payload, result.meta);
             return;
         }
 
@@ -602,6 +633,10 @@ const server = http.createServer(async (request, response) => {
             const cogUrl = url.searchParams.get('url');
             if (!cogUrl) {
                 json(response, 400, { error: 'url parameter required' });
+                return;
+            }
+            if (!isAllowedCogUrl(cogUrl)) {
+                json(response, 400, { error: 'url host not allowed' });
                 return;
             }
             const probeResult = await probeCog(cogUrl);

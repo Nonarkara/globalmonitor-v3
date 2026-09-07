@@ -78,7 +78,7 @@ Longer architecture, measured-vs-modelled table, optional credentials, and Cloud
 
 ## 5. How to run / fork
 
-Requires **Node 20** (CI and Docker) and npm. No private endpoints are required.
+Requires **Node 20** (CI) and npm. No private endpoints are required.
 
 ```bash
 git clone https://github.com/Nonarkara/globalmonitor-v3.git
@@ -101,6 +101,7 @@ Commands that actually exist in `package.json`:
 | `npm run dev:stack` | Local frontend + API together |
 | `npm run dev` / `npm run api` | Frontend or API alone |
 | `npm run lint` | ESLint |
+| `npm test` | Data-honesty and news-ingest tests (`tests/*.test.mjs`) |
 | `npm run build` | Production static build to `dist/` |
 | `npm run preview` | Serve the production build |
 | `npm run refresh:flights` | Rewrite the ADS-B safety snapshot used when live providers do not answer |

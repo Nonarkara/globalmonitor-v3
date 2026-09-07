@@ -5,7 +5,7 @@
  * with exact lat/lon, fatalities, actors, and dates.
  */
 import axios from 'axios';
-import { getTheater, resolveTheater } from './theaters.mjs';
+import { THEATERS, getTheater, resolveTheater } from './theaters.mjs';
 
 const ACLED_BASE = 'https://api.acleddata.com/acled/read';
 
@@ -25,6 +25,12 @@ export const fetchAcledEvents = async (options = {}) => {
         theater = 'middleeast'
     } = options;
 
+    // resolveTheater() maps an unknown id to the default theater — right for a
+    // URL typo, wrong for conflict events: an unknown theater must never be
+    // handed the Middle East set under its own name.
+    if (theater !== 'worldwide' && !THEATERS[theater]) {
+        return buildFallbackEvents(theater);
+    }
     // Country lists come from the shared theater registry; 'global' uses a
     // curated 33-country conflict list (see theaters.mjs for the rationale).
     const resolved = resolveTheater(theater);
@@ -40,6 +46,8 @@ export const fetchAcledEvents = async (options = {}) => {
     // explicitly-empty demo payload (shell renders, nothing impersonates
     // live intelligence).
     if (!key || !email) {
+        const missing = [!key && 'ACLED_API_KEY', !email && 'ACLED_EMAIL'].filter(Boolean).join(' + ');
+        console.warn(`[ACLED] ${missing} not set — serving labelled demo events, not live intelligence`);
         return buildFallbackEvents(resolved);
     }
 
@@ -82,6 +90,9 @@ export const fetchAcledEvents = async (options = {}) => {
                 }
             })),
             total: events.length,
+            // limit=500 with no pagination: a full page means the count is a
+            // floor, not a total. Consumers render "500+" when this is set.
+            truncated: events.length >= 500,
             since,
             theater: resolved,
             source: 'acled'
@@ -146,6 +157,7 @@ function buildFallbackEvents(theater = 'middleeast') {
             type: 'FeatureCollection',
             features: [],
             total: 0,
+            truncated: false,
             since: null,
             theater,
             source: 'demo_offline_no_acled_key'
@@ -171,6 +183,7 @@ function buildFallbackEvents(theater = 'middleeast') {
             }
         })),
         total: events.length,
+        truncated: false,
         since: '2026-02-28',
         theater,
         source: 'demo_offline_no_acled_key'

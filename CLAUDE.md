@@ -268,8 +268,6 @@ dashboards/
     google-apps-script/         # Visitor tracking Apps Script
     wrangler.toml              # Cloudflare Pages config
     functions/                 # Pages Functions API layer
-    fly.toml                   # Fly.io config (retired — reference only)
-    Dockerfile                 # Docker build (legacy Fly.io + Render)
     CLAUDE.md                   # THIS FILE
   mem-by-non/                   # MEM by NON (vanilla)
     index.html, app.js, style.css

@@ -10,9 +10,14 @@
  * All endpoints are free, no API key needed.
  */
 
-/** Build a GIBS WMTS tile URL template (single string with {time} placeholder). */
+/** Build a GIBS WMTS tile URL.
+ *
+ *  The time slot is the literal token `default`, which GIBS resolves to the most
+ *  recent date it actually holds for that layer. Every layer used to be pinned to
+ *  "2 days ago", but each product has its own lag — AMSR2 soil moisture runs ~6
+ *  days behind — so the fixed offset 404'd for anything that did not match. */
 const gibsTileUrl = (layer, tileMatrix = 'GoogleMapsCompatible_Level9', format = 'png') =>
-    `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${layer}/default/{time}/${tileMatrix}/{z}/{y}/{x}.${format}`;
+    `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${layer}/default/default/${tileMatrix}/{z}/{y}/{x}.${format}`;
 
 /** Expand one GIBS tile template into 3 subdomain-rotated URLs so MapLibre can round-robin.
  *  If one subdomain stalls, the others keep the layer alive. NASA GIBS supports
@@ -22,17 +27,6 @@ const gibsRedundant = (url) => [
     url.replace('gibs.earthdata.nasa.gov', 'gibs-a.earthdata.nasa.gov'),
     url.replace('gibs.earthdata.nasa.gov', 'gibs-b.earthdata.nasa.gov')
 ];
-
-/**
- * GIBS date for tile requests.
- * MODIS data has 1-2 day processing lag — using 2 days ago is more reliable
- * than yesterday. Falls back gracefully (NASA returns blank tiles, not errors).
- */
-const yesterday = () => {
-    const d = new Date();
-    d.setDate(d.getDate() - 2); // 2 days ago — matches MODIS processing lag
-    return d.toISOString().slice(0, 10);
-};
 
 /**
  * All available Earth Observation raster layers.
@@ -46,11 +40,12 @@ export const EO_TILE_LAYERS = [
         group: 'satellite',
         icon: '🌃',
         tiles: gibsRedundant(
-            gibsTileUrl('VIIRS_SNPP_DayNightBand_AtSensor_M15').replace('{time}', yesterday())
+            gibsTileUrl('VIIRS_SNPP_DayNightBand_AtSensor_M15', 'GoogleMapsCompatible_Level8', 'jpg')
         ),
         tileSize: 256,
         attribution: 'NASA GIBS / VIIRS',
-        opacity: 0.75,
+        // Default-on, so it sits under the operational layers rather than shouting.
+        opacity: 0.5,
         maxzoom: 8
     },
     {
@@ -61,12 +56,6 @@ export const EO_TILE_LAYERS = [
         icon: '🌿',
         tiles: gibsRedundant(
             gibsTileUrl('MODIS_Terra_NDVI_8Day', 'GoogleMapsCompatible_Level9', 'png')
-                .replace('{time}', (() => {
-                    // NDVI is 8-day composite, use recent available date
-                    const d = new Date();
-                    d.setDate(d.getDate() - 10);
-                    return d.toISOString().slice(0, 10);
-                })())
         ),
         tileSize: 256,
         attribution: 'NASA GIBS / MODIS Terra',
@@ -81,7 +70,6 @@ export const EO_TILE_LAYERS = [
         icon: '🛰️',
         tiles: gibsRedundant(
             gibsTileUrl('VIIRS_SNPP_CorrectedReflectance_TrueColor', 'GoogleMapsCompatible_Level9', 'jpg')
-                .replace('{time}', yesterday())
         ),
         tileSize: 256,
         attribution: 'NASA GIBS / VIIRS',
@@ -96,11 +84,6 @@ export const EO_TILE_LAYERS = [
         icon: '🌊',
         tiles: gibsRedundant(
             gibsTileUrl('MODIS_Aqua_L3_SST_MidIR_Monthly', 'GoogleMapsCompatible_Level7', 'png')
-                .replace('{time}', (() => {
-                    const d = new Date();
-                    d.setMonth(d.getMonth() - 1);
-                    return d.toISOString().slice(0, 7) + '-01';
-                })())
         ),
         tileSize: 256,
         attribution: 'NASA GIBS / MODIS Aqua',
@@ -115,7 +98,6 @@ export const EO_TILE_LAYERS = [
         icon: '🔥',
         tiles: gibsRedundant(
             gibsTileUrl('VIIRS_SNPP_Thermal_Anomalies_375m_All', 'GoogleMapsCompatible_Level9', 'png')
-                .replace('{time}', yesterday())
         ),
         tileSize: 256,
         attribution: 'NASA GIBS / VIIRS',
@@ -130,7 +112,6 @@ export const EO_TILE_LAYERS = [
         icon: '🌧️',
         tiles: gibsRedundant(
             gibsTileUrl('IMERG_Precipitation_Rate', 'GoogleMapsCompatible_Level6', 'png')
-                .replace('{time}', yesterday())
         ),
         tileSize: 256,
         attribution: 'NASA GIBS / GPM IMERG',
@@ -145,7 +126,6 @@ export const EO_TILE_LAYERS = [
         icon: '❄️',
         tiles: gibsRedundant(
             gibsTileUrl('MODIS_Terra_NDSI_Snow_Cover', 'GoogleMapsCompatible_Level9', 'png')
-                .replace('{time}', yesterday())
         ),
         tileSize: 256,
         attribution: 'NASA GIBS / MODIS',
@@ -160,11 +140,11 @@ export const EO_TILE_LAYERS = [
         icon: '💨',
         tiles: gibsRedundant(
             gibsTileUrl('MODIS_Combined_Value_Added_AOD', 'GoogleMapsCompatible_Level6', 'png')
-                .replace('{time}', yesterday())
         ),
         tileSize: 256,
         attribution: 'NASA GIBS / MODIS',
-        opacity: 0.55,
+        // 0.55 buried the aircraft and vessel icons when on at first paint.
+        opacity: 0.38,
         maxzoom: 6
     },
     {
@@ -175,7 +155,6 @@ export const EO_TILE_LAYERS = [
         icon: '🇯🇵',
         tiles: gibsRedundant(
             gibsTileUrl('LPRM_AMSR2_Downscaled_Surface_Soil_Moisture_C1_Band_Day_Daily', 'GoogleMapsCompatible_Level6', 'png')
-                .replace('{time}', yesterday())
         ),
         tileSize: 256,
         attribution: 'JAXA GCOM-W / NASA GIBS',
@@ -237,21 +216,12 @@ export const EO_TILE_LAYERS = [
         attribution: 'RainViewer',
         opacity: 0.6,
         maxzoom: 10
-    },
-    {
-        id: 'eo-wind',
-        name: 'Wind Speed',
-        description: 'Global wind patterns from Open-Meteo',
-        group: 'satellite',
-        icon: '💨',
-        tiles: [
-            'https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=9de243494c0b295cca9337e1e96b00e2'
-        ],
-        tileSize: 256,
-        attribution: 'OpenWeatherMap',
-        opacity: 0.5,
-        maxzoom: 8
     }
+    // 'eo-wind' removed: it pointed at OpenWeatherMap with an API key committed in
+    // this file and shipped in the public bundle. The key has been in git history
+    // since March and must be ROTATED at openweathermap.org — deleting the line
+    // does not revoke it. Restoring wind needs a key in the environment behind a
+    // /api tile proxy, never in source. (Same removal as main, commit bb1854e.)
 ];
 
 // Dynamic COG layers registered at runtime from STAC search results

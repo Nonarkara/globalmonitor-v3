@@ -2,30 +2,34 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 const readCachedState = (cacheKey) => {
     if (!cacheKey || typeof window === 'undefined') {
-        return { data: null, lastUpdated: null };
+        return { data: null, lastUpdated: null, source: null, status: null };
     }
 
     try {
         const raw = window.localStorage.getItem(`tech-monitor:${cacheKey}`);
-        if (!raw) return { data: null, lastUpdated: null };
+        if (!raw) return { data: null, lastUpdated: null, source: null, status: null };
 
         const parsed = JSON.parse(raw);
         return {
             data: parsed.data ?? null,
-            lastUpdated: parsed.lastUpdated ?? null
+            lastUpdated: parsed.lastUpdated ?? null,
+            source: parsed.source ?? null,
+            status: parsed.status ?? null
         };
     } catch {
-        return { data: null, lastUpdated: null };
+        return { data: null, lastUpdated: null, source: null, status: null };
     }
 };
 
-const writeCachedState = (cacheKey, data, lastUpdated) => {
+const writeCachedState = (cacheKey, data, lastUpdated, source, status) => {
     if (!cacheKey || typeof window === 'undefined') return;
 
     try {
         window.localStorage.setItem(`tech-monitor:${cacheKey}`, JSON.stringify({
             data,
-            lastUpdated
+            lastUpdated,
+            source,
+            status
         }));
     } catch {
         // Ignore storage write errors. Live rendering should continue.
@@ -58,6 +62,19 @@ const getEffectiveInterval = (baseMs) => {
     return baseMs;
 };
 
+/** The backend marks demo / sample / curated / fallback payloads with
+ *  X-Tech-Status: sample (see functions/_lib/cache.mjs). When a fetcher does
+ *  not go through fetchBackendJson we still read the payload's own source
+ *  field, so no consumer can accidentally present fallback data as live. */
+const NON_LIVE_SOURCE = /sample|fallback|curated|mock|demo|unconfigured|no_[a-z_]*key/i;
+const resolveSource = (result, responseMeta) =>
+    responseMeta?.source || result?.meta?.source || result?.source || null;
+const resolveStatus = (result, responseMeta) => {
+    if (responseMeta?.status) return responseMeta.status;
+    const source = resolveSource(result, responseMeta);
+    return source && NON_LIVE_SOURCE.test(String(source)) ? 'sample' : 'live';
+};
+
 export const useLiveResource = (fetcher, {
     cacheKey,
     enabled = true,
@@ -77,6 +94,11 @@ export const useLiveResource = (fetcher, {
     const [isLoading, setIsLoading] = useState(enabled && !cached.data);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [isStale, setIsStale] = useState(Boolean(cached.data));
+    // Provenance: where the payload came from and whether it is a live
+    // observation. A localStorage pre-fill with no recorded source is 'cached'
+    // — it is neither confirmed live nor confirmed demo.
+    const [source, setSource] = useState(cached.source);
+    const [status, setStatus] = useState(() => (cached.data ? (cached.status || 'cached') : null));
     const [error, setError] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
 
@@ -121,12 +143,16 @@ export const useLiveResource = (fetcher, {
                 }
 
                 const stampedAt = new Date().toISOString();
+                const nextSource = resolveSource(result, responseMeta);
+                const nextStatus = resolveStatus(result, responseMeta);
                 setData(result);
                 setLastUpdated(responseMeta?.updatedAt || stampedAt);
-                setIsStale(responseMeta?.status === 'stale');
+                setIsStale(nextStatus === 'stale');
+                setSource(nextSource);
+                setStatus(nextStatus);
                 setError(null);
                 setRetryCount(0);
-                writeCachedState(cacheKey, result, responseMeta?.updatedAt || stampedAt);
+                writeCachedState(cacheKey, result, responseMeta?.updatedAt || stampedAt, nextSource, nextStatus);
 
                 // Success — break out of retry loop
                 setIsLoading(false);
@@ -207,6 +233,10 @@ export const useLiveResource = (fetcher, {
         isLoading,
         isRefreshing,
         isStale,
+        // Pass isSample straight into DataStatus's isDemo prop.
+        source,
+        status,
+        isSample: status === 'sample',
         error,
         retryCount,
         refresh: () => load({ manual: true })

@@ -1,7 +1,15 @@
 /**
  * Humanitarian data — UNHCR refugee statistics and ReliefWeb reports.
+ *
+ * No invented figures. The previous fallback returned 7,100,000 displaced for
+ * Syria, 1,450,000 for Myanmar, 120,000 for Thailand and 6,500,000 for the
+ * global view as literals, stamped with the current time, whenever UNHCR
+ * returned nothing — numbers about real populations with no source behind
+ * them. When UNHCR has no rows the payload now carries `totalDisplaced: null`
+ * and says why; when UNHCR is unreachable this throws so useCached serves the
+ * last good payload as STALE.
  */
-import { getTheater, resolveTheater } from './theaters.mjs';
+import { THEATERS, getTheater, resolveTheater } from './theaters.mjs';
 
 const COUNTRY_CENTROIDS = {
     SYR: [38.99, 34.80], IRQ: [43.68, 33.22], AFG: [67.71, 33.94],
@@ -32,9 +40,33 @@ const COUNTRY_NAMES = {
     COD: 'Democratic Republic of the Congo', CMR: 'Cameroon', LBY: 'Libya'
 };
 
+// UNHCR's population API publishes annual totals; the most recent complete
+// year is what we ask for, and the year travels with every number so the
+// panel can print "UNHCR 2024" instead of implying today.
+const UNHCR_YEAR = 2024;
+const UNHCR_PAGE_LIMIT = 100;
+const UNHCR_MAX_PAGES = 5;
+
+const emptyPayload = (theater, source, note) => ({
+    geojson: { type: 'FeatureCollection', features: [] },
+    totalDisplaced: null,
+    topCountries: [],
+    reports: [],
+    fetchedAt: new Date().toISOString(),
+    theater,
+    year: UNHCR_YEAR,
+    source,
+    note
+});
+
 export const fetchHumanitarianPayload = async (theater = 'middleeast') => {
+    // An unknown theater must not silently receive the default theater's numbers.
+    if (theater !== 'worldwide' && !THEATERS[theater]) {
+        return emptyPayload(theater, 'no_coverage_for_theater',
+            `No UNHCR country list is defined for theater "${theater}".`);
+    }
+
     const features = [];
-    let totalDisplaced = 0;
     const reports = [];
     // ISO3 origin lists come from the shared theater registry; 'global' is a
     // curated set of major displacement-origin countries. Codes missing from
@@ -42,16 +74,23 @@ export const fetchHumanitarianPayload = async (theater = 'middleeast') => {
     const resolved = resolveTheater(theater);
     const countryCodes = getTheater(resolved).unhcrCountries;
     const countryList = countryCodes.join(',');
+    let totalDisplaced = 0;
+    let unhcrAnswered = false;
+    let unhcrTruncated = false;
 
-    // 1. UNHCR Population API
+    // 1. UNHCR Population API — paginate; a single 100-row page silently
+    //    truncated per-country sums for the larger theaters.
     try {
-        const url = `https://api.unhcr.org/population/v1/population/?limit=100&year=2024&coo=${countryList}&page=1`;
-        const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
-        if (res.ok) {
+        const countryTotals = {};
+        for (let page = 1; page <= UNHCR_MAX_PAGES; page++) {
+            const url = `https://api.unhcr.org/population/v1/population/?limit=${UNHCR_PAGE_LIMIT}&year=${UNHCR_YEAR}&coo=${countryList}&page=${page}`;
+            const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+            if (!res.ok) break;
+            unhcrAnswered = true;
             const data = await res.json();
-            const countryTotals = {};
+            const items = data.items || [];
 
-            for (const item of (data.items || [])) {
+            for (const item of items) {
                 const code = item.coo_iso || item.coo;
                 if (!code || !COUNTRY_CENTROIDS[code]) continue;
                 if (!countryTotals[code]) countryTotals[code] = 0;
@@ -61,20 +100,25 @@ export const fetchHumanitarianPayload = async (theater = 'middleeast') => {
                     (Number(item.asylum_seekers) || 0);
             }
 
-            for (const [code, total] of Object.entries(countryTotals)) {
-                if (total <= 0) continue;
-                totalDisplaced += total;
-                const coords = COUNTRY_CENTROIDS[code];
-                features.push({
-                    type: 'Feature',
-                    geometry: { type: 'Point', coordinates: coords },
-                    properties: {
-                        country: COUNTRY_NAMES[code] || code,
-                        displaced: total,
-                        radius: Math.max(8, Math.min(40, Math.log10(total) * 8))
-                    }
-                });
-            }
+            const maxPages = Number(data.maxPages) || 1;
+            if (page >= maxPages || items.length < UNHCR_PAGE_LIMIT) break;
+            if (page === UNHCR_MAX_PAGES && maxPages > UNHCR_MAX_PAGES) unhcrTruncated = true;
+        }
+
+        for (const [code, total] of Object.entries(countryTotals)) {
+            if (total <= 0) continue;
+            totalDisplaced += total;
+            const coords = COUNTRY_CENTROIDS[code];
+            features.push({
+                type: 'Feature',
+                geometry: { type: 'Point', coordinates: coords },
+                properties: {
+                    country: COUNTRY_NAMES[code] || code,
+                    displaced: total,
+                    year: UNHCR_YEAR,
+                    radius: Math.max(8, Math.min(40, Math.log10(total) * 8))
+                }
+            });
         }
     } catch (err) {
         console.error('UNHCR API error:', err.message);
@@ -100,48 +144,30 @@ export const fetchHumanitarianPayload = async (theater = 'middleeast') => {
         console.error('ReliefWeb API error:', err.message);
     }
 
-    const payload = {
+    // UNHCR never answered and we have nothing to show: that is an outage.
+    // Throw so the cache layer serves its last good payload as STALE rather
+    // than caching an empty result that reads as "zero displaced".
+    if (!unhcrAnswered && features.length === 0 && reports.length === 0) {
+        throw new Error('UNHCR and ReliefWeb both unreachable');
+    }
+
+    return {
         geojson: {
             type: 'FeatureCollection',
             features
         },
-        totalDisplaced,
+        // null, not 0: UNHCR answered but had no rows for these origins.
+        totalDisplaced: features.length ? totalDisplaced : null,
+        truncated: unhcrTruncated,
         topCountries: features
+            .slice()
             .sort((a, b) => b.properties.displaced - a.properties.displaced)
             .slice(0, 5)
             .map(f => ({ name: f.properties.country, displaced: f.properties.displaced })),
         reports: reports.slice(0, 5),
         fetchedAt: new Date().toISOString(),
-        theater: resolved
+        theater: resolved,
+        year: UNHCR_YEAR,
+        source: unhcrAnswered ? 'unhcr' : 'reliefweb_only'
     };
-
-    if (features.length === 0) {
-        // Sensible fallback so panels never render empty
-        return buildFallbackHumanitarian(resolved);
-    }
-
-    return payload;
 };
-
-function buildFallbackHumanitarian(theater) {
-    const code = theater === 'thailand' ? 'THA' : theater === 'indopacific' ? 'MMR'
-        : theater === 'global' ? 'UKR' : 'SYR';
-    const coords = COUNTRY_CENTROIDS[code];
-    const name = COUNTRY_NAMES[code];
-    const displaced = theater === 'thailand' ? 120000 : theater === 'indopacific' ? 1450000
-        : theater === 'global' ? 6500000 : 7100000;
-    const feature = {
-        type: 'Feature',
-        geometry: { type: 'Point', coordinates: coords },
-        properties: { country: name, displaced, radius: Math.max(8, Math.min(40, Math.log10(displaced) * 8)) }
-    };
-    return {
-        geojson: { type: 'FeatureCollection', features: [feature] },
-        totalDisplaced: displaced,
-        topCountries: [{ name, displaced }],
-        reports: [],
-        fetchedAt: new Date().toISOString(),
-        theater,
-        source: 'fallback'
-    };
-}

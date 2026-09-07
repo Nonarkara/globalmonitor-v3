@@ -1,10 +1,15 @@
 /**
  * Strike Statistics — extracts missile/drone/interception counts
- * from intelligence feed items using regex patterns.
+ * from intelligence feed headlines using regex patterns.
+ *
+ * This is a HEADLINE-MENTION statistic, not a strike count: "12 missiles" in
+ * two outlets' headlines is 24 here. Consumers must label it as mentions.
+ *
+ * Pure function: the totals are computed from what is in the cache right now,
+ * on every call. The previous version accumulated into a module-level Map, so
+ * every request re-added the same headlines and the counters grew with
+ * traffic rather than with events.
  */
-
-const dailyStats = new Map(); // date -> { missiles, drones, interceptions, casualties }
-let lastCleanup = Date.now();
 
 const PATTERNS = {
     missiles: /(\d+)\s*(?:missiles?|rockets?|ballistic)/gi,
@@ -29,20 +34,14 @@ const getDateKey = (date) => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
-export const computeStrikeStats = (serverCache) => {
-    // Cleanup old entries (older than 8 days)
-    if (Date.now() - lastCleanup > 3600000) {
-        const cutoff = new Date();
-        cutoff.setDate(cutoff.getDate() - 8);
-        const cutoffKey = getDateKey(cutoff);
-        for (const [key] of dailyStats) {
-            if (key < cutoffKey) dailyStats.delete(key);
-        }
-        lastCleanup = Date.now();
-    }
+const zeroDay = () => ({ missiles: 0, drones: 0, interceptions: 0, casualties: 0 });
 
+export const computeStrikeStats = (serverCache) => {
+    const dailyStats = new Map();
     const todayKey = getDateKey(new Date());
     const sources = new Set();
+    const seen = new Set();
+    let headlineCount = 0;
 
     // Scan all briefing caches
     const briefingEntries = Array.from(serverCache.entries())
@@ -53,11 +52,17 @@ export const computeStrikeStats = (serverCache) => {
 
         for (const item of entry.payload.items) {
             const title = item.title || '';
-            const dateKey = item.pubDate ? getDateKey(item.pubDate) : todayKey;
+            // The same headline appears in several briefing caches; count it once.
+            const dedupeKey = (item.link || title).trim().toLowerCase();
+            if (!dedupeKey || seen.has(dedupeKey)) continue;
+            seen.add(dedupeKey);
+            headlineCount += 1;
 
-            if (!dailyStats.has(dateKey)) {
-                dailyStats.set(dateKey, { missiles: 0, drones: 0, interceptions: 0, casualties: 0 });
-            }
+            // Undated items are not assigned to today — they have no day.
+            if (!item.pubDate) continue;
+            const dateKey = getDateKey(item.pubDate);
+
+            if (!dailyStats.has(dateKey)) dailyStats.set(dateKey, zeroDay());
             const day = dailyStats.get(dateKey);
 
             day.missiles += extractCount(title, PATTERNS.missiles);
@@ -75,10 +80,7 @@ export const computeStrikeStats = (serverCache) => {
         const d = new Date();
         d.setDate(d.getDate() - i);
         const key = getDateKey(d);
-        daily.push({
-            date: key,
-            ...(dailyStats.get(key) || { missiles: 0, drones: 0, interceptions: 0, casualties: 0 })
-        });
+        daily.push({ date: key, ...(dailyStats.get(key) || zeroDay()) });
     }
 
     const weekTotal = daily.reduce((acc, d) => ({
@@ -86,14 +88,17 @@ export const computeStrikeStats = (serverCache) => {
         drones: acc.drones + d.drones,
         interceptions: acc.interceptions + d.interceptions,
         casualties: acc.casualties + d.casualties
-    }), { missiles: 0, drones: 0, interceptions: 0, casualties: 0 });
+    }), zeroDay());
 
-    const current = dailyStats.get(todayKey) || { missiles: 0, drones: 0, interceptions: 0, casualties: 0 };
+    const current = dailyStats.get(todayKey) || zeroDay();
 
     return {
         current,
         daily,
         weekTotal,
-        sources: Array.from(sources).slice(0, 6)
+        headlineCount,
+        method: 'regex over headlines, deduplicated by link; mentions, not verified counts',
+        sources: Array.from(sources).slice(0, 6),
+        source: headlineCount > 0 ? 'headline_mentions' : 'no_signal'
     };
 };

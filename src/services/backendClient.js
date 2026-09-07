@@ -27,6 +27,9 @@ export const fetchBackendJson = async (path, params = {}) => {
     return attachMeta(response.data, {
         status: response.headers['x-tech-status'] || 'live',
         updatedAt: response.headers['x-tech-updated-at'] || null,
-        cache: response.headers['x-tech-cache'] || 'miss'
+        cache: response.headers['x-tech-cache'] || 'miss',
+        // 'sample' status + the source name let useLiveResource/DataStatus
+        // badge demo or fallback content at the same weight as STALE.
+        source: response.headers['x-tech-source'] || null
     });
 };

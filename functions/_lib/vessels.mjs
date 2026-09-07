@@ -280,8 +280,13 @@ export async function fetchVesselsPayload(theater = 'global', { origin, next } =
     const clientFeatures = sampleForClient(filtered);
     const theaterAisCount = filterByTheater(aisFeatures, theater).length;
     const sources = [];
+    // A committed snapshot file is credited as a snapshot, never as the live
+    // provider whose data happened to be in it. The provenance of a file's
+    // contents is not the provenance of the file.
+    const fromStaticSnapshot = aisSource === 'static-snapshot';
     if (aisSource === 'axiom-overwatch' && theaterAisCount > 0) sources.push('axiom-overwatch.io');
-    else if ((hasAisKey || aisSource === 'static-snapshot') && theaterAisCount > 0) sources.push('aisstream.io');
+    else if (fromStaticSnapshot && theaterAisCount > 0) sources.push('ais-snapshot');
+    else if (hasAisKey && theaterAisCount > 0) sources.push('aisstream.io');
     if (vfConfig.fleetKey) sources.push('vesselfinder-fleet');
     const fleetEmpty = vfConfig.fleetKey && fleet.length === 0;
 
@@ -295,7 +300,10 @@ export async function fetchVesselsPayload(theater = 'global', { origin, next } =
             fetchedAt: new Date().toISOString(),
             source: sources.length ? sources.join('+') : 'none',
             sources,
-            connected: ((hasAisKey || aisSource === 'static-snapshot' || aisSource === 'axiom-overwatch') && theaterAisCount > 0) || (vfConfig.fleetKey && !fleetResult.error),
+            // `connected` means a live feed answered. A snapshot off disk is not
+            // connected — the route stamps it STALE and the legend shows its age.
+            connected: ((hasAisKey && !fromStaticSnapshot) || aisSource === 'axiom-overwatch') && theaterAisCount > 0 || (vfConfig.fleetKey && !fleetResult.error),
+            staticSnapshot: fromStaticSnapshot,
             coverage: (hasAisKey || aisSource === 'static-snapshot' || aisSource === 'axiom-overwatch')
                 ? (vfConfig.fleetKey ? 'ais-snapshot+fleet' : 'ais-snapshot')
                 : (vfConfig.fleetKey ? 'fleet-only' : 'none'),

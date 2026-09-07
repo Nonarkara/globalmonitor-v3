@@ -15,8 +15,44 @@ const pruneCache = () => {
     toRemove.forEach(([key]) => TILE_CACHE.delete(key));
 };
 
+// /api/cog/probe is public and takes a caller-supplied URL. Without a host
+// allowlist it is an open proxy: anyone can make this server fetch any
+// address on the internet (including internal ones) and read back headers
+// and error text. Only the imagery hosts the app actually reads from are
+// permitted; everything else is rejected before any network call.
+const COG_HOST_ALLOWLIST = [
+    /(^|\.)copernicus\.eu$/,
+    /(^|\.)planetarycomputer\.microsoft\.com$/,
+    /(^|\.)blob\.core\.windows\.net$/,
+    /(^|\.)earthdata\.nasa\.gov$/,
+    /(^|\.)amazonaws\.com$/,
+    /(^|\.)element84\.com$/,
+    /(^|\.)sentinel-hub\.com$/
+];
+
+export const isAllowedCogUrl = (raw) => {
+    let parsed;
+    try {
+        parsed = new URL(String(raw));
+    } catch {
+        return false;
+    }
+    if (parsed.protocol !== 'https:') return false;
+    if (parsed.username || parsed.password) return false;
+    return COG_HOST_ALLOWLIST.some((re) => re.test(parsed.hostname));
+};
+
+const rejectedProbe = (cogUrl) => ({
+    url: cogUrl,
+    supportsRangeRequests: false,
+    totalSize: 0,
+    accessible: false,
+    error: 'host not allowed'
+});
+
 // Read the first bytes of a COG to get IFD info (overview detection)
 export const probeCog = async (cogUrl) => {
+    if (!isAllowedCogUrl(cogUrl)) return rejectedProbe(cogUrl);
     try {
         const response = await axios.get(cogUrl, {
             headers: { Range: 'bytes=0-8191' },
