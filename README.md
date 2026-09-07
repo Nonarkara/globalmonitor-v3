@@ -1,5 +1,9 @@
 # Global Monitor v3
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+**Not an official government product.** This is a civic OSINT research dashboard. Funding and execution credits are attribution, not a ministry endorsement. See [Ethical use](#3-ethical-use) and [License](#6-license).
+
 ![Manga-style illustration of an analyst at a civic command desk, watching a Southeast Asia wall labelled GLOBAL MONITOR v3. Side panels show pulse counts, a 92% signal-integrity gauge, and scenario probabilities.](docs/hero-banner.png)
 
 **Illustration only.** Scores and figures drawn in this artwork — Cyber 2,842, Finance 1,975, Supply Chain 2,329, Public Safety 1,452, Weather 3,118, Health 1,201, Energy 2,604, Social Signals 4,331, Signal Integrity 92%, Quality 92%, Latency 48 ms, Coverage 98%, Scenario A 65% — are **not live telemetry**. They belong to the picture, not to the dashboard.
@@ -7,6 +11,17 @@
 Live flagship: [globalmonitor.nonarkara.org](https://globalmonitor.nonarkara.org/) · same app on [globalmonitor.pages.dev](https://globalmonitor.pages.dev/) · static backup: [nonarkara.github.io/globalmonitor](https://nonarkara.github.io/globalmonitor/)
 
 This repository is **`Nonarkara/globalmonitor-v3`**. It is not [`Nonarkara/globalmonitor`](https://github.com/Nonarkara/globalmonitor). See [What this is](#1-what-this-is).
+
+### Clone and run (no keys required)
+
+```bash
+git clone https://github.com/Nonarkara/globalmonitor-v3.git
+cd globalmonitor-v3
+npm install
+npm run dev:stack
+```
+
+Requires **Node 20**. That script starts Vite at `http://127.0.0.1:5180` and the cache API at `http://127.0.0.1:4000` (`/api` is proxied). Leave [`.env.example`](.env.example) uncopied unless you have your own provider keys — the UI still renders public fallbacks and committed snapshots. More commands: [How to run / fork](#5-how-to-run--fork). Contribute: [CONTRIBUTING.md](CONTRIBUTING.md). Report a vulnerability: [SECURITY.md](SECURITY.md).
 
 ---
 
@@ -107,7 +122,7 @@ Commands that actually exist in `package.json`:
 | `npm run refresh:flights` | Rewrite the ADS-B safety snapshot used when live providers do not answer |
 | `npm run deploy:pages` | Refresh snapshot, build, deploy to Cloudflare Pages project `globalmonitor` |
 
-Cloudflare Pages is the documented host. GitHub Actions (`.github/workflows/cloudflare-pages.yml`) and `npm run deploy:pages` both target project **`globalmonitor`**. A fork should point wrangler at **your** Pages project. Bind optional secrets in the host dashboard, never as `VITE_*` variables.
+Cloudflare Pages is the documented host. GitHub Actions (`.github/workflows/cloudflare-pages.yml`) and `npm run deploy:pages` both target project **`globalmonitor`**. A fork should point wrangler at **your** Pages project. Bind optional secrets in the host dashboard, never as `VITE_*` variables. Pull-request expectations: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Sister public maps (separate repos, not this tree): [AsiaWatch](https://asia.nonarkara.org/), [World Console](https://global.nonarkara.org/), [MEM by NON](https://mem.nonarkara.org/), [War Monitor](https://middleeast-monitor.pages.dev/).
 
@@ -115,8 +130,14 @@ Sister public maps (separate repos, not this tree): [AsiaWatch](https://asia.non
 
 ## 6. License
 
-This repository does **not** currently ship a `LICENSE` file; GitHub lists it as unlicensed.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-In-product legal copy (the About modal in `src/App.jsx`) states that the dashboard’s design, source architecture, and visual identity are the work of Dr Non Arkaraprasertkul and Associate Professor Dr Poon Thiengburanathum, all rights reserved. Contact: [non.ar@depa.or.th](mailto:non.ar@depa.or.th).
+This software is released under the [MIT License](LICENSE). Copyright © 2026 **Non Arkaraprasertkul / Axiom X Co., Ltd.**
 
-Third-party datasets remain under their upstream licences. Attribute them when you republish. Forking the **method** (open feeds, visible provenance, measured vs modelled, one theater as a camera) is the invitation; do not treat this README as a grant of rights the repository has not declared.
+The method and visual identity are the work of Dr Non Arkaraprasertkul and Associate Professor Dr Poon Thiengburanathum. Keep the copyright and permission notice when you copy or fork. Contact: [non.ar@depa.or.th](mailto:non.ar@depa.or.th).
+
+This dashboard is **not an official government product** and is **not official intelligence**. PMUA / depa / MDES funding and Axiom + ReTL execution are research attribution. Do not present a fork as ministry policy.
+
+Third-party datasets remain under their upstream licences. Attribute them when you republish.
+
+Contribute: [CONTRIBUTING.md](CONTRIBUTING.md). Security reports: [SECURITY.md](SECURITY.md).
