@@ -101,11 +101,11 @@ Every dashboard has an `ℹ` or `i` button that opens a modal with:
    - Associate Professor Dr. Poon Thiengburanathum — public ranking model designed to explore alternative ways of understanding urban performance
 7. **Intersection statement**: "Their work sits at the intersection of urban design, data, and human behavior, bringing a distinctly people-centered perspective to how cities are measured and experienced."
 8. **Legal fine print**:
-   - IP owned by Dr. Non + Dr. Poon, all rights reserved
-   - OSINT disclaimer (not official government intelligence)
+   - Software copyright Non Arkaraprasertkul / Axiom X Co., Ltd., MIT License (see root `LICENSE`)
+   - Design and method credited to Dr. Non + Dr. Poon; keep the MIT copyright notice
+   - OSINT disclaimer (not official government intelligence; not an official government product)
    - No liability for decisions made based on this information
-   - No unauthorized reproduction, redistribution, reverse engineering, or bad faith use
-   - May be subject to legal action under applicable IP laws
+   - Do not misrepresent authorship; third-party datasets keep their upstream licences
 
 ---
 

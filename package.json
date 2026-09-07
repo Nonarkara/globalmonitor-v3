@@ -2,6 +2,7 @@
   "name": "globalmonitor",
   "private": true,
   "version": "8.0.0",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "api": "node server/index.mjs",

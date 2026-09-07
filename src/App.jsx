@@ -723,9 +723,9 @@ function App() {
                 fontSize: '0.55rem', color: 'var(--ink-3)', lineHeight: 1.6
               }}>
                 <strong style={{ color: 'var(--ink-2)' }}>Legal Notice</strong><br />
-                This dashboard and all associated intellectual property — including but not limited to its design, source code, data architecture, analytical methodologies, and visual identity — are the proprietary work of Dr. Non Arkaraprasertkul and Associate Professor Dr. Poon Thiengburanathum. All rights reserved.<br /><br />
-                This work is provided for informational and research purposes only. The data presented is aggregated from publicly available open-source intelligence (OSINT) feeds and should not be construed as official government intelligence or policy guidance. The creators assume no liability for decisions made based on this information.<br /><br />
-                Unauthorized reproduction, redistribution, reverse engineering, or use of this work in bad faith — including but not limited to commercial exploitation, misrepresentation of authorship, or derivative works without written consent — is strictly prohibited and may be subject to legal action under applicable intellectual property laws.
+                Software copyright Non Arkaraprasertkul / Axiom X Co., Ltd., released under the MIT License. Design, method, and visual identity are the work of Dr. Non Arkaraprasertkul and Associate Professor Dr. Poon Thiengburanathum. Keep the copyright and permission notice in copies and substantial portions.<br /><br />
+                This work is provided for informational and research purposes only. The data presented is aggregated from publicly available open-source intelligence (OSINT) feeds and should not be construed as official government intelligence or policy guidance. This is not an official government product. The creators assume no liability for decisions made based on this information.<br /><br />
+                Do not misrepresent authorship or present this dashboard as official intelligence. Third-party datasets remain under their upstream licences.
               </div>
 
               <div style={{ borderTop: '1px solid var(--line)', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
