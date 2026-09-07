@@ -86,10 +86,8 @@ export const useLiveResource = (fetcher, {
     const [cached] = useState(() => readCachedState(cacheKey));
     const dataRef = useRef(cached.data);
     const cachedDataRef = useRef(cached.data);
-
-    // Stabilize isUsable so it never causes re-render loops
     const isUsableRef = useRef(isUsable);
-    isUsableRef.current = isUsable;
+    const lastUpdatedRef = useRef(cached.lastUpdated);
 
     const [data, setData] = useState(cached.data);
     const [lastUpdated, setLastUpdated] = useState(cached.lastUpdated);
@@ -104,10 +102,17 @@ export const useLiveResource = (fetcher, {
     const [error, setError] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
 
-    dataRef.current = data;
+    useEffect(() => {
+        isUsableRef.current = isUsable;
+    }, [isUsable]);
 
-    const lastUpdatedRef = useRef(lastUpdated);
-    lastUpdatedRef.current = lastUpdated;
+    useEffect(() => {
+        dataRef.current = data;
+    }, [data]);
+
+    useEffect(() => {
+        lastUpdatedRef.current = lastUpdated;
+    }, [lastUpdated]);
 
     const load = useCallback(async ({ manual = false } = {}) => {
         if (!enabled) return;
