@@ -4,7 +4,7 @@ Thank you for forking GlobeWatch. This is a civic OSINT instrument panel, not an
 
 ## Run it
 
-Requires **Node 20** and npm. No private keys are required.
+Requires **Node 22.12+** and npm. No private keys are required.
 
 ```bash
 git clone https://github.com/Nonarkara/globalmonitor-v3.git

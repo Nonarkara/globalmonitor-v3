@@ -21,7 +21,7 @@ npm install
 npm run dev:stack
 ```
 
-Requires **Node 20**. That script starts Vite at `http://127.0.0.1:5180` and the cache API at `http://127.0.0.1:4000` (`/api` is proxied). Leave [`.env.example`](.env.example) uncopied unless you have your own provider keys — the UI still renders public fallbacks and committed snapshots. More commands: [How to run / fork](#5-how-to-run--fork). Contribute: [CONTRIBUTING.md](CONTRIBUTING.md). Report a vulnerability: [SECURITY.md](SECURITY.md).
+Requires **Node 22.12+**. That script starts Vite at `http://127.0.0.1:5180` and the cache API at `http://127.0.0.1:4000` (`/api` is proxied). Leave [`.env.example`](.env.example) uncopied unless you have your own provider keys — the UI still renders public fallbacks and committed snapshots. More commands: [How to run / fork](#5-how-to-run--fork). Contribute: [CONTRIBUTING.md](CONTRIBUTING.md). Report a vulnerability: [SECURITY.md](SECURITY.md).
 
 ---
 
@@ -93,7 +93,7 @@ Longer architecture, measured-vs-modelled table, optional credentials, and Cloud
 
 ## 5. How to run / fork
 
-Requires **Node 20** (CI) and npm. No private endpoints are required.
+Requires **Node 22.12+** and npm. `.nvmrc` selects Node 22 for local development. No private endpoints are required.
 
 ```bash
 git clone https://github.com/Nonarkara/globalmonitor-v3.git
