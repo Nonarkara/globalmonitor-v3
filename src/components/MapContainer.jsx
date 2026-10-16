@@ -484,15 +484,15 @@ const ESRI_SATELLITE_STYLE = {
 // onStyleError handler in <Map> will swap to the fallback so the map never goes blank.
 const MAP_STYLES = {
     // Rams: a minimal, low-chroma paper map. Positron is the light instrument basemap.
-    light: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-    dark: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+    light: 'https://tiles.openfreemap.org/styles/positron',
+    dark: 'https://tiles.openfreemap.org/styles/positron',
     satellite: ESRI_SATELLITE_STYLE,
-    voyager: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'
+    voyager: 'https://tiles.openfreemap.org/styles/liberty'
 };
 
 const MAP_STYLE_FALLBACKS = {
-    dark: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-    voyager: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
+    dark: 'https://tiles.openfreemap.org/styles/positron',
+    voyager: 'https://tiles.openfreemap.org/styles/positron'
 };
 
 const MapContainer = ({
