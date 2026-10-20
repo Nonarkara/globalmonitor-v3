@@ -4,14 +4,14 @@
  * Government offices may have restricted or intermittent connectivity.
  */
 
-const CACHE_NAME = 'gpd-v8-20260703-traffic-hardening';
+const CACHE_NAME = 'gpd-v8-20261020-axiom-logo';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
     '/pmua-logo.webp',
     '/Logo depa-01.png',
     '/smart-city-thailand-logo.svg',
-    '/axiom-logo.png'
+    '/axiom-icon-192.png'
 ];
 
 // Cache static assets on install
