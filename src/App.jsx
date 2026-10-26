@@ -186,11 +186,11 @@ function App() {
 
         {/* Row 2: Header bar — 3-section layout: logos | center title | controls */}
         <div className="header-bar grid-panel">
-          {/* Left: Sponsor logos in white pill */}
+          {/* Left: sponsor logos on the header surface, spacing only */}
           <div className="header-brand-strip" aria-label="Project partners">
             <img src={`${import.meta.env.BASE_URL}pmua-logo.webp`} alt="PMUA" className="header-brand-logo header-brand-logo-pmua" />
             <img src={`${import.meta.env.BASE_URL}depa-logo.png`} alt="depa" className="header-brand-logo header-brand-logo-depa" />
-            <img src={`${import.meta.env.BASE_URL}axiom-logo.png`} alt="Axiom" className="header-brand-logo header-brand-logo-axiom" />
+            <img src={`${import.meta.env.BASE_URL}axiom-icon-192.png`} alt="Axiom" className="header-brand-logo header-brand-logo-axiom" />
             <img src={`${import.meta.env.BASE_URL}retl-logo.svg`} alt="ReTL" className="header-brand-logo header-brand-logo-retl" />
           </div>
 
@@ -682,7 +682,7 @@ function App() {
               </div>
 
               {/* Supporting organizations */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '16px', padding: '10px', border: '1px solid var(--line)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '16px' }}>
                 <img src={`${import.meta.env.BASE_URL}depa-logo.png`} alt="depa" style={{ height: '20px', objectFit: 'contain' }} />
                 <img src={`${import.meta.env.BASE_URL}mdes.png`} alt="Ministry of Digital Economy" style={{ height: '20px', objectFit: 'contain' }} />
                 <img src={`${import.meta.env.BASE_URL}smart-city-thailand-logo.svg`} alt="Smart City Thailand" style={{ height: '18px', objectFit: 'contain' }} />
@@ -691,8 +691,8 @@ function App() {
               {/* Executed by */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '18px' }}>
                 <div style={{ fontSize: '0.5rem', color: 'var(--ink-3)', fontWeight: 700, letterSpacing: '0.16em' }}>EXECUTED BY</div>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', border: '1px solid var(--line)', padding: '4px 10px' }}>
-                  <img src={`${import.meta.env.BASE_URL}axiom-logo.png`} alt="Axiom AI" style={{ height: '20px', objectFit: 'contain' }} />
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
+                  <img src={`${import.meta.env.BASE_URL}axiom-icon-192.png`} alt="Axiom AI" style={{ height: '24px', width: '24px', objectFit: 'contain' }} />
                   <img src={`${import.meta.env.BASE_URL}retl-logo.svg`} alt="ReTL" style={{ height: '18px', objectFit: 'contain' }} />
                 </span>
               </div>
