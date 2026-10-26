@@ -651,9 +651,12 @@
   opacity: 0.7;
 }
 
-/* ── Logo pills — CLAUDE.md exception for border-radius ── */
+/* Logos sit on the header surface. No chip, pad, or radius. */
 .header-brand-strip {
-  border-radius: 5px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* ── Kill gradients & blur site-wide on dashboard chrome ── */

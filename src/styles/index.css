@@ -492,12 +492,12 @@ body {
 .header-brand-strip {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
   justify-self: start;
   min-width: 0;
-  background: #fff;
-  padding: 3px 8px;
-  border-radius: 5px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
 .header-brand-logo {
