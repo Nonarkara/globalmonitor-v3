@@ -1,0 +1,60 @@
+{
+ "file": "firms_SUOMI_VIIRS_C2_Global_7d.csv",
+ "dates": [
+  "2026-10-28",
+  "2026-11-02"
+ ],
+ "n_days": 6,
+ "rows_total": 271252,
+ "rows_nominal_or_high": 271252,
+ "regions": {
+  "Persian Gulf basin": {
+   "cells": 611,
+   "detections": 2516,
+   "chronic_share": 0.19,
+   "transient_share": 0.46,
+   "transient_frp_ge_50MW": 3,
+   "median_peak_frp_MW": 3.2
+  },
+  "Levant": {
+   "cells": 80,
+   "detections": 135,
+   "chronic_share": 0.025,
+   "transient_share": 0.812,
+   "transient_frp_ge_50MW": 0,
+   "median_peak_frp_MW": 1.3
+  },
+  "Ukraine": {
+   "cells": 888,
+   "detections": 1436,
+   "chronic_share": 0.006,
+   "transient_share": 0.939,
+   "transient_frp_ge_50MW": 8,
+   "median_peak_frp_MW": 4.3
+  },
+  "Sudan": {
+   "cells": 20811,
+   "detections": 36749,
+   "chronic_share": 0.001,
+   "transient_share": 0.931,
+   "transient_frp_ge_50MW": 298,
+   "median_peak_frp_MW": 5.8
+  },
+  "Myanmar": {
+   "cells": 453,
+   "detections": 546,
+   "chronic_share": 0.0,
+   "transient_share": 0.945,
+   "transient_frp_ge_50MW": 0,
+   "median_peak_frp_MW": 3.3
+  },
+  "W. Europe (control)": {
+   "cells": 410,
+   "detections": 696,
+   "chronic_share": 0.039,
+   "transient_share": 0.846,
+   "transient_frp_ge_50MW": 1,
+   "median_peak_frp_MW": 3.0
+  }
+ }
+}

@@ -4,7 +4,7 @@
  * Government offices may have restricted or intermittent connectivity.
  */
 
-const CACHE_NAME = 'gpd-v8-20260703-traffic-hardening';
+const CACHE_NAME = 'gpd-v9-20261104-research';
 const STATIC_ASSETS = [
     '/',
     '/index.html',

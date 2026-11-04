@@ -1,0 +1,115 @@
+{
+ "base": "2026-02-27",
+ "marks": {
+  "first session (2 Mar)": "2026-03-02",
+  "+5 sessions": "2026-03-06",
+  "+20 sessions": "2026-03-27",
+  "Brent peak close": "2026-03-31",
+  "latest (2026-11-04)": "2026-11-04"
+ },
+ "vol": {
+  "Brent": {
+   "pre_daily_sd_%": 2.19,
+   "post_daily_sd_%": 4.07,
+   "n_pre": 38,
+   "n_post": 172
+  },
+  "WTI": {
+   "pre_daily_sd_%": 2.19,
+   "post_daily_sd_%": 4.11,
+   "n_pre": 38,
+   "n_post": 172
+  },
+  "S&P 500": {
+   "pre_daily_sd_%": 0.76,
+   "post_daily_sd_%": 0.83,
+   "n_pre": 38,
+   "n_post": 171
+  },
+  "Gold": {
+   "pre_daily_sd_%": 2.7,
+   "post_daily_sd_%": 1.61,
+   "n_pre": 38,
+   "n_post": 172
+  },
+  "Delta": {
+   "pre_daily_sd_%": 2.92,
+   "post_daily_sd_%": 2.33,
+   "n_pre": 38,
+   "n_post": 171
+  },
+  "Frontline": {
+   "pre_daily_sd_%": 2.39,
+   "post_daily_sd_%": 2.98,
+   "n_pre": 38,
+   "n_post": 171
+  }
+ },
+ "corr_brent_airlines": {
+  "pre": {
+   "r_brent_airlines": -0.43,
+   "ci95": [
+    -0.66,
+    -0.13
+   ],
+   "n": 38
+  },
+  "post": {
+   "r_brent_airlines": -0.75,
+   "ci95": [
+    -0.81,
+    -0.67
+   ],
+   "n": 168
+  }
+ },
+ "brent_wti_spread": {
+  "pre_mean": 4.69,
+  "post_mean": 6.35,
+  "max": [
+   "2026-03-31",
+   16.97
+  ]
+ },
+ "milestone_audit": {
+  "claimed_brent_usd": 140,
+  "claim_date": "2026-03-04",
+  "brent_close_claim_date": 81.4,
+  "max_close_march": [
+   "2026-03-31",
+   118.35
+  ],
+  "max_intraday_high_2026": [
+   "2026-04-30",
+   126.1
+  ],
+  "sessions_at_or_above_140": 0
+ },
+ "context": {
+  "h5": {
+   "log_change_pct": 24.6,
+   "percentile_since_2015": 99.7,
+   "n_windows": 2974
+  },
+  "h20": {
+   "log_change_pct": 44.0,
+   "percentile_since_2015": 99.7,
+   "n_windows": 2959
+  },
+  "ukraine2022_vs_2026": {
+   "brent_+20_sessions_%": [
+    25.6,
+    55.3
+   ],
+   "brent_+60_sessions_%": [
+    15.7,
+    37.4
+   ]
+  }
+ },
+ "n_sessions_2026": 212,
+ "range": [
+  "2026-01-02",
+  "2026-11-04"
+ ]
+}

@@ -1415,7 +1415,12 @@ const MapContainer = ({
                                     'text-allow-overlap': false,
                                 }}
                                 paint={{
-                                    'icon-opacity': ['interpolate', ['linear'], ['zoom'], 2, 0.86, 6, 0.93, 10, 0.98],
+                                    // Stale (last-known, > 6 h old) positions are drawn faint: a ship
+                                    // heard last week is not a ship at sea now.
+                                    'icon-opacity': ['interpolate', ['linear'], ['zoom'],
+                                        2, ['case', ['==', ['get', 'stale'], true], 0.26, 0.86],
+                                        6, ['case', ['==', ['get', 'stale'], true], 0.32, 0.93],
+                                        10, ['case', ['==', ['get', 'stale'], true], 0.4, 0.98]],
                                     'text-color': '#191712',
                                     'text-halo-color': 'rgba(255,255,255,0.85)',
                                     'text-halo-width': 1,
@@ -1740,7 +1745,7 @@ const MapContainer = ({
                     />
                     <span style={{ fontVariantNumeric: 'tabular-nums', minWidth: '14ch', display: 'inline-block' }}>
                         {vesselCount > 0
-                            ? `${vesselCount.toLocaleString()} vessels · ${vesselSourceLabel}`
+                            ? `${vesselCount.toLocaleString()} vessels · ${vesselSourceLabel}${vesselsData?.ageSummary ? ` · ${vesselsData.ageSummary.fresh.toLocaleString()} heard < ${vesselsData.ageSummary.staleHours} h` : ''}`
                             : vesselsNeedKey ? 'AIS key required' : 'Awaiting AIS feed…'}
                     </span>
                 </div>

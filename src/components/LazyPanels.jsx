@@ -73,6 +73,7 @@ const PANELS = {
     MultiFrontBoard: lazyWithReload(() => import('./MultiFrontBoard')),
     FlightRadarEmbed: lazyWithReload(() => import('./FlightRadarEmbed')),
     EventDetailsPanel: lazyWithReload(() => import('./EventDetailsPanel')),
+    ResearchView: lazyWithReload(() => import('./ResearchView')),
 };
 
 export const LazyMapContainer = PANELS.MapContainer;

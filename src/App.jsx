@@ -51,6 +51,20 @@ function App() {
   const [isSourceHealthOpen, setIsSourceHealthOpen] = useState(false);
   const [isManualOpen, setIsManualOpen] = useState(false);
   const [isPapersOpen, setIsPapersOpen] = useState(false);
+  // Top-level view: the live dashboard, or the Research preprint. '#research' makes it linkable.
+  const [appView, setAppView] = useState(() => (
+    typeof window !== 'undefined' && window.location.hash === '#research' ? 'research' : 'dashboard'
+  ));
+  useEffect(() => {
+    const onHash = () => setAppView(window.location.hash === '#research' ? 'research' : 'dashboard');
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
+  const openView = useCallback((view) => {
+    setAppView(view);
+    const next = view === 'research' ? '#research' : window.location.pathname + window.location.search;
+    window.history.replaceState(null, '', next);
+  }, []);
   const [isActivityLogOpen, setIsActivityLogOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   useEscapeKey(isAboutOpen, () => setIsAboutOpen(false));
@@ -140,14 +154,15 @@ function App() {
   return (
     <>
       {/* Alert Banner — fixed position at top */}
-      {viewMode === 'middleeast' && (
+      {appView === 'dashboard' && viewMode === 'middleeast' && (
         <ErrorBoundary inline label="Alert Banner">
           <AlertBanner />
         </ErrorBoundary>
       )}
 
-      <div className="app-container" id="main-content" role="main">
+      <div className={`app-container${appView === 'research' ? ' is-research' : ''}`} id="main-content" role="main">
         {/* Full-screen map underneath */}
+        {appView === 'dashboard' && (
         <ErrorBoundary label="Map">
           <Suspense fallback={<div className="map-loading" /> }>
             <LazyMapContainer
@@ -178,6 +193,7 @@ function App() {
             />
           </Suspense>
         </ErrorBoundary>
+        )}
 
         {/* Row 1: World Clock */}
         <ErrorBoundary inline label="World Clock">
@@ -228,9 +244,19 @@ function App() {
               className="header-region-tabs"
               role="tablist"
               aria-label="Theater region selector"
+              onKeyDown={(e) => {
+                if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+                const tabs = [...e.currentTarget.querySelectorAll('[role="tab"]')];
+                const at = tabs.indexOf(document.activeElement);
+                if (at < 0) return;
+                e.preventDefault();
+                const next = tabs[(at + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length];
+                next.focus();
+                next.click();
+              }}
             >
               {Object.values(REGIONS).map((r) => {
-                const isActive = viewMode === r.id;
+                const isActive = appView === 'dashboard' && viewMode === r.id;
                 return (
                   <button
                     key={r.id}
@@ -239,6 +265,7 @@ function App() {
                     aria-label={`Switch dashboard to ${r.label}`}
                     tabIndex={isActive ? 0 : -1}
                     onClick={() => {
+                      openView('dashboard');
                       setViewMode(r.id);
                       setViewTarget({ ...r.viewState, transitionDuration: 1200 });
                       setActiveSources(getDefaultSourceIdsForRegion(r.id));
@@ -250,6 +277,16 @@ function App() {
                   </button>
                 );
               })}
+              <button
+                role="tab"
+                aria-selected={appView === 'research'}
+                aria-label="Open the research preprint"
+                tabIndex={appView === 'research' ? 0 : -1}
+                onClick={() => openView('research')}
+                className={`header-region-tab ${appView === 'research' ? 'is-active' : ''}`}
+              >
+                Research
+              </button>
             </div>
 
             {/* Tools dropdown — collapses secondary operator actions to reduce header noise */}
@@ -296,6 +333,16 @@ function App() {
           </div>
         </div>
 
+        {appView === 'research' && (
+          <div className="research-slot">
+            <ErrorBoundary inline label="Research">
+              <LazyPanel name="ResearchView" />
+            </ErrorBoundary>
+          </div>
+        )}
+
+        {appView === 'dashboard' && (
+        <>
         {/* Row 3: Multi-Front Status Board */}
         {viewMode === 'middleeast' && (
           <div className="multi-front-row">
@@ -609,6 +656,9 @@ function App() {
           </ErrorBoundary>
         )}
 
+        </>
+        )}
+
         {/* Modal: Settings */}
         <SettingsModal
           isOpen={isSettingsOpen}
@@ -748,9 +798,10 @@ function App() {
         {Object.values(REGIONS).map((r) => (
           <button
             key={r.id}
-            className={`mobile-theater-btn ${viewMode === r.id ? 'is-active' : ''}`}
-            aria-pressed={viewMode === r.id}
+            className={`mobile-theater-btn ${appView === 'dashboard' && viewMode === r.id ? 'is-active' : ''}`}
+            aria-pressed={appView === 'dashboard' && viewMode === r.id}
             onClick={() => {
+              openView('dashboard');
               setViewMode(r.id);
               setViewTarget({ ...r.viewState, transitionDuration: 1200 });
               setActiveSources(getDefaultSourceIdsForRegion(r.id));
@@ -760,6 +811,13 @@ function App() {
             {r.label}
           </button>
         ))}
+        <button
+          className={`mobile-theater-btn ${appView === 'research' ? 'is-active' : ''}`}
+          aria-pressed={appView === 'research'}
+          onClick={() => openView('research')}
+        >
+          Research
+        </button>
       </nav>
 
       {/* Classification Banner — always visible, top and bottom of viewport */}

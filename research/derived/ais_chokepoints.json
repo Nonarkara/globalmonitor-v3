@@ -1,0 +1,694 @@
+[
+ {
+  "snapshot": "2026-11-04T07:07:40.889000+00:00",
+  "n_total": 68680,
+  "n_fresh_6h": 12043,
+  "share_fresh_6h": 0.175,
+  "age_h_quantiles_10_50_90": [
+   0.5,
+   170.3,
+   2219.2
+  ],
+  "boxes": {
+   "Persian Gulf": {
+    "n_all_ages": 1171,
+    "median_age_h": 173.0,
+    "n": 1,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": 0.0,
+    "median_speed_moving_kn": null
+   },
+   "Hormuz": {
+    "n_all_ages": 1110,
+    "median_age_h": 279.0,
+    "n": 0,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": null,
+    "median_speed_moving_kn": null
+   },
+   "Gulf of Oman": {
+    "n_all_ages": 37,
+    "median_age_h": 366.0,
+    "n": 0,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": null,
+    "median_speed_moving_kn": null
+   },
+   "Bab el-Mandeb": {
+    "n_all_ages": 0,
+    "median_age_h": null,
+    "n": 0,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": null,
+    "median_speed_moving_kn": null
+   },
+   "Red Sea": {
+    "n_all_ages": 0,
+    "median_age_h": null,
+    "n": 0,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": null,
+    "median_speed_moving_kn": null
+   },
+   "Suez": {
+    "n_all_ages": 681,
+    "median_age_h": 536.0,
+    "n": 26,
+    "tanker": 7,
+    "cargo": 12,
+    "military": 0,
+    "share_moving": 0.12,
+    "median_speed_moving_kn": 3.7
+   },
+   "Cape (S. Africa)": {
+    "n_all_ages": 1922,
+    "median_age_h": 245.0,
+    "n": 175,
+    "tanker": 17,
+    "cargo": 105,
+    "military": 0,
+    "share_moving": 0.52,
+    "median_speed_moving_kn": 11.4
+   },
+   "Malacca": {
+    "n_all_ages": 8357,
+    "median_age_h": 314.0,
+    "n": 353,
+    "tanker": 167,
+    "cargo": 128,
+    "military": 0,
+    "share_moving": 0.56,
+    "median_speed_moving_kn": 6.8
+   },
+   "Singapore": {
+    "n_all_ages": 5548,
+    "median_age_h": 261.0,
+    "n": 353,
+    "tanker": 167,
+    "cargo": 128,
+    "military": 0,
+    "share_moving": 0.56,
+    "median_speed_moving_kn": 6.8
+   },
+   "Taiwan Strait": {
+    "n_all_ages": 934,
+    "median_age_h": 376.0,
+    "n": 41,
+    "tanker": 4,
+    "cargo": 32,
+    "military": 0,
+    "share_moving": 0.0,
+    "median_speed_moving_kn": null
+   },
+   "North Sea": {
+    "n_all_ages": 3369,
+    "median_age_h": 1.0,
+    "n": 1914,
+    "tanker": 324,
+    "cargo": 711,
+    "military": 0,
+    "share_moving": 0.28,
+    "median_speed_moving_kn": 8.6
+   },
+   "Baltic": {
+    "n_all_ages": 2206,
+    "median_age_h": 19.0,
+    "n": 936,
+    "tanker": 101,
+    "cargo": 451,
+    "military": 0,
+    "share_moving": 0.18,
+    "median_speed_moving_kn": 10.9
+   },
+   "Eastern Med": {
+    "n_all_ages": 1720,
+    "median_age_h": 153.0,
+    "n": 248,
+    "tanker": 44,
+    "cargo": 102,
+    "military": 0,
+    "share_moving": 0.15,
+    "median_speed_moving_kn": 11.1
+   },
+   "Bosporus/Marmara": {
+    "n_all_ages": 1027,
+    "median_age_h": 361.0,
+    "n": 54,
+    "tanker": 28,
+    "cargo": 21,
+    "military": 0,
+    "share_moving": 0.48,
+    "median_speed_moving_kn": 9.1
+   },
+   "English Channel": {
+    "n_all_ages": 788,
+    "median_age_h": 16.0,
+    "n": 322,
+    "tanker": 62,
+    "cargo": 154,
+    "military": 0,
+    "share_moving": 0.66,
+    "median_speed_moving_kn": 9.8
+   },
+   "Panama": {
+    "n_all_ages": 389,
+    "median_age_h": 38.0,
+    "n": 19,
+    "tanker": 1,
+    "cargo": 17,
+    "military": 0,
+    "share_moving": 0.74,
+    "median_speed_moving_kn": 10.4
+   }
+  }
+ },
+ {
+  "snapshot": "2026-11-04T07:09:02.810000+00:00",
+  "n_total": 68680,
+  "n_fresh_6h": 12067,
+  "share_fresh_6h": 0.176,
+  "age_h_quantiles_10_50_90": [
+   0.5,
+   169.2,
+   2213.9
+  ],
+  "boxes": {
+   "Persian Gulf": {
+    "n_all_ages": 1170,
+    "median_age_h": 173.0,
+    "n": 1,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": 0.0,
+    "median_speed_moving_kn": null
+   },
+   "Hormuz": {
+    "n_all_ages": 1093,
+    "median_age_h": 279.0,
+    "n": 0,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": null,
+    "median_speed_moving_kn": null
+   },
+   "Gulf of Oman": {
+    "n_all_ages": 38,
+    "median_age_h": 361.0,
+    "n": 0,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": null,
+    "median_speed_moving_kn": null
+   },
+   "Bab el-Mandeb": {
+    "n_all_ages": 0,
+    "median_age_h": null,
+    "n": 0,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": null,
+    "median_speed_moving_kn": null
+   },
+   "Red Sea": {
+    "n_all_ages": 0,
+    "median_age_h": null,
+    "n": 0,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": null,
+    "median_speed_moving_kn": null
+   },
+   "Suez": {
+    "n_all_ages": 689,
+    "median_age_h": 537.0,
+    "n": 26,
+    "tanker": 7,
+    "cargo": 12,
+    "military": 0,
+    "share_moving": 0.12,
+    "median_speed_moving_kn": 3.7
+   },
+   "Cape (S. Africa)": {
+    "n_all_ages": 1947,
+    "median_age_h": 245.0,
+    "n": 177,
+    "tanker": 17,
+    "cargo": 107,
+    "military": 0,
+    "share_moving": 0.51,
+    "median_speed_moving_kn": 11.4
+   },
+   "Malacca": {
+    "n_all_ages": 8323,
+    "median_age_h": 312.0,
+    "n": 351,
+    "tanker": 166,
+    "cargo": 127,
+    "military": 0,
+    "share_moving": 0.56,
+    "median_speed_moving_kn": 6.8
+   },
+   "Singapore": {
+    "n_all_ages": 5532,
+    "median_age_h": 261.0,
+    "n": 351,
+    "tanker": 166,
+    "cargo": 127,
+    "military": 0,
+    "share_moving": 0.56,
+    "median_speed_moving_kn": 6.8
+   },
+   "Taiwan Strait": {
+    "n_all_ages": 951,
+    "median_age_h": 375.0,
+    "n": 41,
+    "tanker": 4,
+    "cargo": 31,
+    "military": 0,
+    "share_moving": 0.0,
+    "median_speed_moving_kn": null
+   },
+   "North Sea": {
+    "n_all_ages": 3360,
+    "median_age_h": 1.0,
+    "n": 1915,
+    "tanker": 325,
+    "cargo": 709,
+    "military": 0,
+    "share_moving": 0.28,
+    "median_speed_moving_kn": 8.6
+   },
+   "Baltic": {
+    "n_all_ages": 2211,
+    "median_age_h": 18.0,
+    "n": 942,
+    "tanker": 101,
+    "cargo": 466,
+    "military": 0,
+    "share_moving": 0.18,
+    "median_speed_moving_kn": 10.9
+   },
+   "Eastern Med": {
+    "n_all_ages": 1734,
+    "median_age_h": 161.0,
+    "n": 240,
+    "tanker": 43,
+    "cargo": 98,
+    "military": 0,
+    "share_moving": 0.16,
+    "median_speed_moving_kn": 11.1
+   },
+   "Bosporus/Marmara": {
+    "n_all_ages": 1035,
+    "median_age_h": 392.0,
+    "n": 54,
+    "tanker": 28,
+    "cargo": 21,
+    "military": 0,
+    "share_moving": 0.48,
+    "median_speed_moving_kn": 9.1
+   },
+   "English Channel": {
+    "n_all_ages": 790,
+    "median_age_h": 16.0,
+    "n": 322,
+    "tanker": 62,
+    "cargo": 154,
+    "military": 0,
+    "share_moving": 0.66,
+    "median_speed_moving_kn": 9.8
+   },
+   "Panama": {
+    "n_all_ages": 389,
+    "median_age_h": 38.0,
+    "n": 19,
+    "tanker": 1,
+    "cargo": 17,
+    "military": 0,
+    "share_moving": 0.74,
+    "median_speed_moving_kn": 10.4
+   }
+  }
+ },
+ {
+  "snapshot": "2026-11-04T07:49:05.485000+00:00",
+  "n_total": 68680,
+  "n_fresh_6h": 12091,
+  "share_fresh_6h": 0.176,
+  "age_h_quantiles_10_50_90": [
+   0.3,
+   169.1,
+   2227.6
+  ],
+  "boxes": {
+   "Persian Gulf": {
+    "n_all_ages": 1174,
+    "median_age_h": 174.0,
+    "n": 0,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": null,
+    "median_speed_moving_kn": null
+   },
+   "Hormuz": {
+    "n_all_ages": 1107,
+    "median_age_h": 280.0,
+    "n": 0,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": null,
+    "median_speed_moving_kn": null
+   },
+   "Gulf of Oman": {
+    "n_all_ages": 41,
+    "median_age_h": 367.0,
+    "n": 0,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": null,
+    "median_speed_moving_kn": null
+   },
+   "Bab el-Mandeb": {
+    "n_all_ages": 0,
+    "median_age_h": null,
+    "n": 0,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": null,
+    "median_speed_moving_kn": null
+   },
+   "Red Sea": {
+    "n_all_ages": 0,
+    "median_age_h": null,
+    "n": 0,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": null,
+    "median_speed_moving_kn": null
+   },
+   "Suez": {
+    "n_all_ages": 691,
+    "median_age_h": 515.0,
+    "n": 12,
+    "tanker": 4,
+    "cargo": 8,
+    "military": 0,
+    "share_moving": 0.25,
+    "median_speed_moving_kn": 3.7
+   },
+   "Cape (S. Africa)": {
+    "n_all_ages": 1934,
+    "median_age_h": 246.0,
+    "n": 174,
+    "tanker": 17,
+    "cargo": 104,
+    "military": 0,
+    "share_moving": 0.52,
+    "median_speed_moving_kn": 11.6
+   },
+   "Malacca": {
+    "n_all_ages": 8376,
+    "median_age_h": 314.0,
+    "n": 350,
+    "tanker": 165,
+    "cargo": 128,
+    "military": 0,
+    "share_moving": 0.57,
+    "median_speed_moving_kn": 7.2
+   },
+   "Singapore": {
+    "n_all_ages": 5575,
+    "median_age_h": 262.0,
+    "n": 350,
+    "tanker": 165,
+    "cargo": 128,
+    "military": 0,
+    "share_moving": 0.57,
+    "median_speed_moving_kn": 7.2
+   },
+   "Taiwan Strait": {
+    "n_all_ages": 959,
+    "median_age_h": 374.0,
+    "n": 39,
+    "tanker": 4,
+    "cargo": 29,
+    "military": 0,
+    "share_moving": 0.0,
+    "median_speed_moving_kn": null
+   },
+   "North Sea": {
+    "n_all_ages": 3368,
+    "median_age_h": 1.0,
+    "n": 1915,
+    "tanker": 322,
+    "cargo": 715,
+    "military": 0,
+    "share_moving": 0.3,
+    "median_speed_moving_kn": 8.8
+   },
+   "Baltic": {
+    "n_all_ages": 2210,
+    "median_age_h": 18.0,
+    "n": 957,
+    "tanker": 101,
+    "cargo": 463,
+    "military": 0,
+    "share_moving": 0.18,
+    "median_speed_moving_kn": 10.9
+   },
+   "Eastern Med": {
+    "n_all_ages": 1731,
+    "median_age_h": 163.0,
+    "n": 237,
+    "tanker": 42,
+    "cargo": 104,
+    "military": 0,
+    "share_moving": 0.17,
+    "median_speed_moving_kn": 11.0
+   },
+   "Bosporus/Marmara": {
+    "n_all_ages": 1029,
+    "median_age_h": 379.0,
+    "n": 57,
+    "tanker": 29,
+    "cargo": 23,
+    "military": 0,
+    "share_moving": 0.53,
+    "median_speed_moving_kn": 9.4
+   },
+   "English Channel": {
+    "n_all_ages": 797,
+    "median_age_h": 16.0,
+    "n": 338,
+    "tanker": 63,
+    "cargo": 155,
+    "military": 0,
+    "share_moving": 0.7,
+    "median_speed_moving_kn": 9.5
+   },
+   "Panama": {
+    "n_all_ages": 383,
+    "median_age_h": 38.0,
+    "n": 15,
+    "tanker": 1,
+    "cargo": 13,
+    "military": 0,
+    "share_moving": 0.8,
+    "median_speed_moving_kn": 9.8
+   }
+  }
+ },
+ {
+  "snapshot": "2026-11-04T08:29:04.597000+00:00",
+  "n_total": 68680,
+  "n_fresh_6h": 12009,
+  "share_fresh_6h": 0.175,
+  "age_h_quantiles_10_50_90": [
+   0.8,
+   169.8,
+   2218.5
+  ],
+  "boxes": {
+   "Persian Gulf": {
+    "n_all_ages": 1171,
+    "median_age_h": 175.0,
+    "n": 0,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": null,
+    "median_speed_moving_kn": null
+   },
+   "Hormuz": {
+    "n_all_ages": 1105,
+    "median_age_h": 281.0,
+    "n": 0,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": null,
+    "median_speed_moving_kn": null
+   },
+   "Gulf of Oman": {
+    "n_all_ages": 41,
+    "median_age_h": 367.0,
+    "n": 0,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": null,
+    "median_speed_moving_kn": null
+   },
+   "Bab el-Mandeb": {
+    "n_all_ages": 0,
+    "median_age_h": null,
+    "n": 0,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": null,
+    "median_speed_moving_kn": null
+   },
+   "Red Sea": {
+    "n_all_ages": 0,
+    "median_age_h": null,
+    "n": 0,
+    "tanker": 0,
+    "cargo": 0,
+    "military": 0,
+    "share_moving": null,
+    "median_speed_moving_kn": null
+   },
+   "Suez": {
+    "n_all_ages": 685,
+    "median_age_h": 538.0,
+    "n": 10,
+    "tanker": 2,
+    "cargo": 8,
+    "military": 0,
+    "share_moving": 0.3,
+    "median_speed_moving_kn": 3.7
+   },
+   "Cape (S. Africa)": {
+    "n_all_ages": 1925,
+    "median_age_h": 247.0,
+    "n": 170,
+    "tanker": 16,
+    "cargo": 102,
+    "military": 0,
+    "share_moving": 0.51,
+    "median_speed_moving_kn": 11.6
+   },
+   "Malacca": {
+    "n_all_ages": 8377,
+    "median_age_h": 314.0,
+    "n": 333,
+    "tanker": 156,
+    "cargo": 122,
+    "military": 0,
+    "share_moving": 0.55,
+    "median_speed_moving_kn": 7.2
+   },
+   "Singapore": {
+    "n_all_ages": 5563,
+    "median_age_h": 263.0,
+    "n": 333,
+    "tanker": 156,
+    "cargo": 122,
+    "military": 0,
+    "share_moving": 0.55,
+    "median_speed_moving_kn": 7.2
+   },
+   "Taiwan Strait": {
+    "n_all_ages": 947,
+    "median_age_h": 375.0,
+    "n": 34,
+    "tanker": 3,
+    "cargo": 26,
+    "military": 0,
+    "share_moving": 0.0,
+    "median_speed_moving_kn": null
+   },
+   "North Sea": {
+    "n_all_ages": 3390,
+    "median_age_h": 2.0,
+    "n": 1891,
+    "tanker": 321,
+    "cargo": 696,
+    "military": 0,
+    "share_moving": 0.3,
+    "median_speed_moving_kn": 8.6
+   },
+   "Baltic": {
+    "n_all_ages": 2206,
+    "median_age_h": 19.0,
+    "n": 938,
+    "tanker": 100,
+    "cargo": 450,
+    "military": 0,
+    "share_moving": 0.18,
+    "median_speed_moving_kn": 10.8
+   },
+   "Eastern Med": {
+    "n_all_ages": 1720,
+    "median_age_h": 161.0,
+    "n": 232,
+    "tanker": 43,
+    "cargo": 99,
+    "military": 0,
+    "share_moving": 0.17,
+    "median_speed_moving_kn": 11.0
+   },
+   "Bosporus/Marmara": {
+    "n_all_ages": 1035,
+    "median_age_h": 394.0,
+    "n": 54,
+    "tanker": 28,
+    "cargo": 21,
+    "military": 0,
+    "share_moving": 0.5,
+    "median_speed_moving_kn": 9.4
+   },
+   "English Channel": {
+    "n_all_ages": 794,
+    "median_age_h": 17.0,
+    "n": 336,
+    "tanker": 62,
+    "cargo": 154,
+    "military": 0,
+    "share_moving": 0.7,
+    "median_speed_moving_kn": 9.5
+   },
+   "Panama": {
+    "n_all_ages": 387,
+    "median_age_h": 39.0,
+    "n": 14,
+    "tanker": 0,
+    "cargo": 13,
+    "military": 0,
+    "share_moving": 0.71,
+    "median_speed_moving_kn": 9.8
+   }
+  }
+ }
+]

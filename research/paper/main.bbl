@@ -1,0 +1,216 @@
+\begin{thebibliography}{36}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[{adsb.lol}(2026)]{adsblol}
+{adsb.lol}.
+\newblock adsb.lol: open {ADS-B} flight tracking.
+\newblock \url{https://adsb.lol/}, 2026.
+\newblock Accessed 4 November 2026.
+
+\bibitem[Arslanalp et~al.(2021)Arslanalp, Koepke, and Verschuur]{arslanalp2021imf}
+Serkan Arslanalp, Robin Koepke, and Jasper Verschuur.
+\newblock Tracking trade from space: An application to pandemic disruptions in global shipping.
+\newblock IMF Working Paper WP/21/225, International Monetary Fund, 2021.
+
+\bibitem[{Axiom Overwatch}(2026)]{overwatch}
+{Axiom Overwatch}.
+\newblock Global {AIS} positions, rest snapshot.
+\newblock \url{https://axiomoverwatch.io}, 2026.
+\newblock CC-BY 4.0; accessed 4 November 2026.
+
+\bibitem[Caldara and Iacoviello(2022)]{caldara2022gpr}
+Dario Caldara and Matteo Iacoviello.
+\newblock Measuring geopolitical risk.
+\newblock \emph{American Economic Review}, 112\penalty0 (4):\penalty0 1194--1225, 2022.
+\newblock \doi{10.1257/aer.20191823}.
+
+\bibitem[Cederman and Weidmann(2017)]{cederman2017predicting}
+Lars-Erik Cederman and Nils~B. Weidmann.
+\newblock Predicting armed conflict: Time to adjust our expectations?
+\newblock \emph{Science}, 355\penalty0 (6324):\penalty0 474--476, 2017.
+\newblock \doi{10.1126/science.aal4483}.
+
+\bibitem[Cerdeiro et~al.(2020)Cerdeiro, Kom{\'a}romi, Liu, and Saeed]{cerdeiro2020seaborne}
+Diego~A. Cerdeiro, Andr{\'a}s Kom{\'a}romi, Yang Liu, and Mamoon Saeed.
+\newblock World seaborne trade in real time: A proof of concept for building {AIS}-based nowcasts from scratch.
+\newblock IMF Working Paper WP/20/57, International Monetary Fund, 2020.
+
+\bibitem[{Committee to Protect Journalists}(2025)]{cpj2025report}
+{Committee to Protect Journalists}.
+\newblock 2024 is deadliest year for journalists in {CPJ} history; almost 70\% killed by {Israel}.
+\newblock \url{https://cpj.org/special-reports/2024-is-deadliest-year-for-journalists-in-cpj-history-almost-70-percent-killed-by-israel/}, 2025.
+\newblock Published 12 February 2025; CPJ later revised some casualty figures.
+
+\bibitem[{Committee to Protect Journalists}(2026)]{cpj2026report}
+{Committee to Protect Journalists}.
+\newblock Record 129 press members killed in 2025; {Israel} responsible for 2/3 of deaths.
+\newblock \url{https://cpj.org/special-reports/record-129-press-members-killed-in-2025-israel-responsible-for-2-of-3-of-deaths/}, 2026.
+\newblock Published 25 February 2026.
+
+\bibitem[Dong et~al.(2020)Dong, Du, and Gardner]{dong2020covid}
+Ensheng Dong, Hongru Du, and Lauren Gardner.
+\newblock An interactive web-based dashboard to track {COVID-19} in real time.
+\newblock \emph{The Lancet Infectious Diseases}, 20\penalty0 (5):\penalty0 533--534, 2020.
+\newblock \doi{10.1016/S1473-3099(20)30120-1}.
+
+\bibitem[{Dutch Safety Board}(2015)]{dsb2015mh17}
+{Dutch Safety Board}.
+\newblock Crash of malaysia airlines flight {MH17}, {Hrabove}, {Ukraine}, 17 july 2014.
+\newblock Technical report, Dutch Safety Board, The Hague, 2015.
+
+\bibitem[Earl et~al.(2004)Earl, Martin, McCarthy, and Soule]{earl2004newspaper}
+Jennifer Earl, Andrew Martin, John~D. McCarthy, and Sarah~A. Soule.
+\newblock The use of newspaper data in the study of collective action.
+\newblock \emph{Annual Review of Sociology}, 30:\penalty0 65--80, 2004.
+\newblock \doi{10.1146/annurev.soc.30.012703.110603}.
+
+\bibitem[{European Union Aviation Safety Agency}(2026)]{easa2026czib}
+{European Union Aviation Safety Agency}.
+\newblock Conflict zones advisories (conflict zone information bulletins, {CZIB}).
+\newblock \url{https://www.easa.europa.eu/en/domains/air-operations/czibs}, 2026.
+\newblock Accessed 4 November 2026.
+
+\bibitem[Hegre et~al.(2019)Hegre, Allansson, Basedau, Colaresi, Croicu, Fjelde, Hoyles, Hultman, H{\"o}gbladh, Jansen, et~al.]{hegre2019views}
+H{\aa}vard Hegre, Marie Allansson, Matthias Basedau, Michael Colaresi, Mihai Croicu, Hanne Fjelde, Frederick Hoyles, Lisa Hultman, Stina H{\"o}gbladh, Remco Jansen, et~al.
+\newblock {ViEWS}: A political violence early-warning system.
+\newblock \emph{Journal of Peace Research}, 56\penalty0 (2):\penalty0 155--174, 2019.
+\newblock \doi{10.1177/0022343319823860}.
+
+\bibitem[Higgins(2021)]{higgins2021bellingcat}
+Eliot Higgins.
+\newblock \emph{We Are {Bellingcat}: Global Crime, Online Sleuths, and the Bold Future of News}.
+\newblock Bloomsbury Publishing, New York, 2021.
+
+\bibitem[Hobbs and Radke(1992)]{hobbs1992kuwait}
+Peter~V. Hobbs and Lawrence~F. Radke.
+\newblock Airborne studies of the smoke from the {Kuwait} oil fires.
+\newblock \emph{Science}, 256\penalty0 (5059):\penalty0 987--991, 1992.
+\newblock \doi{10.1126/science.256.5059.987}.
+
+\bibitem[{International Civil Aviation Organization}(2018)]{icao2018doc10084}
+{International Civil Aviation Organization}.
+\newblock \emph{Risk Assessment Manual for Civil Aircraft Operations Over or Near Conflict Zones ({Doc} 10084)}.
+\newblock Montr{\'e}al, 2nd edition, 2018.
+
+\bibitem[{International Monetary Fund}(2026)]{portwatch}
+{International Monetary Fund}.
+\newblock {PortWatch}: daily port and chokepoint activity estimated from satellite {AIS}.
+\newblock \url{https://portwatch.imf.org/}, 2026.
+\newblock Accessed 4 November 2026; methodology in \citet{arslanalp2021imf}.
+
+\bibitem[Kilian(2009)]{kilian2009oil}
+Lutz Kilian.
+\newblock Not all oil price shocks are alike: Disentangling demand and supply shocks in the crude oil market.
+\newblock \emph{American Economic Review}, 99\penalty0 (3):\penalty0 1053--1069, 2009.
+\newblock \doi{10.1257/aer.99.3.1053}.
+
+\bibitem[Kroodsma et~al.(2018)Kroodsma, Mayorga, Hochberg, Miller, Boerder, Ferretti, Wilson, Bergman, White, Block, Woods, Sullivan, Costello, and Worm]{kroodsma2018fisheries}
+David~A. Kroodsma, Juan Mayorga, Timothy Hochberg, Nathan~A. Miller, Kristina Boerder, Francesco Ferretti, Alex Wilson, Bjorn Bergman, Timothy~D. White, Barbara~A. Block, Paul Woods, Brian Sullivan, Christopher Costello, and Boris Worm.
+\newblock Tracking the global footprint of fisheries.
+\newblock \emph{Science}, 359\penalty0 (6378):\penalty0 904--908, 2018.
+\newblock \doi{10.1126/science.aao5646}.
+
+\bibitem[Leetaru and Schrodt(2013)]{leetaru2013gdelt}
+Kalev Leetaru and Philip~A. Schrodt.
+\newblock {GDELT}: Global data on events, location and tone, 1979--2012.
+\newblock Paper presented at the International Studies Association Annual Convention, San Francisco, April 2013, 2013.
+
+\bibitem[Li and Li(2014)]{li2014nightlights}
+Xi~Li and Deren Li.
+\newblock Can night-time light images play a role in evaluating the {Syrian} crisis?
+\newblock \emph{International Journal of Remote Sensing}, 35\penalty0 (18):\penalty0 6648--6661, 2014.
+\newblock \doi{10.1080/01431161.2014.971469}.
+
+\bibitem[{NASA LANCE FIRMS}(2026)]{firms}
+{NASA LANCE FIRMS}.
+\newblock Fire information for resource management system: {VIIRS} 375\,m {NRT} active fire data.
+\newblock \url{https://firms.modaps.eosdis.nasa.gov/active_fire/}, 2026.
+\newblock Accessed 4 November 2026.
+
+\bibitem[{Natural Earth}(2026)]{naturalearth}
+{Natural Earth}.
+\newblock Natural earth: Free vector and raster map data.
+\newblock \url{https://www.naturalearthdata.com/}, 2026.
+\newblock Public domain; accessed 4 November 2026.
+
+\bibitem[{OpenSky Network}(2026)]{opensky}
+{OpenSky Network}.
+\newblock Opensky network {REST} {API}: state vectors.
+\newblock \url{https://openskynetwork.github.io/opensky-api/}, 2026.
+\newblock Anonymous access; accessed 4 November 2026.
+
+\bibitem[Park et~al.(2020)Park, Lee, Seto, Hochberg, Wong, Miller, Takasaki, Kubota, Oozeki, Doshi, et~al.]{park2020darkfleets}
+Jaeyoon Park, Jungsam Lee, Katherine Seto, Timothy Hochberg, Brian~A. Wong, Nathan~A. Miller, Kenji Takasaki, Hiroshi Kubota, Yoshioki Oozeki, Sejal Doshi, et~al.
+\newblock Illuminating dark fishing fleets in {North Korea}.
+\newblock \emph{Science Advances}, 6\penalty0 (30):\penalty0 eabb1197, 2020.
+\newblock \doi{10.1126/sciadv.abb1197}.
+
+\bibitem[Raleigh et~al.(2010)Raleigh, Linke, Hegre, and Karlsen]{raleigh2010acled}
+Clionadh Raleigh, Andrew Linke, H{\aa}vard Hegre, and Joakim Karlsen.
+\newblock Introducing {ACLED}: An armed conflict location and event dataset.
+\newblock \emph{Journal of Peace Research}, 47\penalty0 (5):\penalty0 651--660, 2010.
+\newblock \doi{10.1177/0022343310378914}.
+
+\bibitem[Sch{\"a}fer et~al.(2014)Sch{\"a}fer, Strohmeier, Lenders, Martinovic, and Wilhelm]{schafer2014opensky}
+Matthias Sch{\"a}fer, Martin Strohmeier, Vincent Lenders, Ivan Martinovic, and Matthias Wilhelm.
+\newblock Bringing up {OpenSky}: A large-scale {ADS-B} sensor network for research.
+\newblock In \emph{Proc. 13th Int. Symp. on Information Processing in Sensor Networks (IPSN)}, pages 83--94, Berlin, 2014.
+\newblock \doi{10.1109/IPSN.2014.6846743}.
+
+\bibitem[Schroeder et~al.(2014)Schroeder, Oliva, Giglio, and Csiszar]{schroeder2014viirs}
+Wilfrid Schroeder, Patricia Oliva, Louis Giglio, and Ivan~A. Csiszar.
+\newblock The new {VIIRS} 375\,m active fire detection data product: Algorithm description and initial assessment.
+\newblock \emph{Remote Sensing of Environment}, 143:\penalty0 85--96, 2014.
+\newblock \doi{10.1016/j.rse.2013.12.008}.
+
+\bibitem[Strohmeier et~al.(2021)Strohmeier, Olive, L{\"u}bbe, Sch{\"a}fer, and Lenders]{strohmeier2021opensky}
+Martin Strohmeier, Xavier Olive, Jannis L{\"u}bbe, Matthias Sch{\"a}fer, and Vincent Lenders.
+\newblock Crowdsourced air traffic data from the {OpenSky} network 2019--2020.
+\newblock \emph{Earth System Science Data}, 13\penalty0 (2):\penalty0 357--366, 2021.
+\newblock \doi{10.5194/essd-13-357-2021}.
+
+\bibitem[Sundberg and Melander(2013)]{sundberg2013ucdp}
+Ralph Sundberg and Erik Melander.
+\newblock Introducing the {UCDP} georeferenced event dataset.
+\newblock \emph{Journal of Peace Research}, 50\penalty0 (4):\penalty0 523--532, 2013.
+\newblock \doi{10.1177/0022343313484347}.
+
+\bibitem[{United Nations Environment Programme}(2024)]{unep2024gaza}
+{United Nations Environment Programme}.
+\newblock Environmental impact of the conflict in {Gaza}: Preliminary assessment of environmental impacts.
+\newblock Technical report, UNEP, Nairobi, 2024.
+
+\bibitem[{U.S. Energy Information Administration}(2025)]{eia2025hormuz}
+{U.S. Energy Information Administration}.
+\newblock Amid regional conflict, the strait of {Hormuz} remains critical oil chokepoint.
+\newblock Today in Energy, \url{https://www.eia.gov/todayinenergy/detail.php?id=65504}, 2025.
+
+\bibitem[{U.S. Energy Information Administration}(2026)]{eia2026steo}
+{U.S. Energy Information Administration}.
+\newblock Short-term energy outlook, {October} 2026: Global energy security (strait of {Hormuz} flows, table 4).
+\newblock \url{https://www.eia.gov/outlooks/steo/report/energysecurity/article.php}, 2026.
+\newblock Released 6 October 2026; accessed 4 November 2026.
+
+\bibitem[Weidmann(2016)]{weidmann2016reporting}
+Nils~B. Weidmann.
+\newblock A closer look at reporting bias in conflict event data.
+\newblock \emph{American Journal of Political Science}, 60\penalty0 (1):\penalty0 206--218, 2016.
+\newblock \doi{10.1111/ajps.12196}.
+
+\bibitem[Witmer(2015)]{witmer2015remote}
+Frank D.~W. Witmer.
+\newblock Remote sensing of violent conflict: eyes from above.
+\newblock \emph{International Journal of Remote Sensing}, 36\penalty0 (9):\penalty0 2326--2352, 2015.
+\newblock \doi{10.1080/01431161.2015.1035412}.
+
+\bibitem[{Yahoo}(2026)]{yahoofinance}
+{Yahoo}.
+\newblock Yahoo finance chart endpoint (unofficial and undocumented).
+\newblock \url{https://query1.finance.yahoo.com/v8/finance/chart/}, 2026.
+\newblock Accessed 4 November 2026.
+
+\end{thebibliography}

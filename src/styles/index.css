@@ -3858,3 +3858,8 @@ input[type="text"], input[type="search"], select, textarea {
     background: var(--surface-hover);
   }
 }
+
+/* Five buttons at phone width: tighten tracking so two-word labels stay on one line */
+@media (max-width: 480px) {
+  .mobile-theater-btn { padding: 12px 2px; font-size: 0.62rem; letter-spacing: 0.04em; }
+}

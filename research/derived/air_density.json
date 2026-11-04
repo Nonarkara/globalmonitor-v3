@@ -1,0 +1,650 @@
+{
+ "n_samples": 8,
+ "collected": [
+  "2026-11-04T07:20:23.178981+00:00",
+  "2026-11-04T07:40:23.196654+00:00",
+  "2026-11-04T08:00:23.217472+00:00",
+  "2026-11-04T08:20:23.232539+00:00",
+  "2026-11-04T08:40:23.247800+00:00",
+  "2026-11-04T09:00:23.264548+00:00",
+  "2026-11-04T09:20:23.280146+00:00",
+  "2026-11-04T09:40:23.286636+00:00"
+ ],
+ "regions": {
+  "middleeast": {
+   "airborne_mean": 404.6,
+   "airborne_range": [
+    344,
+    452
+   ],
+   "countries": [
+    {
+     "country": "United Arab Emirates",
+     "area_km2": 71443,
+     "mean_aircraft": 35.8,
+     "mean_cruise": 4.2,
+     "per_1e5km2": 50.04,
+     "czib": false
+    },
+    {
+     "country": "Georgia",
+     "area_km2": 30443,
+     "mean_aircraft": 6.9,
+     "mean_cruise": 5.9,
+     "per_1e5km2": 22.58,
+     "czib": false
+    },
+    {
+     "country": "Israel",
+     "area_km2": 22103,
+     "mean_aircraft": 4.6,
+     "mean_cruise": 0.0,
+     "per_1e5km2": 20.92,
+     "czib": false
+    },
+    {
+     "country": "Greece",
+     "area_km2": 29995,
+     "mean_aircraft": 6.1,
+     "mean_cruise": 3.5,
+     "per_1e5km2": 20.42,
+     "czib": false
+    },
+    {
+     "country": "Armenia",
+     "area_km2": 29625,
+     "mean_aircraft": 4.0,
+     "mean_cruise": 3.5,
+     "per_1e5km2": 13.5,
+     "czib": false
+    },
+    {
+     "country": "Turkey",
+     "area_km2": 781404,
+     "mean_aircraft": 93.6,
+     "mean_cruise": 67.6,
+     "per_1e5km2": 11.98,
+     "czib": false
+    },
+    {
+     "country": "Jordan",
+     "area_km2": 89074,
+     "mean_aircraft": 9.8,
+     "mean_cruise": 5.5,
+     "per_1e5km2": 10.95,
+     "czib": true
+    },
+    {
+     "country": "Azerbaijan",
+     "area_km2": 86605,
+     "mean_aircraft": 8.4,
+     "mean_cruise": 8.4,
+     "per_1e5km2": 9.67,
+     "czib": false
+    },
+    {
+     "country": "Syria",
+     "area_km2": 186430,
+     "mean_aircraft": 9.9,
+     "mean_cruise": 9.2,
+     "per_1e5km2": 5.3,
+     "czib": true
+    },
+    {
+     "country": "Oman",
+     "area_km2": 312975,
+     "mean_aircraft": 7.8,
+     "mean_cruise": 5.9,
+     "per_1e5km2": 2.48,
+     "czib": false
+    },
+    {
+     "country": "Saudi Arabia",
+     "area_km2": 1934022,
+     "mean_aircraft": 13.0,
+     "mean_cruise": 11.8,
+     "per_1e5km2": 0.67,
+     "czib": true
+    },
+    {
+     "country": "Egypt",
+     "area_km2": 1006994,
+     "mean_aircraft": 4.6,
+     "mean_cruise": 4.4,
+     "per_1e5km2": 0.46,
+     "czib": false
+    },
+    {
+     "country": "Iran",
+     "area_km2": 1629383,
+     "mean_aircraft": 0.6,
+     "mean_cruise": 0.5,
+     "per_1e5km2": 0.04,
+     "czib": true
+    },
+    {
+     "country": "Turkmenistan",
+     "area_km2": 445066,
+     "mean_aircraft": 0.0,
+     "mean_cruise": 0.0,
+     "per_1e5km2": 0.0,
+     "czib": false
+    },
+    {
+     "country": "Eritrea",
+     "area_km2": 123985,
+     "mean_aircraft": 0.0,
+     "mean_cruise": 0.0,
+     "per_1e5km2": 0.0,
+     "czib": false
+    },
+    {
+     "country": "Pakistan",
+     "area_km2": 130781,
+     "mean_aircraft": 0.0,
+     "mean_cruise": 0.0,
+     "per_1e5km2": 0.0,
+     "czib": true
+    },
+    {
+     "country": "Iraq",
+     "area_km2": 438711,
+     "mean_aircraft": 0.0,
+     "mean_cruise": 0.0,
+     "per_1e5km2": 0.0,
+     "czib": true
+    },
+    {
+     "country": "Libya",
+     "area_km2": 128668,
+     "mean_aircraft": 0.0,
+     "mean_cruise": 0.0,
+     "per_1e5km2": 0.0,
+     "czib": true
+    },
+    {
+     "country": "Ethiopia",
+     "area_km2": 347016,
+     "mean_aircraft": 0.0,
+     "mean_cruise": 0.0,
+     "per_1e5km2": 0.0,
+     "czib": false
+    },
+    {
+     "country": "Uzbekistan",
+     "area_km2": 92681,
+     "mean_aircraft": 0.0,
+     "mean_cruise": 0.0,
+     "per_1e5km2": 0.0,
+     "czib": false
+    },
+    {
+     "country": "Afghanistan",
+     "area_km2": 262421,
+     "mean_aircraft": 0.0,
+     "mean_cruise": 0.0,
+     "per_1e5km2": 0.0,
+     "czib": true
+    },
+    {
+     "country": "Sudan",
+     "area_km2": 1734703,
+     "mean_aircraft": 0.0,
+     "mean_cruise": 0.0,
+     "per_1e5km2": 0.0,
+     "czib": true
+    },
+    {
+     "country": "Somalia",
+     "area_km2": 41773,
+     "mean_aircraft": 0.0,
+     "mean_cruise": 0.0,
+     "per_1e5km2": 0.0,
+     "czib": false
+    },
+    {
+     "country": "Yemen",
+     "area_km2": 455299,
+     "mean_aircraft": 0.0,
+     "mean_cruise": 0.0,
+     "per_1e5km2": 0.0,
+     "czib": true
+    },
+    {
+     "country": "Somaliland",
+     "area_km2": 68198,
+     "mean_aircraft": 0.0,
+     "mean_cruise": 0.0,
+     "per_1e5km2": 0.0,
+     "czib": false
+    },
+    {
+     "country": "Djibouti",
+     "area_km2": 21753,
+     "mean_aircraft": 0.0,
+     "mean_cruise": 0.0,
+     "per_1e5km2": 0.0,
+     "czib": false
+    },
+    {
+     "country": "S. Sudan",
+     "area_km2": 37006,
+     "mean_aircraft": 0.0,
+     "mean_cruise": 0.0,
+     "per_1e5km2": 0.0,
+     "czib": false
+    }
+   ]
+  },
+  "europe": {
+   "airborne_mean": 2292.6,
+   "airborne_range": [
+    1912,
+    2781
+   ],
+   "countries": [
+    {
+     "country": "Netherlands",
+     "area_km2": 36969,
+     "mean_aircraft": 48.6,
+     "mean_cruise": 14.8,
+     "per_1e5km2": 131.53,
+     "czib": false
+    },
+    {
+     "country": "Belgium",
+     "area_km2": 30701,
+     "mean_aircraft": 39.4,
+     "mean_cruise": 19.5,
+     "per_1e5km2": 128.25,
+     "czib": false
+    },
+    {
+     "country": "Switzerland",
+     "area_km2": 41301,
+     "mean_aircraft": 43.2,
+     "mean_cruise": 15.5,
+     "per_1e5km2": 104.72,
+     "czib": false
+    },
+    {
+     "country": "United Kingdom",
+     "area_km2": 239166,
+     "mean_aircraft": 174.0,
+     "mean_cruise": 57.2,
+     "per_1e5km2": 72.75,
+     "czib": false
+    },
+    {
+     "country": "Germany",
+     "area_km2": 357154,
+     "mean_aircraft": 250.9,
+     "mean_cruise": 130.5,
+     "per_1e5km2": 70.24,
+     "czib": false
+    },
+    {
+     "country": "Austria",
+     "area_km2": 84104,
+     "mean_aircraft": 53.6,
+     "mean_cruise": 35.2,
+     "per_1e5km2": 63.76,
+     "czib": false
+    },
+    {
+     "country": "France",
+     "area_km2": 547330,
+     "mean_aircraft": 281.8,
+     "mean_cruise": 180.0,
+     "per_1e5km2": 51.48,
+     "czib": false
+    },
+    {
+     "country": "Czechia",
+     "area_km2": 78662,
+     "mean_aircraft": 36.6,
+     "mean_cruise": 19.4,
+     "per_1e5km2": 46.56,
+     "czib": false
+    },
+    {
+     "country": "Italy",
+     "area_km2": 301290,
+     "mean_aircraft": 128.2,
+     "mean_cruise": 66.1,
+     "per_1e5km2": 42.57,
+     "czib": false
+    },
+    {
+     "country": "Hungary",
+     "area_km2": 93174,
+     "mean_aircraft": 39.0,
+     "mean_cruise": 26.8,
+     "per_1e5km2": 41.86,
+     "czib": false
+    },
+    {
+     "country": "Portugal",
+     "area_km2": 88073,
+     "mean_aircraft": 36.5,
+     "mean_cruise": 24.4,
+     "per_1e5km2": 41.44,
+     "czib": false
+    },
+    {
+     "country": "Spain",
+     "area_km2": 500445,
+     "mean_aircraft": 186.4,
+     "mean_cruise": 123.8,
+     "per_1e5km2": 37.24,
+     "czib": false
+    },
+    {
+     "country": "Denmark",
+     "area_km2": 42516,
+     "mean_aircraft": 15.6,
+     "mean_cruise": 4.1,
+     "per_1e5km2": 36.75,
+     "czib": false
+    },
+    {
+     "country": "Slovenia",
+     "area_km2": 20240,
+     "mean_aircraft": 6.8,
+     "mean_cruise": 6.0,
+     "per_1e5km2": 33.35,
+     "czib": false
+    },
+    {
+     "country": "Croatia",
+     "area_km2": 54549,
+     "mean_aircraft": 17.2,
+     "mean_cruise": 15.1,
+     "per_1e5km2": 31.62,
+     "czib": false
+    },
+    {
+     "country": "Serbia",
+     "area_km2": 77674,
+     "mean_aircraft": 23.9,
+     "mean_cruise": 21.1,
+     "per_1e5km2": 30.74,
+     "czib": false
+    },
+    {
+     "country": "Ireland",
+     "area_km2": 67649,
+     "mean_aircraft": 20.4,
+     "mean_cruise": 11.0,
+     "per_1e5km2": 30.12,
+     "czib": false
+    },
+    {
+     "country": "Bulgaria",
+     "area_km2": 112680,
+     "mean_aircraft": 33.6,
+     "mean_cruise": 31.5,
+     "per_1e5km2": 29.84,
+     "czib": false
+    },
+    {
+     "country": "Slovakia",
+     "area_km2": 48449,
+     "mean_aircraft": 13.9,
+     "mean_cruise": 10.5,
+     "per_1e5km2": 28.64,
+     "czib": false
+    },
+    {
+     "country": "Bosnia and Herz.",
+     "area_km2": 51804,
+     "mean_aircraft": 14.0,
+     "mean_cruise": 13.1,
+     "per_1e5km2": 27.03,
+     "czib": false
+    },
+    {
+     "country": "Turkey",
+     "area_km2": 145321,
+     "mean_aircraft": 38.4,
+     "mean_cruise": 18.1,
+     "per_1e5km2": 26.41,
+     "czib": false
+    },
+    {
+     "country": "Norway",
+     "area_km2": 55361,
+     "mean_aircraft": 14.2,
+     "mean_cruise": 4.1,
+     "per_1e5km2": 25.74,
+     "czib": false
+    },
+    {
+     "country": "Sweden",
+     "area_km2": 142268,
+     "mean_aircraft": 32.9,
+     "mean_cruise": 14.6,
+     "per_1e5km2": 23.11,
+     "czib": false
+    },
+    {
+     "country": "Poland",
+     "area_km2": 313337,
+     "mean_aircraft": 70.4,
+     "mean_cruise": 34.1,
+     "per_1e5km2": 22.46,
+     "czib": false
+    },
+    {
+     "country": "Romania",
+     "area_km2": 236347,
+     "mean_aircraft": 50.1,
+     "mean_cruise": 42.8,
+     "per_1e5km2": 21.21,
+     "czib": false
+    },
+    {
+     "country": "Greece",
+     "area_km2": 130191,
+     "mean_aircraft": 27.1,
+     "mean_cruise": 17.1,
+     "per_1e5km2": 20.83,
+     "czib": false
+    },
+    {
+     "country": "North Macedonia",
+     "area_km2": 25422,
+     "mean_aircraft": 5.0,
+     "mean_cruise": 4.4,
+     "per_1e5km2": 19.67,
+     "czib": false
+    },
+    {
+     "country": "Albania",
+     "area_km2": 28402,
+     "mean_aircraft": 4.6,
+     "mean_cruise": 4.5,
+     "per_1e5km2": 16.28,
+     "czib": false
+    },
+    {
+     "country": "Lithuania",
+     "area_km2": 64667,
+     "mean_aircraft": 3.4,
+     "mean_cruise": 2.0,
+     "per_1e5km2": 5.22,
+     "czib": false
+    },
+    {
+     "country": "Latvia",
+     "area_km2": 64407,
+     "mean_aircraft": 3.2,
+     "mean_cruise": 1.1,
+     "per_1e5km2": 5.05,
+     "czib": false
+    },
+    {
+     "country": "Estonia",
+     "area_km2": 45556,
+     "mean_aircraft": 2.2,
+     "mean_cruise": 1.1,
+     "per_1e5km2": 4.94,
+     "czib": false
+    },
+    {
+     "country": "Algeria",
+     "area_km2": 156162,
+     "mean_aircraft": 2.9,
+     "mean_cruise": 2.1,
+     "per_1e5km2": 1.84,
+     "czib": false
+    },
+    {
+     "country": "Tunisia",
+     "area_km2": 52250,
+     "mean_aircraft": 0.9,
+     "mean_cruise": 0.6,
+     "per_1e5km2": 1.67,
+     "czib": false
+    },
+    {
+     "country": "Belarus",
+     "area_km2": 163409,
+     "mean_aircraft": 1.9,
+     "mean_cruise": 0.8,
+     "per_1e5km2": 1.15,
+     "czib": false
+    },
+    {
+     "country": "Moldova",
+     "area_km2": 33110,
+     "mean_aircraft": 0.2,
+     "mean_cruise": 0.2,
+     "per_1e5km2": 0.76,
+     "czib": false
+    },
+    {
+     "country": "Ukraine",
+     "area_km2": 216635,
+     "mean_aircraft": 0.8,
+     "mean_cruise": 0.6,
+     "per_1e5km2": 0.35,
+     "czib": true
+    },
+    {
+     "country": "Russia",
+     "area_km2": 70793,
+     "mean_aircraft": 0.1,
+     "mean_cruise": 0.0,
+     "per_1e5km2": 0.18,
+     "czib": true
+    }
+   ]
+  },
+  "seasia": {
+   "airborne_mean": 463.5,
+   "airborne_range": [
+    443,
+    481
+   ],
+   "countries": [
+    {
+     "country": "Taiwan",
+     "area_km2": 34518,
+     "mean_aircraft": 13.4,
+     "mean_cruise": 6.2,
+     "per_1e5km2": 38.75,
+     "czib": false
+    },
+    {
+     "country": "Bangladesh",
+     "area_km2": 66210,
+     "mean_aircraft": 10.1,
+     "mean_cruise": 3.4,
+     "per_1e5km2": 15.29,
+     "czib": false
+    },
+    {
+     "country": "Malaysia",
+     "area_km2": 328489,
+     "mean_aircraft": 43.5,
+     "mean_cruise": 15.9,
+     "per_1e5km2": 13.24,
+     "czib": false
+    },
+    {
+     "country": "Thailand",
+     "area_km2": 517753,
+     "mean_aircraft": 67.4,
+     "mean_cruise": 30.1,
+     "per_1e5km2": 13.01,
+     "czib": false
+    },
+    {
+     "country": "China",
+     "area_km2": 642931,
+     "mean_aircraft": 56.6,
+     "mean_cruise": 25.4,
+     "per_1e5km2": 8.81,
+     "czib": false
+    },
+    {
+     "country": "Philippines",
+     "area_km2": 291578,
+     "mean_aircraft": 21.1,
+     "mean_cruise": 6.1,
+     "per_1e5km2": 7.25,
+     "czib": false
+    },
+    {
+     "country": "India",
+     "area_km2": 60966,
+     "mean_aircraft": 3.0,
+     "mean_cruise": 2.0,
+     "per_1e5km2": 4.92,
+     "czib": false
+    },
+    {
+     "country": "Myanmar",
+     "area_km2": 566793,
+     "mean_aircraft": 19.6,
+     "mean_cruise": 15.9,
+     "per_1e5km2": 3.46,
+     "czib": false
+    },
+    {
+     "country": "Indonesia",
+     "area_km2": 1563352,
+     "mean_aircraft": 24.1,
+     "mean_cruise": 7.4,
+     "per_1e5km2": 1.54,
+     "czib": false
+    },
+    {
+     "country": "Laos",
+     "area_km2": 229612,
+     "mean_aircraft": 3.5,
+     "mean_cruise": 3.4,
+     "per_1e5km2": 1.52,
+     "czib": false
+    },
+    {
+     "country": "Vietnam",
+     "area_km2": 330740,
+     "mean_aircraft": 3.0,
+     "mean_cruise": 0.0,
+     "per_1e5km2": 0.91,
+     "czib": false
+    },
+    {
+     "country": "Cambodia",
+     "area_km2": 181798,
+     "mean_aircraft": 1.5,
+     "mean_cruise": 1.5,
+     "per_1e5km2": 0.83,
+     "czib": false
+    }
+   ]
+  }
+ }
+}

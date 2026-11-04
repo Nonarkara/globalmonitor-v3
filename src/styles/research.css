@@ -1,0 +1,50 @@
+/* Research view — the paper is the dominant element; the rail answers "what is this, how do I take it, what did it find". */
+.app-container.is-research { height: auto; }
+.research-slot { grid-column: 1 / -1; grid-row: 4; min-height: 0; pointer-events: auto; display: flex; }
+.research-view {
+  flex: 1; min-height: 0; display: grid; grid-template-columns: 300px minmax(0, 1fr);
+  background: var(--panel); border: 1px solid var(--line); color: var(--ink);
+}
+.research-rail { padding: 18px 20px 20px; overflow-y: auto; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; }
+.research-eyebrow { font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; color: var(--green); margin: 0; }
+.research-title { font-size: 1.42rem; line-height: 1.12; font-weight: 700; letter-spacing: -0.01em; margin: 0; }
+.research-authors { font-size: 0.8rem; color: var(--ink-2); margin: 0; }
+.research-lead { font-size: 0.9rem; line-height: 1.45; margin: 0; max-width: 34ch; }
+.research-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.research-btn {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 14px;
+  font: inherit; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; color: var(--ink); text-decoration: none;
+  background: var(--panel); border: 1px solid var(--line-2); border-radius: 0; cursor: pointer;
+}
+.research-btn:hover { background: var(--surface-hover); }
+.research-btn--primary { background: var(--green); border-color: var(--green); color: #fff; }
+.research-btn--primary:hover { background: #185a37; }
+.research-bib { width: 100%; box-sizing: border-box; font: 0.7rem/1.4 ui-monospace, Menlo, monospace; color: var(--ink); background: var(--paper); border: 1px solid var(--line-2); padding: 8px; resize: none; }
+.research-meta { font-size: 0.72rem; line-height: 1.5; color: var(--ink-3); margin: 0; }
+.research-meta a { color: var(--green); text-decoration: underline; text-underline-offset: 2px; }
+.research-points { list-style: none; margin: 0; padding: 10px 0 0; display: flex; flex-direction: column; gap: 7px; font-size: 0.8rem; line-height: 1.4; color: var(--ink-2); border-top: 1px solid var(--line); }
+.research-points strong { color: var(--ink); }
+.research-reader { min-width: 0; min-height: 0; background: var(--paper); overflow: hidden; }
+.research-pages { list-style: none; margin: 0; padding: 12px; display: flex; flex-direction: column; gap: 12px; align-items: center; height: 100%; box-sizing: border-box; overflow-y: auto; }
+.research-pages li { width: 100%; max-width: 860px; }
+.research-pages a { display: block; }
+.research-pages img { width: 100%; height: auto; display: block; border: 1px solid var(--line); background: #fff; }
+
+@media (max-width: 1024px) {
+  /* the fixed bottom tab bar takes over below this width */
+  .app-container.is-research { padding-bottom: 64px; }
+}
+@media (max-width: 900px) {
+  .app-container.is-research { padding-bottom: 76px; }
+  .research-view { display: block; border-left: 0; border-right: 0; }
+  .research-rail { border-right: 0; border-bottom: 1px solid var(--line); padding: 14px 14px 16px; overflow: visible; }
+  .research-lead { max-width: none; }
+  .research-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .research-btn { min-height: 48px; }
+  .research-btn--primary { grid-column: 1 / -1; }
+  .research-meta a { display: inline-block; padding: 12px 4px; margin: -12px -4px; }
+  /* A letter-size page is ~6 px type at phone width: show page 1 as a doorway, the PDF is the reader */
+  .research-reader { overflow: visible; }
+  .research-pages { height: auto; overflow: visible; padding: 10px 0 0; }
+  .research-pages li:nth-child(n + 2) { display: none; }
+}

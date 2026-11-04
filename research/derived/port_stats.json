@@ -1,0 +1,267 @@
+{
+ "window_pre": [
+  "2025-01-01",
+  "2026-02-27"
+ ],
+ "window_post": [
+  "2026-03-01",
+  "2026-10-30"
+ ],
+ "n_days_pre": 423,
+ "n_days_post": 244,
+ "groups": {
+  "Inside the Gulf": {
+   "portcalls": {
+    "pre_mean_per_day": 74.3,
+    "post_mean_per_day": 20.9,
+    "ratio": 0.28,
+    "ci95": [
+     0.26,
+     0.3
+    ],
+    "ratio_vs_control": 0.29
+   },
+   "portcalls_tanker": {
+    "pre_mean_per_day": 19.7,
+    "post_mean_per_day": 5.4,
+    "ratio": 0.27,
+    "ci95": [
+     0.25,
+     0.29
+    ],
+    "ratio_vs_control": 0.28
+   }
+  },
+  "Gulf of Oman coast": {
+   "portcalls": {
+    "pre_mean_per_day": 16.9,
+    "post_mean_per_day": 9.7,
+    "ratio": 0.57,
+    "ci95": [
+     0.52,
+     0.63
+    ],
+    "ratio_vs_control": 0.59
+   },
+   "portcalls_tanker": {
+    "pre_mean_per_day": 11.6,
+    "post_mean_per_day": 4.6,
+    "ratio": 0.4,
+    "ci95": [
+     0.34,
+     0.45
+    ],
+    "ratio_vs_control": 0.4
+   }
+  },
+  "Red Sea and Suez": {
+   "portcalls": {
+    "pre_mean_per_day": 14.7,
+    "post_mean_per_day": 12.1,
+    "ratio": 0.83,
+    "ci95": [
+     0.73,
+     0.92
+    ],
+    "ratio_vs_control": 0.84
+   },
+   "portcalls_tanker": {
+    "pre_mean_per_day": 2.4,
+    "post_mean_per_day": 2.2,
+    "ratio": 0.93,
+    "ci95": [
+     0.79,
+     1.08
+    ],
+    "ratio_vs_control": 0.94
+   }
+  },
+  "Eastern Mediterranean": {
+   "portcalls": {
+    "pre_mean_per_day": 30.6,
+    "post_mean_per_day": 27.7,
+    "ratio": 0.91,
+    "ci95": [
+     0.87,
+     0.94
+    ],
+    "ratio_vs_control": 0.92
+   },
+   "portcalls_tanker": {
+    "pre_mean_per_day": 2.4,
+    "post_mean_per_day": 2.7,
+    "ratio": 1.13,
+    "ci95": [
+     1.03,
+     1.26
+    ],
+    "ratio_vs_control": 1.15
+   }
+  },
+  "Control (Singapore, Rotterdam)": {
+   "portcalls": {
+    "pre_mean_per_day": 209.1,
+    "post_mean_per_day": 205.0,
+    "ratio": 0.98,
+    "ci95": [
+     0.97,
+     0.99
+    ],
+    "ratio_vs_control": 1.0
+   },
+   "portcalls_tanker": {
+    "pre_mean_per_day": 117.3,
+    "post_mean_per_day": 115.6,
+    "ratio": 0.98,
+    "ci95": [
+     0.97,
+     1.0
+    ],
+    "ratio_vs_control": 1.0
+   }
+  }
+ },
+ "ports": {
+  "Jebel Ali": {
+   "group": "Inside the Gulf",
+   "pre": 25.0,
+   "post": 3.9,
+   "ratio": 0.16
+  },
+  "Khalifa Port": {
+   "group": "Inside the Gulf",
+   "pre": 9.9,
+   "post": 1.5,
+   "ratio": 0.16
+  },
+  "Dubai": {
+   "group": "Inside the Gulf",
+   "pre": 7.2,
+   "post": 4.6,
+   "ratio": 0.65
+  },
+  "Ras Laffan": {
+   "group": "Inside the Gulf",
+   "pre": 4.7,
+   "post": 1.4,
+   "ratio": 0.3
+  },
+  "Dammam": {
+   "group": "Inside the Gulf",
+   "pre": 5.6,
+   "post": 1.8,
+   "ratio": 0.33
+  },
+  "Jubail": {
+   "group": "Inside the Gulf",
+   "pre": 6.4,
+   "post": 1.8,
+   "ratio": 0.28
+  },
+  "Shuaiba": {
+   "group": "Inside the Gulf",
+   "pre": 4.3,
+   "post": 0.4,
+   "ratio": 0.1
+  },
+  "Umm Qasr": {
+   "group": "Inside the Gulf",
+   "pre": 8.6,
+   "post": 3.6,
+   "ratio": 0.42
+  },
+  "Bandar Shahid Rajaee": {
+   "group": "Inside the Gulf",
+   "pre": 2.6,
+   "post": 1.7,
+   "ratio": 0.65
+  },
+  "Fujairah": {
+   "group": "Gulf of Oman coast",
+   "pre": 10.3,
+   "post": 5.0,
+   "ratio": 0.48
+  },
+  "Port of Sohar": {
+   "group": "Gulf of Oman coast",
+   "pre": 6.5,
+   "post": 4.7,
+   "ratio": 0.72
+  },
+  "Jeddah": {
+   "group": "Red Sea and Suez",
+   "pre": 8.5,
+   "post": 6.5,
+   "ratio": 0.77
+  },
+  "Djibouti": {
+   "group": "Red Sea and Suez",
+   "pre": 4.0,
+   "post": 3.6,
+   "ratio": 0.9
+  },
+  "Port Said": {
+   "group": "Red Sea and Suez",
+   "pre": 2.2,
+   "post": 2.0,
+   "ratio": 0.9
+  },
+  "Alexandria": {
+   "group": "Eastern Mediterranean",
+   "pre": 10.8,
+   "post": 9.2,
+   "ratio": 0.86
+  },
+  "Haifa": {
+   "group": "Eastern Mediterranean",
+   "pre": 7.2,
+   "post": 6.2,
+   "ratio": 0.86
+  },
+  "Ashdod": {
+   "group": "Eastern Mediterranean",
+   "pre": 5.5,
+   "post": 5.0,
+   "ratio": 0.92
+  },
+  "Damietta": {
+   "group": "Eastern Mediterranean",
+   "pre": 7.1,
+   "post": 7.2,
+   "ratio": 1.02
+  },
+  "Singapore": {
+   "group": "Control (Singapore, Rotterdam)",
+   "pre": 126.8,
+   "post": 121.5,
+   "ratio": 0.96
+  },
+  "Rotterdam": {
+   "group": "Control (Singapore, Rotterdam)",
+   "pre": 82.2,
+   "post": 83.5,
+   "ratio": 1.01
+  }
+ },
+ "inside_gulf_monthly_ratio": {
+  "2026-02": 1.06,
+  "2026-03": 0.25,
+  "2026-04": 0.25,
+  "2026-05": 0.19,
+  "2026-06": 0.27,
+  "2026-07": 0.36,
+  "2026-08": 0.3,
+  "2026-09": 0.3,
+  "2026-10": 0.31
+ },
+ "red_sea_excl_jeddah": {
+  "ratio": 0.9,
+  "ci95": [
+   0.85,
+   0.95
+  ]
+ },
+ "jeddah_oct_ratio": 0.13,
+ "jeddah_jun_ratio": 1.02,
+ "red_sea_group_oct_ratio": 0.44
+}
