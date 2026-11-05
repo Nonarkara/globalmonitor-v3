@@ -1,4 +1,4 @@
-\begin{thebibliography}{36}
+\begin{thebibliography}{38}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -178,6 +178,18 @@ Ralph Sundberg and Erik Melander.
 \newblock Introducing the {UCDP} georeferenced event dataset.
 \newblock \emph{Journal of Peace Research}, 50\penalty0 (4):\penalty0 523--532, 2013.
 \newblock \doi{10.1177/0022343313484347}.
+
+\bibitem[Thiengburanathum(2026)]{thiengburanathum2026anchor}
+Poon Thiengburanathum.
+\newblock The {Anchor} {Strategy} v1.1: {Thailand} in the multipolar transition. a strategic foresight report on the world order, 2025--2040.
+\newblock Technical report, Future Signals, Strategic Foresight Series, Chiang Mai, 2026.
+\newblock Revised complete edition; \url{https://forsight.craft.me/6S8F26TZcMyf6z}.
+
+\bibitem[Thiengburanathum and Arkaraprasertkul(2026)]{anchorconsole}
+Poon Thiengburanathum and Non Arkaraprasertkul.
+\newblock The {Anchor} {Console}: {Thailand} in the multipolar transition.
+\newblock \url{https://foresight.nonarkara.org/}, 2026.
+\newblock Accessed 5 November 2026.
 
 \bibitem[{United Nations Environment Programme}(2024)]{unep2024gaza}
 {United Nations Environment Programme}.

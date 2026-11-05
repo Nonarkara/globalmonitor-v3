@@ -1,12 +1,12 @@
 {
   "title": "Seeing a War Without Standing in It",
-  "version": "v1.0",
-  "dateLabel": "4 Nov 2026",
+  "version": "v1.1",
+  "dateLabel": "5 Nov 2026",
   "authors": [
     "Poon Thiengburanathum",
     "Non Arkaraprasertkul"
   ],
-  "lead": "What open ships, planes, satellites and markets reveal about the 2026 Gulf conflict, and where they go blind.",
+  "lead": "What open ships, planes, satellites and markets reveal about the 2026 Gulf conflict, where they go blind, and what that means for strategic foresight.",
   "points": [
     {
       "lead": "Seen clearly:",
@@ -21,60 +21,70 @@
       "text": "three errors in our own dashboard, found by auditing it with the same method."
     },
     {
+      "lead": "Seen for foresight:",
+      "text": "read against four possible worlds, the war looks like a regional shock that has so far stayed regional."
+    },
+    {
       "lead": "The rule:",
       "text": "never show a silence without showing how well the sensor could hear."
     }
   ],
   "licence": "Not peer reviewed · open data",
   "codeUrl": "https://github.com/Nonarkara/globalmonitor-v3/tree/main/research",
-  "bibtex": "@misc{thiengburanathum2026seeing,\n  author = {Thiengburanathum, Poon and Arkaraprasertkul, Non},\n  title = {Seeing a War Without Standing in It: What Open Ships, Planes, Satellites and Markets Reveal About the 2026 Gulf Conflict, and Where They Go Blind},\n  year = {2026},\n  month = nov,\n  note = {Preprint v1.0, not peer reviewed},\n  url = {https://globalmonitor.nonarkara.org/#research}\n}",
-  "pages": 9,
+  "bibtex": "@misc{thiengburanathum2026seeing,\n  author = {Thiengburanathum, Poon and Arkaraprasertkul, Non},\n  title = {Seeing a War Without Standing in It: What Open Ships, Planes, Satellites and Markets Reveal About the 2026 Gulf Conflict, and Where They Go Blind},\n  year = {2026},\n  month = nov,\n  note = {Preprint v1.1, not peer reviewed},\n  url = {https://globalmonitor.nonarkara.org/#research}\n}",
+  "foresightUrl": "https://foresight.nonarkara.org",
+  "pages": 10,
   "figures": 5,
-  "references": 36,
+  "references": 38,
   "pdf": "/research/seeing-a-war-without-standing-in-it.pdf",
   "pageImages": [
     {
-      "src": "/research/pages/p-1.webp",
+      "src": "/research/pages/p-01.webp",
       "w": 1360,
       "h": 1760
     },
     {
-      "src": "/research/pages/p-2.webp",
+      "src": "/research/pages/p-02.webp",
       "w": 1360,
       "h": 1760
     },
     {
-      "src": "/research/pages/p-3.webp",
+      "src": "/research/pages/p-03.webp",
       "w": 1360,
       "h": 1760
     },
     {
-      "src": "/research/pages/p-4.webp",
+      "src": "/research/pages/p-04.webp",
       "w": 1360,
       "h": 1760
     },
     {
-      "src": "/research/pages/p-5.webp",
+      "src": "/research/pages/p-05.webp",
       "w": 1360,
       "h": 1760
     },
     {
-      "src": "/research/pages/p-6.webp",
+      "src": "/research/pages/p-06.webp",
       "w": 1360,
       "h": 1760
     },
     {
-      "src": "/research/pages/p-7.webp",
+      "src": "/research/pages/p-07.webp",
       "w": 1360,
       "h": 1760
     },
     {
-      "src": "/research/pages/p-8.webp",
+      "src": "/research/pages/p-08.webp",
       "w": 1360,
       "h": 1760
     },
     {
-      "src": "/research/pages/p-9.webp",
+      "src": "/research/pages/p-09.webp",
+      "w": 1360,
+      "h": 1760
+    },
+    {
+      "src": "/research/pages/p-10.webp",
       "w": 1360,
       "h": 1747
     }

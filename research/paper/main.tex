@@ -35,7 +35,7 @@
 \fancyhead[R]{\footnotesize\color{ink2}Seeing a War Without Standing in It}
 \fancyfoot[C]{\footnotesize\color{ink2}\thepage}
 \renewcommand{\headrulewidth}{0.3pt}\renewcommand{\headrule}{\hbox to\headwidth{\color{rule}\leaders\hrule height \headrulewidth\hfill}}
-\fancypagestyle{first}{\fancyhf{}\fancyhead[L]{\footnotesize\bfseries\color{gwgreen}PREPRINT\ \ \normalfont\color{ink2}Not peer reviewed \textperiodcentered{} v1.0 \textperiodcentered{} 4 November 2026}\fancyhead[R]{\footnotesize\color{ink2}globalmonitor.nonarkara.org}\fancyfoot[C]{\footnotesize\color{ink2}\thepage}\renewcommand{\headrulewidth}{0.3pt}}
+\fancypagestyle{first}{\fancyhf{}\fancyhead[L]{\footnotesize\bfseries\color{gwgreen}PREPRINT\ \ \normalfont\color{ink2}Not peer reviewed \textperiodcentered{} v1.1 \textperiodcentered{} 5 November 2026}\fancyhead[R]{\footnotesize\color{ink2}globalmonitor.nonarkara.org}\fancyfoot[C]{\footnotesize\color{ink2}\thepage}\renewcommand{\headrulewidth}{0.3pt}}
 
 \begin{document}
 \twocolumn[{%
@@ -43,7 +43,7 @@
 \vspace{-0.2em}
 {\raggedright\fontsize{24}{27}\selectfont\bfseries\color{ink} Seeing a War Without Standing in It\par}
 \vspace{5pt}
-{\raggedright\fontsize{11.5}{14.5}\selectfont\itshape\color{ink2} What open ships, planes, satellites and markets reveal about the 2026 Gulf conflict, and where they go blind\par}
+{\raggedright\fontsize{11.5}{14.5}\selectfont\itshape\color{ink2} What open ships, planes, satellites and markets reveal about the 2026 Gulf conflict, where they go blind, and what that means for strategic foresight\par}
 \vspace{9pt}
 {\raggedright\large Poon Thiengburanathum\textsuperscript{1,2}\quad\quad Non Arkaraprasertkul\textsuperscript{3,*}\par}
 \vspace{3pt}
@@ -51,13 +51,14 @@
 \vspace{4pt}{\color{rule}\rule{\textwidth}{0.5pt}}\vspace{2pt}
 }]
 
-\noindent\textbf{Abstract.}\ Journalists in conflict zones are dying at record rates: 129 press members were killed in 2025, by one count. Most of us will never go, and would help little if we did. Can we understand a war from outside, safely, with what is already public? We built an open observatory, GlobalWatch, that reads five \emph{witnesses} that need nobody's permission: ship transponders, aircraft transponders, thermal satellites, markets and aviation regulators. We tested it on the conflict that began on 28 February 2026. Money and ports speak clearly. Brent rose \BrentPeakPct\pct\ to its peak close, and its 20-session move sits at the \PctileTwenty\textsuperscript{th} percentile of all such moves since 2015; port calls inside the Persian Gulf fell to \GulfRatio\pct\ of their earlier rate (95\pct\ CI \GulfLo--\GulfHi\pct), while control ports held at \CtrlRatio\pct. Free transponder feeds go blind exactly where it matters: only \AisFreshPct\pct\ of \AisTotal\ vessel positions were under six hours old, none lay in the Red Sea, and the Gulf was quieter than every other lane we measured, so a silence there cannot be told apart from a coverage gap. Our own platform also erred: a hand-written milestone claimed \$\AuditClaim\ Brent on 4 March, when the close was \$\AuditClose, and a composite gauge read ``LOW'' while three of its four inputs were offline. The contribution is not a sharper eye but an honest one: every reading should travel with a measure of what could have been seen. Code, data and scripts are open.
+\noindent\textbf{Abstract.}\ Journalists in conflict zones are dying at record rates: 129 press members were killed in 2025, by one count. Most of us will never go, and would help little if we did. Can we understand a war from outside, safely, with what is already public? We built an open observatory, GlobalWatch, that reads five \emph{witnesses} that need nobody's permission: ship transponders, aircraft transponders, thermal satellites, markets and aviation regulators. We tested it on the conflict that began on 28 February 2026. Money and ports speak clearly. Brent rose \BrentPeakPct\pct\ to its peak close, and its 20-session move sits at the \PctileTwenty\textsuperscript{th} percentile of all such moves since 2015; port calls inside the Persian Gulf fell to \GulfRatio\pct\ of their earlier rate (95\pct\ CI \GulfLo--\GulfHi\pct), while control ports held at \CtrlRatio\pct. Free transponder feeds go blind exactly where it matters: only \AisFreshPct\pct\ of \AisTotal\ vessel positions were under six hours old, none lay in the Red Sea, and the Gulf was quieter than every other lane we measured, so a silence there cannot be told apart from a coverage gap. Our own platform also erred: a hand-written milestone claimed \$\AuditClaim\ Brent on 4 March, when the close was \$\AuditClose, and a composite gauge read ``LOW'' while three of its four inputs were offline. We then read the war through the four world trajectories of the Anchor Strategy, a strategic-foresight framework for Thailand: the witnesses can speak to two of the four, whisper on a third and say nothing on the fourth. The contribution is not a sharper eye but an honest one: every reading should travel with a measure of what could have been seen. Code, data and scripts are open.
 
 \smallskip\noindent\textbf{Key points.}
 \begin{itemize}
 \item \textbf{Seen clearly:} prices and port calls moved at once, far outside normal range, and independent sources agree.
 \item \textbf{Seen poorly:} free ship and aircraft feeds cannot tell an empty sea from an unheard one.
 \item \textbf{Seen wrongly, by us:} three errors in our own dashboard, found by auditing it with the same method.
+\item \textbf{Seen for foresight:} read against four possible worlds, the war looks like a regional shock that, so far, has stayed regional; the data cannot yet rule out the others.
 \item \textbf{The rule:} never show a silence without showing how well the sensor could hear.
 \end{itemize}
 
@@ -70,14 +71,16 @@ Two things make the question harder than it looks. First, reporting is itself a 
 
 Our answer, the most important thing first: \emph{we can see that something changed, fast and cheaply, by reading systems that cannot lie cheaply, namely money, ports and regulators. We often cannot see why. In some places we cannot see at all, and the instrument will not say so unless it is made to.}
 
-We make four contributions. (i) An open observatory that reads five independent witnesses. (ii) An \emph{observability audit}: a procedure for deciding whether an empty cell on a map is a quiet place or a deaf receiver. (iii) Evidence from the first eight months of the 2026 Gulf conflict. (iv) An audit of our own platform, which found three errors; we report them because the method is only credible if it is turned on its author.
+We make five contributions. (i) An open observatory that reads five independent witnesses. (ii) An \emph{observability audit}: a procedure for deciding whether an empty cell on a map is a quiet place or a deaf receiver. (iii) Evidence from the first eight months of the 2026 Gulf conflict. (iv) An audit of our own platform, which found three errors; we report them because the method is only credible if it is turned on its author. (v) A mapping from the witnesses to the four trajectories of the Anchor Strategy \citep{thiengburanathum2026anchor}, which turns monitoring into foresight signposts and says which of them can be read.
 
 \section{Related work}
 \textbf{Open-source investigation} turned public traces into evidence long before this war \citep{higgins2021bellingcat}. \textbf{Conflict event data} (ACLED, UCDP, GDELT) code reports into counts and coordinates \citep{raleigh2010acled,sundberg2013ucdp,leetaru2013gdelt}; their known weakness is that reporting is uneven across space and time \citep{weidmann2016reporting}. \textbf{Remote sensing} sees without reporters: nightlights tracked the Syrian crisis \citep{li2014nightlights}, airborne sampling measured the Kuwait oil-fire smoke \citep{hobbs1992kuwait}, and thermal sensors now detect fire at 375\,m \citep{schroeder2014viirs}; \citet{witmer2015remote} reviews the field. The environmental toll of the Gaza war has been assessed the same way \citep{unep2024gaza}.
 
 \textbf{Transponders.} Ship AIS reveals fisheries at global scale \citep{kroodsma2018fisheries}, satellite imagery finds the fleets that switch it off \citep{park2020darkfleets}, and AIS has been turned into trade nowcasts \citep{cerdeiro2020seaborne}. Aircraft ADS-B, collected by volunteer receivers, produced research-grade air-traffic data \citep{schafer2014opensky,strohmeier2021opensky}. Since flight MH17 was shot down over Ukraine \citep{dsb2015mh17}, civil aviation authorities have published conflict-zone guidance \citep{icao2018doc10084,easa2026czib}. \textbf{Markets} price geopolitical risk \citep{caldara2022gpr} and distinguish oil shocks by cause \citep{kilian2009oil}. \textbf{Dashboards} can inform in real time \citep{dong2020covid}, and forecasting war is hard \citep{cederman2017predicting,hegre2019views}, so we do not forecast here.
 
-What is missing is a single frame that puts these channels side by side \emph{and} measures how well each could hear. That is the gap we fill.
+\textbf{Strategic foresight} asks a different question from forecasting: not what will happen, but which worlds are plausible and what survives in each. The Anchor Strategy frames Thailand's next decade as four bracket trajectories, not predictions \citep{thiengburanathum2026anchor}: \emph{Bloc-ification}, a return to two stacks; the \emph{Archipelago Order}, permanent fragmentation and the most probable path through 2035; a \emph{Reformed Concert} of major powers; and \emph{Cascade Breakdown}, unlikely but consequence-rich. It scores six strategic layers against each. Its instrument, the Anchor Console, lets a reader pick a world and watch which layers survive \citep{anchorconsole}. Judgements like these need signposts: facts that would look different if one world, rather than another, were arriving.
+
+What is missing is a single frame that puts the open channels side by side \emph{and} measures how well each could hear, so that a signpost is only counted if it can be read. That is the gap we fill.
 
 \section{Method}
 \subsection{Five witnesses}
@@ -105,6 +108,9 @@ A silence informs only if the sensor could have heard. For each channel we there
 
 \subsection{Statistics}
 Ratios of means (post over pre) carry 95\pct\ moving-block bootstrap intervals with 7-day blocks, 4000 resamples, to respect the weekly cycle. Correlations carry Fisher-$z$ intervals. ``Unusualness'' of a price move is its percentile among all rolling windows of the same length since 2015. Port groups are fixed by geography before looking at results.
+
+\subsection{From witnesses to signposts}
+A trajectory is a story; a signpost is a fact that would differ if the story were true. For each of the four trajectories we ask what the five witnesses would show, then apply the audit above: a signpost counts only if its witness could have heard it. Each cell is labelled \emph{measured}, a number computed here from open data, or \emph{judgement}, our reading, which the data do not force. The labels borrow the two kinds of claim the Anchor Console distinguishes \citep{anchorconsole}. The mapping is a reading aid, not a test: one event cannot adjudicate four futures.
 
 \subsection{Reproducibility}
 Every number and table in this paper is generated from scripts that read the files in the repository (see Data and code availability); a single command rebuilds the PDF. Live feeds change, so snapshot files are archived with their timestamps.
@@ -196,7 +202,7 @@ Thermal satellites see heat, not intent. The open FIRMS file for \FirmsFrom\ to 
 
 \begin{figure}[t]
 \centering\includegraphics[width=\columnwidth]{../figures/fig_fire.pdf}
-\caption{\textbf{Chronic or transient.} Share of detected 1\,km cells by number of days lit, by region, from the FIRMS 7-day file \citep{firms,schroeder2014viirs}. The Gulf basin shows the chronic signature of flares.}\label{fig:fire}
+\caption{\textbf{Chronic or transient.} Share of detected 1\,km cells by number of days lit, by region, from the FIRMS 7-day file \citep{firms,schroeder2014viirs}. The Gulf basin shows a chronic pattern consistent with flares.}\label{fig:fire}
 \end{figure}
 
 \subsection{An audit of the observatory itself}
@@ -220,6 +226,25 @@ Escalation gauge & misleading & 2/100 ``LOW'' from 1 of 4 inputs\\\bottomrule
 \end{tabular}
 \end{table}
 
+\subsection{Which world does this look like?}
+Table~\ref{tab:worlds} sets the readings of the previous sections against the four trajectories. Read this way, the war looks like a $\beta$ event with a $\delta$ ingredient: coupled stress across prices, ports, oil flows and aviation advice, absorbed before it reached the controls. Control ports held at \CtrlRatio\pct, the Eastern Mediterranean at \MedRatio\pct, and the S\&P~500's daily volatility moved only from \SPPre\pct\ to \SPPost\pct. We say ``looks like'', not ``is''. The narrower finding is the useful one. Of the four trajectories, the witnesses can speak to two ($\beta$ and $\delta$), whisper on $\gamma$, and say nothing on $\alpha$. The audit also says where the whisper is weak: the free ship feed cannot hear the Gulf, so the flow leg of the $\delta$ test rests on port calls and EIA estimates, not on ships.
+
+\begin{table}[!t]
+\centering\footnotesize
+\caption{The five witnesses read against the four trajectories of the Anchor Strategy \citep{thiengburanathum2026anchor}. Figures are measured in this paper; ``coupled'' and ``regional'' are our judgement.}\label{tab:worlds}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{1.35cm}>{\raggedright\arraybackslash}p{2.3cm}>{\raggedright\arraybackslash}p{3.55cm}@{}}
+\toprule
+Trajectory & Signpost it leaves & What we saw, March--November 2026\\\midrule
+$\alpha$ Bloc-ification & Control ports and routes split along bloc lines & Control ports flat (\CtrlRatio\pct). No witness measures alignment: \emph{unreadable here}\\
+$\beta$ Archipelago & A regional shock that stays regional & Gulf ports \GulfRatio\pct, Eastern Mediterranean \MedRatio\pct, controls \CtrlRatio\pct; equity volatility nearly unchanged: \emph{consistent}\\
+$\gamma$ Concert & Coordinated de-escalation; flows recover & Gulf calls \GulfJul\pct\ in July, \GulfOct\pct\ in October; advice reissued by country, not withdrawn: \emph{weak}\\
+$\delta$ Cascade & Coupled stress that spills into the controls & Prices, ports, oil flows and aviation advice moved together; no spill into controls so far: \emph{ingredient present, spillover absent}\\\bottomrule
+\end{tabular}
+\end{table}
+
+For the Anchor architecture the lesson is placement. The strategy scores Connector Infrastructure at 9 of 10 under $\beta$ but 2 under $\delta$, while the Sovereign Foundation, which includes energy, scores 8 under $\beta$ and 10 under $\delta$ \citep{thiengburanathum2026anchor}. The Gulf shock hit the connector channel directly, through ports, and reached energy through oil flows. That is an illustration of those ratings, not a test of them. What we cannot say is how much of Thailand's own trade and energy runs through the Gulf: this paper does not measure it, and that number belongs in the console once it is sourced.
+
 \section{Discussion}
 \subsection{Did we see better than the journalists?}
 No, and it would be a mistake to say so. A reporter can ask a question, smell smoke and meet a family. We cannot. What we can do is different, and three things stand out. We see a whole sea at once, which no reporter can. We see \emph{absence over time}, such as ports that quietly fell to a fraction of their traffic, which no single story records. And we see money's verdict, which is a vote by people with something to lose.
@@ -230,7 +255,7 @@ Equally, three things are out of reach: \emph{why} (a falling port count does no
 The best counter-argument runs as follows. Sensors are contested terrain. Ships switch transponders off; signals can be jammed or spoofed; receivers are placed by volunteers, who are not placed evenly across a war. A platform that shows sensor data with confidence may mislead more than a hesitant reporter, because a map looks like truth. The objection is right, and our own results illustrate it: the free ship feed cannot hear the Gulf, the aircraft feed cannot hear Egypt, and our own dashboard once drew days-old ships as live.
 
 \subsection{What survives}
-What survives is a principle. \emph{Treat every channel as a witness with known eyesight, and print the eyesight next to the testimony.} Concretely: (1) show the age of every position and the coverage of every region beside the data; (2) refuse a composite score when its inputs are missing, and say ``insufficient data'' instead of ``low''; (3) triangulate across witnesses that fail for different reasons, such as ports, flows, prices and regulators; (4) record the provenance of every hand-written annotation and audit it like a sensor; (5) keep it free and open, so that anyone can repeat the audit. This is a design rule, not a technology. It costs nothing to implement and it changes what the screen claims.
+What survives is a principle. \emph{Treat every channel as a witness with known eyesight, and print the eyesight next to the testimony.} Concretely: (1) show the age of every position and the coverage of every region beside the data; (2) refuse a composite score when its inputs are missing, and say ``insufficient data'' instead of ``low''; (3) triangulate across witnesses that fail for different reasons, such as ports, flows, prices and regulators; (4) record the provenance of every hand-written annotation and audit it like a sensor; (5) keep it free and open, so that anyone can repeat the audit; (6) name the trajectory each reading bears on, and say how well its sensor can speak for it. This is a design rule, not a technology. It costs nothing to implement and it changes what the screen claims.
 
 \subsection{Ethics and safety}
 Every input is already public, and our analyses use aggregate counts; we do not follow named people, vessels or aircraft over time. The dashboard displays only what its sources publish. Open tools can help the careful and the careless alike, so we recommend that deployments avoid persistent tracks of individual military assets and avoid alerts keyed to named facilities. We do not describe any use as targeting. Our figures about journalists come from CPJ, whose counts it revises as cases are reviewed \citep{cpj2026report,cpj2025report}.
@@ -239,10 +264,13 @@ Every input is already public, and our analyses use aggregate counts; we do not 
 This is one event over eight months, not years: the platform's continuous archive was not retained, so the longitudinal evidence comes from public series that can be reconstructed (prices, port calls, regulator bulletins), and the ship, aircraft and heat results are cross-sections on a single day. The aircraft result rests on \AirN\ samples from an anonymous research API with uneven coverage. Port calls are model estimates from satellite AIS, and the source flags the Gulf as unreliable \citep{eia2026steo}. The Yahoo Finance endpoint is unofficial and its terms restrict some uses, so we archive derived closes only. Front-month futures contain roll jumps. Geography fixed the port groups, but their size is small. The bulletins list is a snapshot of a page that changes weekly. We found no way to test our results against ground truth on casualties or damage, and we make no claim about either.
 
 \section{Conclusion}
-A war can be partly seen from a laptop. The money spoke on the first day and spoke hard. Ports inside the Persian Gulf fell to under a third of their usual traffic and stayed low. The regulator reissued its advice country by country. These readings agree, and they come from witnesses that fail for different reasons, which is why we trust them. The same method told us that the free ship feed cannot hear the Gulf, that the aircraft feed cannot hear Egypt, and that our own dashboard had said things that were not true. The lesson is not to look harder. It is to say, beside every number, how well we could have heard.
+A war can be partly seen from a laptop. The money spoke on the first day and spoke hard. Ports inside the Persian Gulf fell to under a third of their usual traffic and stayed low. The regulator reissued its advice country by country. These readings agree, and they come from witnesses that fail for different reasons, which is why we trust them. The same method told us that the free ship feed cannot hear the Gulf, that the aircraft feed cannot hear Egypt, and that our own dashboard had said things that were not true. The lesson is not to look harder. It is to say, beside every number, how well we could have heard. Set against four possible worlds, the same readings show a regional shock that, so far, has stayed regional. The next job is to wire the five witnesses into the Anchor Console as signposts, each with its eyesight printed beside it.
 
 \section*{Data and code availability}\label{sec:avail}
-The platform, analysis scripts, derived tables and this paper's \LaTeX\ source are in the repository \href{https://github.com/Nonarkara/globalmonitor-v3}{github.com/Nonarkara/globalmonitor-v3} under \texttt{research/} (MIT licence). Source data keep their original licences: PortWatch, OpenSky, adsb.lol, Axiom Overwatch (CC-BY~4.0), NASA FIRMS, EASA, EIA, Natural Earth \citep{naturalearth}. Live URL: \href{https://globalmonitor.nonarkara.org}{globalmonitor.nonarkara.org}.
+The platform, analysis scripts, derived tables and this paper's \LaTeX\ source are in the repository \href{https://github.com/Nonarkara/globalmonitor-v3}{github.com/Nonarkara/globalmonitor-v3} under \texttt{research/} (MIT licence). Source data keep their original licences: PortWatch, OpenSky, adsb.lol, Axiom Overwatch (CC-BY~4.0), NASA FIRMS, EASA, EIA, Natural Earth \citep{naturalearth}. Live URLs: \href{https://globalmonitor.nonarkara.org}{globalmonitor.nonarkara.org} (observatory) and \href{https://foresight.nonarkara.org}{foresight.nonarkara.org} (Anchor Console).
+
+\section*{Author contributions}
+P.T. developed the strategic-foresight framework (the Anchor Strategy and its four trajectories) from which the question is posed. N.A. built the GlobalWatch observatory, the Anchor Console and the analysis pipeline. Both authors revised the paper. The text and analysis code were drafted with the help of an AI model (Claude, Anthropic); the authors take responsibility for the content.
 
 \section*{Funding and competing interests}
 The platform is supported by the Program Management Unit for Area Based Development (PMU A) and the Digital Economy Promotion Agency (depa), and executed by Axiom and The Reason to Live Company (ReTL). The corresponding author works at depa, one of the funders; readers should weigh the results accordingly. The ship snapshot comes from a service named Axiom Overwatch, and Axiom executes the platform; treat that feed as not independent of this project.

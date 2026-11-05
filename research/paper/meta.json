@@ -1,16 +1,36 @@
 {
   "title": "Seeing a War Without Standing in It",
-  "version": "v1.0",
-  "dateLabel": "4 Nov 2026",
-  "authors": ["Poon Thiengburanathum", "Non Arkaraprasertkul"],
-  "lead": "What open ships, planes, satellites and markets reveal about the 2026 Gulf conflict, and where they go blind.",
+  "version": "v1.1",
+  "dateLabel": "5 Nov 2026",
+  "authors": [
+    "Poon Thiengburanathum",
+    "Non Arkaraprasertkul"
+  ],
+  "lead": "What open ships, planes, satellites and markets reveal about the 2026 Gulf conflict, where they go blind, and what that means for strategic foresight.",
   "points": [
-    { "lead": "Seen clearly:", "text": "prices and port calls moved at once, far outside normal range, and independent sources agree." },
-    { "lead": "Seen poorly:", "text": "free ship and aircraft feeds cannot tell an empty sea from an unheard one." },
-    { "lead": "Seen wrongly, by us:", "text": "three errors in our own dashboard, found by auditing it with the same method." },
-    { "lead": "The rule:", "text": "never show a silence without showing how well the sensor could hear." }
+    {
+      "lead": "Seen clearly:",
+      "text": "prices and port calls moved at once, far outside normal range, and independent sources agree."
+    },
+    {
+      "lead": "Seen poorly:",
+      "text": "free ship and aircraft feeds cannot tell an empty sea from an unheard one."
+    },
+    {
+      "lead": "Seen wrongly, by us:",
+      "text": "three errors in our own dashboard, found by auditing it with the same method."
+    },
+    {
+      "lead": "Seen for foresight:",
+      "text": "read against four possible worlds, the war looks like a regional shock that has so far stayed regional."
+    },
+    {
+      "lead": "The rule:",
+      "text": "never show a silence without showing how well the sensor could hear."
+    }
   ],
   "licence": "Not peer reviewed · open data",
   "codeUrl": "https://github.com/Nonarkara/globalmonitor-v3/tree/main/research",
-  "bibtex": "@misc{thiengburanathum2026seeing,\n  author = {Thiengburanathum, Poon and Arkaraprasertkul, Non},\n  title = {Seeing a War Without Standing in It: What Open Ships, Planes, Satellites and Markets Reveal About the 2026 Gulf Conflict, and Where They Go Blind},\n  year = {2026},\n  month = nov,\n  note = {Preprint v1.0, not peer reviewed},\n  url = {https://globalmonitor.nonarkara.org/#research}\n}"
+  "bibtex": "@misc{thiengburanathum2026seeing,\n  author = {Thiengburanathum, Poon and Arkaraprasertkul, Non},\n  title = {Seeing a War Without Standing in It: What Open Ships, Planes, Satellites and Markets Reveal About the 2026 Gulf Conflict, and Where They Go Blind},\n  year = {2026},\n  month = nov,\n  note = {Preprint v1.1, not peer reviewed},\n  url = {https://globalmonitor.nonarkara.org/#research}\n}",
+  "foresightUrl": "https://foresight.nonarkara.org"
 }

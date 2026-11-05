@@ -33,7 +33,8 @@ const ResearchView = () => {
                 )}
                 <p className="research-meta">
                     {paper.pages} pages · {paper.figures} figures · {paper.references} references · {paper.licence} ·{' '}
-                    <a href={paper.codeUrl} target="_blank" rel="noreferrer">Code and data</a>
+                    <a href={paper.codeUrl} target="_blank" rel="noreferrer">Code and data</a> ·{' '}
+                    <a href={paper.foresightUrl} target="_blank" rel="noreferrer">Anchor Console</a>
                 </p>
                 <ul className="research-points">
                     {paper.points.map((point) => (
