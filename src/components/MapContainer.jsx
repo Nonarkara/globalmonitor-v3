@@ -1,8 +1,13 @@
 import React, { useCallback, useState, useRef, useEffect, useMemo, useReducer } from 'react';
 import Map, { Marker, Source, Layer, Popup } from 'react-map-gl/maplibre';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { AlertTriangle } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
+
+// MapLibre 6 resolves the worker from import.meta.url. Vite's prebundle does not
+// sit next to maplibre-gl-worker.mjs, so set the bundled worker before any map is constructed.
+maplibregl.setWorkerUrl(maplibreWorkerUrl);
 import { fetchNaturalDisasters } from '../services/nasaEonet';
 import { fetchConflictsAndCrises } from '../services/reliefWeb';
 import { fetchLiveWeather } from '../services/weather';
@@ -833,6 +838,9 @@ const MapContainer = ({
                 dragRotate
                 touchZoomRotate
                 {...viewState}
+                workerUrl={maplibreWorkerUrl}
+                // react-map-gl 8 dropped the v7 default. Keep that plugin so Arabic and Hebrew labels still shape.
+                RTLTextPlugin="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js"
                 onMove={handleMove}
                 onLoad={handleMapLoad}
                 onMouseMove={handleMouseMove}
