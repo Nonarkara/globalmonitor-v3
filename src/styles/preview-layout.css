@@ -57,6 +57,7 @@
 .preview-compact .header-title { font-size: .8rem; letter-spacing: 0; text-transform: none; }
 .preview-compact .header-subtitle { display: none; }
 .preview-compact .header-controls { width: auto; flex: 0 0 auto; gap: 2px; }
+.preview-compact:not(.is-research) .header-region-tabs { display: none !important; }
 .preview-compact .header-tools-trigger,
 .preview-instrument-button,
 .preview-close {
