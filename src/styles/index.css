@@ -91,7 +91,7 @@
   --z-header: 20;
   --z-modal: 100;
   --z-banner: 1000;
-  --classification-band: 18px;
+  --classification-band: 0px;
 }
 
 ::selection {

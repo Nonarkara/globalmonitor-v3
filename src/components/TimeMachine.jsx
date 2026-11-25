@@ -7,9 +7,9 @@ const formatDate = (d) => d.toLocaleDateString('en-US', { month: 'short', day: '
 const daysSince = (d) => Math.floor((d - WAR_START) / 86400000);
 const getToday = () => new Date();
 
-const TimeMachine = ({ onDateChange }) => {
+const TimeMachine = ({ initialDate, onDateChange }) => {
     const [today, setToday] = useState(getToday);
-    const [selectedDate, setSelectedDate] = useState(getToday);
+    const [selectedDate, setSelectedDate] = useState(() => initialDate ?? getToday());
     const [playing, setPlaying] = useState(false);
     const intervalRef = useRef(null);
 

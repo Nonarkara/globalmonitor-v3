@@ -3,6 +3,15 @@
  */
 import { getTheater, resolveTheater } from './theaters.mjs';
 
+export class GdeltRateLimit extends Error {
+    constructor(retryAfter) {
+        super('GDELT rate limited');
+        this.retryAfter = /^\d{1,9}$/.test(retryAfter ?? '')
+            ? Math.max(1, Math.min(900, Number(retryAfter)))
+            : 60;
+    }
+}
+
 export const fetchGdeltSentiment = async (theater = 'middleeast') => {
     // Query terms come from the shared theater registry; 'global' uses broad
     // conflict terms (see theaters.mjs).
@@ -12,6 +21,7 @@ export const fetchGdeltSentiment = async (theater = 'middleeast') => {
 
     try {
         const res = await fetch(url, { signal: AbortSignal.timeout(12000) });
+        if (res.status === 429) throw new GdeltRateLimit(res.headers.get('Retry-After'));
         if (!res.ok) throw new Error(`GDELT ${res.status}`);
 
         const data = await res.json();

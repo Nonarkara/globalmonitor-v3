@@ -16,7 +16,7 @@ import { computeEscalation } from '../../server/lib/escalation.mjs';
 import { computeStrikeStats } from '../../server/lib/strikeStats.mjs';
 import { fetchHumanitarianPayload } from '../../server/lib/humanitarian.mjs';
 import { computeInfrastructureStatus } from '../../server/lib/infrastructure.mjs';
-import { fetchGdeltSentiment } from '../../server/lib/gdelt.mjs';
+import { fetchGdeltSentiment, GdeltRateLimit } from '../../server/lib/gdelt.mjs';
 import { fetchFlightsPayload } from '../../server/lib/flights.mjs';
 import { computeFrontStatus } from '../../server/lib/frontStatus.mjs';
 import { fetchNgaWarnings } from '../../server/lib/ngaWarnings.mjs';
@@ -294,7 +294,14 @@ export async function handleApiRequest(request, env, next) {
                 30 * 60 * 1000,
                 () => fetchGdeltSentiment(theater),
                 (p) => Array.isArray(p?.timeline) && p.timeline.length > 0
-            );
+            ).catch(error => {
+                if (!(error instanceof GdeltRateLimit)) throw error;
+                return { rateLimit: error.retryAfter };
+            });
+            if (result.rateLimit) {
+                return jsonResponse({ error: 'GDELT temporarily unavailable', retry_after: result.rateLimit }, 503,
+                    { status: 'unavailable', source: 'gdelt', retryAfter: result.rateLimit });
+            }
             if (result.meta.cache !== 'hit') upsertSentimentReadings(result.payload).catch(() => {});
             return jsonResponse(result.payload, 200, result.meta);
         }

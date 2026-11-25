@@ -3,7 +3,7 @@ import { AlertTriangle, X } from 'lucide-react';
 import { fetchEscalation } from '../services/escalation';
 import { useLiveResource } from '../hooks/useLiveResource';
 
-const AlertBanner = () => {
+const AlertBanner = ({ compact = false }) => {
     const [dismissed, setDismissed] = useState(false);
     const fetcher = useCallback(() => fetchEscalation(), []);
     const { data, error } = useLiveResource(fetcher, {
@@ -36,8 +36,8 @@ const AlertBanner = () => {
     }
 
     return (
-        <div style={{
-            position: 'fixed',
+        <div className={compact ? 'preview-alert' : undefined} role="status" style={{
+            position: compact ? 'static' : 'fixed',
             top: 18,
             left: 0,
             right: 0,
@@ -49,7 +49,7 @@ const AlertBanner = () => {
             alignItems: 'center',
             justifyContent: 'center',
             gap: '10px',
-            animation: isCritical ? 'alert-pulse 3s ease-in-out infinite' : 'none'
+            animation: isCritical && !compact ? 'alert-pulse 3s ease-in-out infinite' : 'none'
         }}>
             <AlertTriangle size={14} style={{ color: textColor, flexShrink: 0 }} />
             <span style={{
@@ -61,7 +61,7 @@ const AlertBanner = () => {
             }}>
                 {isCritical ? 'CRITICAL ESCALATION' : 'ELEVATED THREAT'} — SCORE {score}/100
             </span>
-            {factors.length > 0 && (
+            {!compact && factors.length > 0 && (
                 <span style={{
                     fontSize: '0.5rem',
                     color: 'var(--ink-3)',
@@ -71,6 +71,8 @@ const AlertBanner = () => {
                 </span>
             )}
             <button
+                type="button"
+                aria-label="Dismiss escalation alert"
                 onClick={() => setDismissed(true)}
                 style={{
                     background: 'transparent',

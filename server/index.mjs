@@ -20,7 +20,7 @@ import { computeEscalation } from './lib/escalation.mjs';
 import { computeStrikeStats } from './lib/strikeStats.mjs';
 import { fetchHumanitarianPayload } from './lib/humanitarian.mjs';
 import { computeInfrastructureStatus } from './lib/infrastructure.mjs';
-import { fetchGdeltSentiment } from './lib/gdelt.mjs';
+import { fetchGdeltSentiment, GdeltRateLimit } from './lib/gdelt.mjs';
 import { fetchFlightsPayload } from './lib/flights.mjs';
 import { computeFrontStatus } from './lib/frontStatus.mjs';
 import { fetchNgaWarnings } from './lib/ngaWarnings.mjs';
@@ -88,6 +88,7 @@ const json = (response, statusCode, payload, meta = {}) => {
         'Access-Control-Allow-Methods': 'GET,OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Content-Type': 'application/json; charset=utf-8',
+        ...(meta.retryAfter ? { 'Retry-After': String(meta.retryAfter) } : {}),
         'X-Tech-Status': meta.status || 'live',
         'X-Tech-Updated-At': meta.updatedAt || '',
         'X-Tech-Cache': meta.cache || 'miss',
@@ -426,8 +427,16 @@ const server = http.createServer(async (request, response) => {
                 `gdelt:${theater}`,
                 30 * 60 * 1000,
                 () => fetchGdeltSentiment(theater),
-                (p) => Array.isArray(p?.timeline)
-            );
+                (p) => Array.isArray(p?.timeline) && p.timeline.length > 0
+            ).catch(error => {
+                if (!(error instanceof GdeltRateLimit)) throw error;
+                return { rateLimit: error.retryAfter };
+            });
+            if (result.rateLimit) {
+                json(response, 503, { error: 'GDELT temporarily unavailable', retry_after: result.rateLimit },
+                    { status: 'unavailable', source: 'gdelt', retryAfter: result.rateLimit });
+                return;
+            }
             if (result.meta.cache !== 'hit') {
                 upsertSentimentReadings(result.payload).catch(() => {});
                 dbUpsertSentiment(result.payload);
