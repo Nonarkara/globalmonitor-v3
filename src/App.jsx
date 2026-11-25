@@ -359,7 +359,15 @@ function App() {
                   <button role="menuitem" onClick={() => { setToolsOpen(false); setIsSettingsOpen(true); }}>
                     <Settings size={12} aria-hidden="true" /> News sources
                   </button>
-                  <button role="menuitem" onClick={() => { setToolsOpen(false); logActivity(LOG_TYPES.USER_ACTION, 'Print briefing initiated'); window.print(); }}>
+                  <button role="menuitem" onClick={() => {
+                    setToolsOpen(false);
+                    if (appView === 'dashboard') {
+                      instrumentTrigger.current = toolsRef.current?.querySelector('button');
+                      setInstrument('intel');
+                    } else {
+                      window.print();
+                    }
+                  }}>
                     <Printer size={12} aria-hidden="true" /> Print briefing
                   </button>
                   <button role="menuitem" onClick={() => { setToolsOpen(false); setIsAboutOpen(true); }}>
@@ -426,6 +434,10 @@ function App() {
         {/* Row 3: Right sidebar */}
         {instrument === 'intel' && <div className="preview-intel">
         <button ref={instrumentClose} type="button" className="preview-close" onClick={closeInstrument}>Close intel</button>
+        <button type="button" className="preview-print" onClick={() => {
+          logActivity(LOG_TYPES.USER_ACTION, 'Print briefing initiated');
+          window.print();
+        }}>Print briefing</button>
         <ErrorBoundary inline label="World Clock"><WorldClock viewMode={viewMode} /></ErrorBoundary>
         <ErrorBoundary inline label="Live Feed">
           <LiveIntelligenceFeed key={`ticker:${viewMode}:${sourceSetKey}`} activeSourceIds={activeSources} viewMode={viewMode} staticFeed />

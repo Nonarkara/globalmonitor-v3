@@ -13,7 +13,11 @@ const browser = await chromium.launch();
 try {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
     const errors = [];
+    let mapWorkerLoaded = false;
     page.on('pageerror', error => errors.push(error.message));
+    page.on('response', response => {
+        if (/\/assets\/maplibre-gl-worker-.*\.js$/.test(response.url()) && response.ok()) mapWorkerLoaded = true;
+    });
     await page.route('**/*', route => {
         const request = route.request();
         if (request.method() !== 'GET') return route.abort();
@@ -55,7 +59,12 @@ try {
     for (const width of [320, 375, 390, 768, 1023, 1024, 1025, 1440]) {
         await page.setViewportSize({ width, height: width >= 768 ? 900 : 844 });
         await page.getByRole('button', { name: 'Layers', exact: true }).waitFor();
-        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        // MapLibre resizes its canvas asynchronously after the grid has settled.
+        await page.waitForFunction(() => {
+            const canvas = document.querySelector('.maplibregl-canvas')?.getBoundingClientRect();
+            const map = document.querySelector('.map-wrapper')?.getBoundingClientRect();
+            return canvas && map && Math.abs(canvas.width - map.width) <= 2 && Math.abs(canvas.height - map.height) <= 2;
+        });
         const value = await metrics();
         check(value);
         console.log(width, JSON.stringify(value));
@@ -82,6 +91,26 @@ try {
     await page.getByRole('menuitem', { name: 'Manual' }).waitFor();
     await page.keyboard.press('Escape');
     assert.equal(await tools.getAttribute('aria-expanded'), 'false');
+    const layers = page.getByRole('button', { name: 'Layers', exact: true });
+    await layers.click();
+    for (const name of ['Flights', 'Ships']) {
+        const toggle = page.getByRole('button', { name, exact: true });
+        await toggle.click();
+        await toggle.click();
+    }
+    await page.keyboard.press('Escape');
+    await tools.click();
+    await page.getByRole('menuitem', { name: 'Print briefing' }).click();
+    const print = page.getByRole('button', { name: 'Print briefing', exact: true });
+    await print.waitFor();
+    await page.evaluate(() => { window.print = () => { window.__printed = true; }; });
+    await print.click();
+    assert.equal(await page.evaluate(() => window.__printed), true);
+    await page.emulateMedia({ media: 'print' });
+    assert.equal(await page.locator('.preview-intel').isVisible(), true);
+    assert.equal(await page.locator('.preview-dock').isVisible(), false);
+    await page.emulateMedia({ media: 'screen' });
+    await page.keyboard.press('Escape');
     const obstruction = await page.addStyleTag({ content: '.map-wrapper {height: 120px !important}' });
     const obstructed = await metrics();
     assert.ok(obstructed.share < .6);
@@ -91,6 +120,7 @@ try {
     await page.locator('.maplibregl-canvas').waitFor();
     if (screenshots) await page.screenshot({ path: `${screenshots}/after-1440.png` });
     assert.deepEqual(errors, []);
+    if (process.env.REQUIRE_MAP_WORKER === '1') assert.ok(mapWorkerLoaded, 'bundled MapLibre worker did not load');
 } finally {
     await browser.close();
 }

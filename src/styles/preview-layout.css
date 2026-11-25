@@ -146,6 +146,14 @@
 .preview-intel > .top-bar-clock { display: flex; position: static; width: auto; height: auto; }
 .preview-intel .news-ticker-wrapper, .preview-intel .right-sidebar, .preview-intel .bottom-bar { position: static; width: 100%; }
 .preview-intel .bottom-bar { display: flex; flex-direction: column; max-height: none; }
+.preview-print { min-height: 44px; padding: 4px 10px; color: var(--ink); background: var(--panel); }
+
+@media print {
+  html, body, #root { height: auto !important; overflow: visible !important; }
+  .preview-compact:not(.is-research) { display: block !important; }
+  .preview-dock, .preview-alert-slot { display: none !important; }
+  .preview-compact .preview-intel { display: block; height: auto; width: 100%; max-height: none; overflow: visible; }
+}
 
 @media (min-width: 1025px) {
   .preview-compact .header-bar { padding-inline: 12px; }
