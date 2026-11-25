@@ -12,7 +12,6 @@ import { Settings, RefreshCw, Network, Database, FileText, Printer, Info, Menu, 
 
 import EscalationGauge from './components/EscalationGauge';
 import AlertBanner from './components/AlertBanner';
-import ClassificationBanner from './components/ClassificationBanner';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import ActorNetworkModal from './components/ActorNetworkModal';
 import OracleSandboxModal from './components/OracleSandboxModal';
@@ -29,6 +28,26 @@ import './styles/print.css';
 const DASHBOARD_VERSION = 'v8.3';
 
 function App() {
+  const [narrow, setNarrow] = useState(() => window.matchMedia('(max-width: 1024px)').matches);
+  const [appView, setAppView] = useState(() => window.location.hash === '#research' ? 'research' : 'dashboard');
+  const compact = appView === 'dashboard' || narrow;
+  const [instrument, setInstrument] = useState(null);
+  const instrumentTrigger = useRef(null);
+  const instrumentClose = useRef(null);
+  useEffect(() => {
+    if (compact && instrument) instrumentClose.current?.focus({ preventScroll: true });
+  }, [compact, instrument]);
+  const closeInstrument = () => {
+    setInstrument(null);
+    (instrumentTrigger.current?.isConnected ? instrumentTrigger.current
+      : document.querySelector('[data-instrument="intel"]'))?.focus();
+  };
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 1024px)');
+    const update = () => setNarrow(query.matches);
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
   // ponytail: aerosol drowns the live traffic at 0.55 opacity — keep it a toggle, not a default. Re-add 'eo-aerosol' to restore aerosol-on-load.
   // Aerosol and nightlights are on at first paint by request — the two layers that
   // make this read as a satellite picture rather than a plotted map. Both are dimmed
@@ -52,9 +71,6 @@ function App() {
   const [isManualOpen, setIsManualOpen] = useState(false);
   const [isPapersOpen, setIsPapersOpen] = useState(false);
   // Top-level view: the live dashboard, or the Research preprint. '#research' makes it linkable.
-  const [appView, setAppView] = useState(() => (
-    typeof window !== 'undefined' && window.location.hash === '#research' ? 'research' : 'dashboard'
-  ));
   useEffect(() => {
     const onHash = () => setAppView(window.location.hash === '#research' ? 'research' : 'dashboard');
     window.addEventListener('hashchange', onHash);
@@ -62,6 +78,7 @@ function App() {
   }, []);
   const openView = useCallback((view) => {
     setAppView(view);
+    setInstrument(null);
     const next = view === 'research' ? '#research' : window.location.pathname + window.location.search;
     window.history.replaceState(null, '', next);
   }, []);
@@ -70,6 +87,14 @@ function App() {
   useEscapeKey(isAboutOpen, () => setIsAboutOpen(false));
   const [toolsOpen, setToolsOpen] = useState(false);
   const toolsRef = useRef(null);
+  useEscapeKey(toolsOpen, () => {
+    setToolsOpen(false);
+    toolsRef.current?.querySelector('button')?.focus();
+  });
+  useEscapeKey(compact && Boolean(instrument) && !toolsOpen &&
+    !isSettingsOpen && !isAboutOpen && !isManualOpen && !isPapersOpen &&
+    !isSourceHealthOpen && !isActivityLogOpen && !isNetworkOpen &&
+    !isOracleOpen && !floodSandboxCity, closeInstrument);
   useEffect(() => {
     const onDocClick = (e) => {
       if (toolsRef.current && !toolsRef.current.contains(e.target)) setToolsOpen(false);
@@ -125,7 +150,7 @@ function App() {
       ...target,
       transitionDuration: target.transitionDuration || 1500,
     }));
-  }, []);
+  }, [setViewTarget]);
 
   const toggleSource = (sourceId) => {
     setActiveSources(prev =>
@@ -153,22 +178,19 @@ function App() {
 
   return (
     <>
-      {/* Alert Banner — fixed position at top */}
-      {appView === 'dashboard' && viewMode === 'middleeast' && (
-        <ErrorBoundary inline label="Alert Banner">
-          <AlertBanner />
-        </ErrorBoundary>
-      )}
-
-      <div className={`app-container${appView === 'research' ? ' is-research' : ''}`} id="main-content" role="main">
+      <div className={`app-container globewatch-shell${compact ? ' preview-compact' : ''}${appView === 'research' ? ' is-research' : ''}`} id="main-content" role="main">
         {/* Full-screen map underneath */}
         {appView === 'dashboard' && (
         <ErrorBoundary label="Map">
           <Suspense fallback={<div className="map-loading" /> }>
             <LazyMapContainer
+              compactInstruments={compact}
               viewTarget={viewTarget}
               activeLayers={activeLayers}
-              onMarkerClick={setSelectedEvent}
+              onMarkerClick={(event) => {
+                setSelectedEvent(event);
+                if (compact && event) setInstrument('intel');
+              }}
               copernicusPreview={copernicusResource.data}
               copernicusMode={copernicusMode}
               copernicusRuntimeSource={copernicusRuntimeSource}
@@ -194,11 +216,16 @@ function App() {
           </Suspense>
         </ErrorBoundary>
         )}
+        {appView === 'dashboard' && viewMode === 'middleeast' && (
+          <div className="preview-alert-slot">
+            <ErrorBoundary inline label="Alert Banner"><AlertBanner compact /></ErrorBoundary>
+          </div>
+        )}
 
         {/* Row 1: World Clock */}
-        <ErrorBoundary inline label="World Clock">
+        {!compact && <ErrorBoundary inline label="World Clock">
           <WorldClock viewMode={viewMode} />
-        </ErrorBoundary>
+        </ErrorBoundary>}
 
         {/* Row 2: Header bar — 3-section layout: logos | center title | controls */}
         <div className="header-bar grid-panel">
@@ -214,18 +241,29 @@ function App() {
           <div className="header-status">
             <div className="header-title-lockup">
               <span className="header-title">
-                Global Political Dashboard
+                {compact ? 'GlobeWatch' : 'Global Political Dashboard'}
               </span>
               <span className="header-subtitle">
                 {getRegion(viewMode).label}
               </span>
             </div>
-            <ErrorBoundary inline label="Escalation">
+            {!compact && <ErrorBoundary inline label="Escalation">
               <EscalationGauge viewMode={viewMode} />
-            </ErrorBoundary>
+            </ErrorBoundary>}
           </div>
           {/* Right: Controls */}
           <div className="header-controls">
+            {compact && appView === 'dashboard' && ['layers', 'intel'].map(name => (
+              <button key={name} className="preview-instrument-button" type="button" data-instrument={name}
+                aria-expanded={instrument === name}
+                onClick={(event) => {
+                  instrumentTrigger.current = event.currentTarget;
+                  setInstrument(current => current === name ? null : name);
+                }}>
+                {name === 'layers' ? 'Layers' : 'Intel'}
+              </button>
+            ))}
+            {!compact && <>
             <button
               onClick={() => setIsManualOpen(true)}
               aria-label="Open System Manual"
@@ -240,6 +278,7 @@ function App() {
             >
               <FileText size={11} aria-hidden="true" /> Papers
             </button>
+            </>}
             <div
               className="header-region-tabs"
               role="tablist"
@@ -305,6 +344,9 @@ function App() {
               </button>
               {toolsOpen && (
                 <div className="header-tools-menu" role="menu">
+                  <button role="menuitem" onClick={() => { setToolsOpen(false); setIsManualOpen(true); }}>
+                    <Info size={12} aria-hidden="true" /> Manual
+                  </button>
                   <button role="menuitem" onClick={() => { setToolsOpen(false); setIsPapersOpen(true); }}>
                     <FileText size={12} aria-hidden="true" /> Papers
                   </button>
@@ -317,7 +359,15 @@ function App() {
                   <button role="menuitem" onClick={() => { setToolsOpen(false); setIsSettingsOpen(true); }}>
                     <Settings size={12} aria-hidden="true" /> News sources
                   </button>
-                  <button role="menuitem" onClick={() => { setToolsOpen(false); logActivity(LOG_TYPES.USER_ACTION, 'Print briefing initiated'); window.print(); }}>
+                  <button role="menuitem" onClick={() => {
+                    setToolsOpen(false);
+                    if (appView === 'dashboard') {
+                      instrumentTrigger.current = toolsRef.current?.querySelector('button');
+                      setInstrument('intel');
+                    } else {
+                      window.print();
+                    }
+                  }}>
                     <Printer size={12} aria-hidden="true" /> Print briefing
                   </button>
                   <button role="menuitem" onClick={() => { setToolsOpen(false); setIsAboutOpen(true); }}>
@@ -343,17 +393,9 @@ function App() {
 
         {appView === 'dashboard' && (
         <>
-        {/* Row 3: Multi-Front Status Board */}
-        {viewMode === 'middleeast' && (
-          <div className="multi-front-row">
-            <ErrorBoundary inline label="Multi-Front Board">
-              <LazyPanel name="MultiFrontBoard" viewMode={viewMode} />
-            </ErrorBoundary>
-          </div>
-        )}
-
         {/* Row 3-5: Left sidebar — spans down to bottom bar */}
-        <div className="left-sidebar">
+        {instrument === 'layers' && <div className="left-sidebar preview-instrument">
+          <button ref={instrumentClose} type="button" className="preview-close" onClick={closeInstrument}>Close layers</button>
           <ErrorBoundary inline label="Sidebar">
             <Sidebar
               activeLayers={activeLayers}
@@ -387,10 +429,26 @@ function App() {
           <ErrorBoundary inline label="Live TV">
             <LazyPanel name="LiveTVPanel" viewMode={viewMode} />
           </ErrorBoundary>
-        </div>
+        </div>}
 
         {/* Row 3: Right sidebar */}
+        {instrument === 'intel' && <div className="preview-intel">
+        <button ref={instrumentClose} type="button" className="preview-close" onClick={closeInstrument}>Close intel</button>
+        <button type="button" className="preview-print" onClick={() => {
+          logActivity(LOG_TYPES.USER_ACTION, 'Print briefing initiated');
+          window.print();
+        }}>Print briefing</button>
+        <ErrorBoundary inline label="World Clock"><WorldClock viewMode={viewMode} /></ErrorBoundary>
+        <ErrorBoundary inline label="Live Feed">
+          <LiveIntelligenceFeed key={`ticker:${viewMode}:${sourceSetKey}`} activeSourceIds={activeSources} viewMode={viewMode} staticFeed />
+        </ErrorBoundary>
         <div className="right-sidebar">
+          <ErrorBoundary inline label="Escalation"><EscalationGauge viewMode={viewMode} /></ErrorBoundary>
+          {viewMode === 'middleeast' && (
+            <ErrorBoundary inline label="Multi-Front Board">
+              <LazyPanel name="MultiFrontBoard" viewMode={viewMode} />
+            </ErrorBoundary>
+          )}
           {selectedEvent && (
             <LazyPanel
               name="EventDetailsPanel"
@@ -645,16 +703,15 @@ function App() {
             </>
           )}
         </div>
-        <ErrorBoundary inline label="Live Feed">
-          <LiveIntelligenceFeed key={`ticker:${viewMode}:${sourceSetKey}`} activeSourceIds={activeSources} viewMode={viewMode} />
-        </ErrorBoundary>
-
         {/* Time Machine — date slider for historical data */}
         {viewMode === 'middleeast' && (
           <ErrorBoundary inline label="Time Machine">
-            <LazyPanel name="TimeMachine" onDateChange={setTimeMachineDate} />
+            <div className="preview-time-machine">
+              <LazyPanel name="TimeMachine" initialDate={timeMachineDate} onDateChange={setTimeMachineDate} />
+            </div>
           </ErrorBoundary>
         )}
+        </div>}
 
         </>
         )}
@@ -794,7 +851,7 @@ function App() {
       </div>
 
       {/* Mobile-only theater nav — fixed bottom bar, within thumb reach */}
-      <nav className="mobile-theater-nav" aria-label="Theater selector">
+      <nav className={`mobile-theater-nav${appView === 'dashboard' ? ' preview-dock' : ''}`} aria-label="Theater selector">
         {Object.values(REGIONS).map((r) => (
           <button
             key={r.id}
@@ -820,8 +877,6 @@ function App() {
         </button>
       </nav>
 
-      {/* Classification Banner — always visible, top and bottom of viewport */}
-      <ClassificationBanner level="FOUO" />
     </>
   );
 }

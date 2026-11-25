@@ -1,8 +1,14 @@
 import React, { useCallback, useState, useRef, useEffect, useMemo, useReducer } from 'react';
-import Map, { Marker, Source, Layer, Popup } from 'react-map-gl/maplibre';
-import maplibregl from 'maplibre-gl';
+import Map, { Marker, Source, Layer, Popup, AttributionControl } from 'react-map-gl/maplibre';
+import { trafficArchive } from '../services/trafficArchive.js';
+import * as maplibregl from 'maplibre-gl';
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { AlertTriangle } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
+
+// MapLibre 6 resolves the worker from import.meta.url. Vite's prebundle does not
+// sit next to maplibre-gl-worker.mjs, so set the bundled worker before any map is constructed.
+maplibregl.setWorkerUrl(maplibreWorkerUrl);
 import { fetchNaturalDisasters } from '../services/nasaEonet';
 import { fetchConflictsAndCrises } from '../services/reliefWeb';
 import { fetchLiveWeather } from '../services/weather';
@@ -496,6 +502,7 @@ const MAP_STYLE_FALLBACKS = {
 };
 
 const MapContainer = ({
+    compactInstruments = false,
     viewTarget,
     activeLayers,
     onMarkerClick,
@@ -689,8 +696,15 @@ const MapContainer = ({
     const aqiData = aqiResource.data;
     const firmsData = firmsResource.data;
     const infraData = infraResource.data;
-    const flightsData = flightsResource.data;
-    const vesselsData = vesselsResource.data;
+    const [nowMs, setNowMs] = useState(() => Date.now());
+    useEffect(() => {
+        const t = setInterval(() => setNowMs(Date.now()), 60_000);
+        return () => clearInterval(t);
+    }, []);
+    const flightArchive = trafficArchive('aircraft', flightsResource.data?.meta, nowMs);
+    const vesselArchive = trafficArchive('vessel', vesselsResource.data?.meta, nowMs);
+    const flightsData = flightArchive?.hidden ? null : flightsResource.data;
+    const vesselsData = vesselArchive?.hidden ? null : vesselsResource.data;
     // Marching-ants dash cycle on the flood corridors: the dashes crawl
     // downstream, making the direction of water legible at a glance. One
     // uniform paint write per tick — no geometry upload, negligible cost.
@@ -731,11 +745,6 @@ const MapContainer = ({
     // FIRMS and ACLED sit on the same map as traffic with no provenance line of
     // their own. Same format as the traffic rows: count · source · age.
     // A clock that ticks in an effect, so age labels are pure during render.
-    const [nowMs, setNowMs] = useState(() => Date.now());
-    useEffect(() => {
-        const t = setInterval(() => setNowMs(Date.now()), 60_000);
-        return () => clearInterval(t);
-    }, []);
     const ageLabel = (iso) => {
         if (!iso) return null;
         const mins = Math.floor((nowMs - new Date(iso).getTime()) / 60000);
@@ -833,14 +842,19 @@ const MapContainer = ({
                 dragRotate
                 touchZoomRotate
                 {...viewState}
+                workerUrl={maplibreWorkerUrl}
+                // react-map-gl 8 dropped the v7 default. Keep that plugin so Arabic and Hebrew labels still shape.
+                RTLTextPlugin="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js"
                 onMove={handleMove}
                 onLoad={handleMapLoad}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
                 interactiveLayerIds={['flights-icons', 'vessels-icons', 'flood-stations-alert', 'flood-stations-all']}
                 style={{ width: '100%', height: '100%' }}
+                attributionControl={false}
                 mapStyle={MAP_STYLES[mapStyle] || MAP_STYLES.dark}
             >
+                <AttributionControl compact />
                 {showStrategicContext && (
                     <>
                         <Source id="strategic-zones" type="geojson" data={STRATEGIC_ZONES}>
@@ -1711,8 +1725,9 @@ const MapContainer = ({
                 </div>
             )}
 
-            <div
+            <details
                 className="map-legend map-legend--traffic"
+                open={compactInstruments ? undefined : true}
                 style={{
                     top: 12,
                     bottom: 'auto',
@@ -1725,14 +1740,16 @@ const MapContainer = ({
                 aria-hidden={!legendVisible}
             >
                 {/* "SOURCES", not "LIVE TRAFFIC" — an item below may read "3d old". */}
-                <div className="map-legend-title">SOURCES</div>
+                <summary className="map-legend-title">Sources</summary>
                 <div
                     className="map-legend-item"
                     style={{ visibility: flightsLayerActive ? 'visible' : 'hidden' }}
                 >
                     <span className="map-legend-line" style={{ background: '#191712' }} />
                     <span style={{ fontVariantNumeric: 'tabular-nums', minWidth: '14ch', display: 'inline-block' }}>
-                        {flightCount > 0 ? `${flightCount.toLocaleString()} aircraft · ${flightSourceLabel}` : '… aircraft · ADS-B'}
+                        {flightCount > 0
+                            ? `${flightCount.toLocaleString()} aircraft · ${flightArchive?.label || flightSourceLabel}`
+                            : flightArchive?.label || (flightsResource.isLoading ? 'Loading aircraft…' : 'Aircraft feed unavailable')}
                     </span>
                 </div>
                 <div
@@ -1745,8 +1762,8 @@ const MapContainer = ({
                     />
                     <span style={{ fontVariantNumeric: 'tabular-nums', minWidth: '14ch', display: 'inline-block' }}>
                         {vesselCount > 0
-                            ? `${vesselCount.toLocaleString()} vessels · ${vesselSourceLabel}${vesselsData?.ageSummary ? ` · ${vesselsData.ageSummary.fresh.toLocaleString()} heard < ${vesselsData.ageSummary.staleHours} h` : ''}`
-                            : vesselsNeedKey ? 'AIS key required' : 'Awaiting AIS feed…'}
+                            ? `${vesselCount.toLocaleString()} vessels · ${vesselArchive?.label || vesselSourceLabel}${vesselsData?.ageSummary ? ` · ${vesselsData.ageSummary.fresh.toLocaleString()} heard < ${vesselsData.ageSummary.staleHours} h` : ''}`
+                            : vesselArchive?.label || (vesselsNeedKey ? 'AIS key required' : vesselsResource.isLoading ? 'Loading AIS…' : 'AIS feed unavailable')}
                     </span>
                 </div>
                 <div
@@ -1768,7 +1785,7 @@ const MapContainer = ({
                         <span style={{ fontVariantNumeric: 'tabular-nums', color: acledLive ? undefined : 'var(--red)' }}>{acledSourceLabel}</span>
                     </div>
                 )}
-            </div>
+            </details>
 
             <div
                 className="map-legend map-legend--strategic"
@@ -1811,7 +1828,7 @@ const MapContainer = ({
                 const activeEoLayers = EO_TILE_LAYERS.filter(l => activeLayers.includes(l.id));
                 if (activeEoLayers.length === 0) return null;
                 return (
-                    <div style={{
+                    <div className="map-eo-labels" style={{
                         position: 'absolute',
                         bottom: '12px',
                         left: '50%',

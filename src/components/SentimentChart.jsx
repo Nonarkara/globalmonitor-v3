@@ -2,8 +2,8 @@ import React, { useCallback, useMemo } from 'react';
 import { Activity } from 'lucide-react';
 import { useLiveResource } from '../hooks/useLiveResource';
 import DataStatus from './DataStatus';
+import { fetchBackendJson } from '../services/backendClient.js';
 
-const API_BASE = import.meta.env.DEV ? 'http://localhost:8802' : '';
 const EMPTY_TIMELINE = [];
 const CHART_WIDTH = 200;
 const CHART_HEIGHT = 60;
@@ -11,7 +11,7 @@ const CHART_PAD = 2;
 
 const SentimentChart = ({ viewMode = 'middleeast' }) => {
     const fetcher = useCallback(() =>
-        fetch(`${API_BASE}/api/sentiment?theater=${encodeURIComponent(viewMode)}`).then(r => r.json()), [viewMode]);
+        fetchBackendJson('/api/sentiment', { theater: viewMode }), [viewMode]);
 
     const { data, isLoading, isRefreshing, isStale, error, retryCount, refresh } = useLiveResource(fetcher, {
         cacheKey: `gdelt-sentiment:${viewMode}`,

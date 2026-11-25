@@ -4,12 +4,12 @@
  * Government offices may have restricted or intermittent connectivity.
  */
 
-const CACHE_NAME = 'gpd-v9-20261104-research';
+const CACHE_NAME = 'gpd-v9-20261126-map-first';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
     '/pmua-logo.webp',
-    '/Logo depa-01.png',
+    '/depa-logo.png',
     '/smart-city-thailand-logo.svg',
     '/axiom-logo.png'
 ];
@@ -27,7 +27,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then(keys =>
-            Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+            Promise.all(keys.filter(k => k.startsWith('gpd-') && k !== CACHE_NAME).map(k => caches.delete(k)))
         ).then(() => self.clients.claim())
     );
 });

@@ -1,9 +1,10 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { fetchLiveNews } from '../services/liveNews';
 import { RefreshCw } from 'lucide-react';
 import { useLiveResource } from '../hooks/useLiveResource';
 
-const LiveIntelligenceFeed = ({ activeSourceIds }) => {
+const LiveIntelligenceFeed = ({ activeSourceIds, staticFeed = false }) => {
+    const [paused, setPaused] = useState(false);
     const cacheKey = `ticker:${Array.isArray(activeSourceIds) && activeSourceIds.length ? activeSourceIds.join(',') : 'default'}`;
     const fetcher = useCallback(() => fetchLiveNews(activeSourceIds), [activeSourceIds]);
     const {
@@ -37,6 +38,9 @@ const LiveIntelligenceFeed = ({ activeSourceIds }) => {
                 <span style={{ color: 'var(--ink)', fontWeight: 'bold', fontSize: '0.7rem', padding: '2px 6px', borderRadius: 0, background: 'var(--panel)', border: '1px solid var(--line)' }}>
                     {isStale ? 'STALE' : 'LIVE INTEL'}
                 </span>
+                {!staticFeed && news.length > 0 && <button type="button" aria-pressed={paused} onClick={() => setPaused(value => !value)}>
+                    {paused ? 'Resume' : 'Pause'}
+                </button>}
                 <button
                     onClick={refresh}
                     style={{ background: 'transparent', border: 'none', color: 'var(--ink-2)', cursor: 'pointer', display: 'flex', padding: 0 }}
@@ -46,9 +50,10 @@ const LiveIntelligenceFeed = ({ activeSourceIds }) => {
                 </button>
             </div>
             <div className="news-marquee-container">
-                <div className={`news-marquee ${news.length === 0 ? 'news-marquee-static' : ''}`}>
+                <div className={`news-marquee ${staticFeed || news.length === 0 ? 'news-marquee-static' : ''}`}
+                    style={paused ? { animationPlayState: 'paused' } : undefined}>
                     {/* Duplicate for infinite scroll illusion */}
-                    {(news.length > 0 ? [...news, ...news] : [{
+                    {(news.length > 0 ? (staticFeed ? news : [...news, ...news]) : [{
                         title: error ? 'Live headline feeds are temporarily unavailable. Last-good data will reappear when the sources respond.' : 'Connecting to live headline feeds...',
                         link: '',
                         source: error ? 'Feed Status' : 'Sync',
