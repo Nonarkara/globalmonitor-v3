@@ -16,7 +16,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # wrangler 4.168 requires Node >= 22.12.
+          node-version: 22
       - run: npm ci || npm install
       - run: npx vite build
         env:
@@ -26,4 +27,9 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # Must match the wrangler devDependency. If this is unset and the
+          # local binary is missing, wrangler-action@v3 installs 3.90.0, whose
+          # miniflare calls zod's z.ostring(). The repo override pins zod 4,
+          # which removed that method, so the action dies before any API call.
+          wranglerVersion: "4.168.0"
           command: pages deploy dist --project-name=globalmonitor --branch=main
